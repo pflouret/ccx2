@@ -190,7 +190,7 @@ class XmmsService(object):
       v = res.value()
       if v == xmmsclient.PLAYBACK_STATUS_PLAY:
         self.playback_pause()
-      elif v == xmmsclient.PLAYBACK_STATUS_PAUSE:
+      else:
         self.playback_start()
     self.playback_status(cb=__status_cb)
 
