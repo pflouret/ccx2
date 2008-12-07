@@ -146,7 +146,7 @@ class Playlist(widgets.CustomKeysListBox):
 
   def _play_highlighted(self):
     pos = self.get_focus()[1]
-    xs.playlist_play(playlist=self.view_pls, pos=pos, sync=False)
+    xs.playlist_play(playlist=self.view_pls, pos=pos)
 
   def _set_body(self, body):
     self.body = body
