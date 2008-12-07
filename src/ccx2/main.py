@@ -39,11 +39,11 @@ class GlobalCommandsHandler(object):
   def __init__(self):
     self._key_action = {}
 
-    for action, fun in (('play', lambda: xs.playback_play(sync=True)),
-                        ('play-pause-toggle', lambda: xs.playback_play_pause_toggle(sync=True)),
-                        ('stop', lambda: xs.playback_stop(sync=True)),
-                        ('next-track', lambda: xs.playback_next(sync=True)),
-                        ('previous-track', lambda: xs.playback_prev(sync=True)),
+    for action, fun in (('play', lambda: xs.playback_play(sync=False)),
+                        ('play-pause-toggle', lambda: xs.playback_play_pause_toggle(sync=False)),
+                        ('stop', lambda: xs.playback_stop(sync=False)),
+                        ('next-track', lambda: xs.playback_next(sync=False)),
+                        ('previous-track', lambda: xs.playback_prev(sync=False)),
                        ):
       for key in keybindings['playback'][action]:
         self._key_action[key] = fun

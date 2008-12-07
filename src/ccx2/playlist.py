@@ -43,7 +43,7 @@ class PlaylistWalker(urwid.ListWalker):
 
     if self.pls == self.active_pls:
       try:
-        self.current_pos = xs.playlist_current_pos(sync=True)['position']
+        self.current_pos = xs.playlist_current_pos()['position']
       except XMMSError:
         self.current_pos = -1
     else:
@@ -54,10 +54,9 @@ class PlaylistWalker(urwid.ListWalker):
     self._load()
 
   def _load(self):
-    ids = xs.playlist_list_entries(self.pls, sync=True)
+    ids = xs.playlist_list_entries(self.pls)
     songs = xs.coll_query_infos(coll.Reference(self.pls, 'Playlists'),
-                                fields=['artist', 'album', 'title'],
-                                sync=True)
+                                fields=['artist', 'album', 'title'])
 
     songs = dict([(s['id'], s) for s in songs])
 
@@ -115,7 +114,7 @@ class Playlist(widgets.CustomKeysListBox):
 
     self._key_action = self._make_key_action_mapping()
     self._walkers = {} # pls => walker
-    self.active_pls = xs.playlist_current_active(sync=True)
+    self.active_pls = xs.playlist_current_active()
     self.view_pls = self.active_pls
 
     self.load(self.active_pls)
@@ -147,7 +146,7 @@ class Playlist(widgets.CustomKeysListBox):
 
   def _play_highlighted(self):
     pos = self.get_focus()[1]
-    xs.playlist_play(playlist=self.view_pls, pos=pos)
+    xs.playlist_play(playlist=self.view_pls, pos=pos, sync=False)
 
   def _set_body(self, body):
     self.body = body
@@ -164,8 +163,8 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     self._load()
 
   def _load(self):
-    self.playlists = [p for p in xs.playlist_list(sync=True) if p != '_active']
-    self.cur_active = xs.playlist_current_active(sync=True)
+    self.playlists = [p for p in xs.playlist_list() if p != '_active']
+    self.cur_active = xs.playlist_current_active()
 
   def _on_xmms_playlist_loaded(self, value):
     self.cur_active = value
@@ -229,7 +228,7 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
 
   def _load_highlighted(self):
     pls_name = self.get_focus()[0].pls_name
-    xs.playlist_load(pls_name, sync=True)
+    xs.playlist_load(pls_name)
 
   def keypress(self, size, key):
     if key in self._key_action:

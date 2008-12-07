@@ -125,13 +125,13 @@ class XmmsService(object):
         id,
         lambda res: self.emit('xmms-playback-current-info', res.value()))
 
-  def bindata_retrieve(self, hash, cb=None, sync=False):
+  def bindata_retrieve(self, hash, cb=None, sync=True):
     if sync:
       return self.xmms_s.bindata_retrieve(hash)
     else:
       self.xmms.bindata_retrieve(hash, cb)
 
-  def coll_query_infos(self, collection, fields, cb=None, sync=False):
+  def coll_query_infos(self, collection, fields, cb=None, sync=True):
     if 'id' not in fields:
       fields = fields + ['id']
 
@@ -140,31 +140,31 @@ class XmmsService(object):
     else:
       self.xmms.coll_query_infos(collection, fields, cb=cb)
 
-  def coll_rename(self, oldname, newname, ns, cb=None, sync=False):
+  def coll_rename(self, oldname, newname, ns, cb=None, sync=True):
     if sync:
       return self.xmms_s.coll_rename(oldname, newname, ns)
     else:
       self.xmms.coll_rename(oldname, newname, ns, cb=cb)
 
-  def coll_save(self, collection, name, ns, cb=None, sync=False):
+  def coll_save(self, collection, name, ns, cb=None, sync=True):
     if sync:
       return self.xmms_s.coll_save(collection, name, ns)
     else:
       self.xmms.coll_save(collection, name, ns, cb=cb)
 
-  def configval_get(self, key, cb=None, sync=False):
+  def configval_get(self, key, cb=None, sync=True):
     if sync:
       return self.xmms_s.configval_get(key)
     else:
       self.xmms.configval_get(key, cb=cb)
 
-  def configval_set(self, key, val, cb=None, sync=False):
+  def configval_set(self, key, val, cb=None, sync=True):
     if sync:
       return self.xmms_s.configval_set(key, val)
     else:
       self.xmms.configval_set(key, val, cb=cb)
 
-  def playback_current_id(self, cb=None, sync=False):
+  def playback_current_id(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playback_current_id()
     else:
@@ -172,102 +172,102 @@ class XmmsService(object):
         cb = self._on_xmms_playback_current_id
       self.xmms.playback_current_id(cb=cb)
 
-  def playback_next(self, cb=None, sync=False):
+  def playback_next(self, cb=None, sync=True):
     self.playlist_set_next(pos=1, relative=True, sync=True)
     if sync:
       return self.playback_tickle()
     else:
-      self.playback_tickle(sync=True)
+      self.playback_tickle()
 
-  def playback_pause(self, cb=None, sync=False):
+  def playback_pause(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playback_pause()
     else:
       self.xmms.playback_pause(cb=cb)
 
-  def playback_play_pause_toggle(self, cb=None, sync=False):
+  def playback_play_pause_toggle(self, cb=None, sync=True):
     def __status_cb(res):
       v = res.value()
       if v == xmmsclient.PLAYBACK_STATUS_PLAY:
-        self.playback_pause()
+        self.playback_pause(sync=False)
       else:
-        self.playback_start()
-    self.playback_status(cb=__status_cb)
+        self.playback_start(sync=False)
+    self.playback_status(cb=__status_cb, sync=False)
 
-  def playback_prev(self, cb=None, sync=False):
+  def playback_prev(self, cb=None, sync=True):
     self.playlist_set_next(pos=-1, relative=True, sync=True)
     if sync:
       return self.playback_tickle()
     else:
       self.playback_tickle(sync=True)
 
-  def playback_seek_ms(self, ms, cb=None, sync=False):
+  def playback_seek_ms(self, ms, cb=None, sync=True):
     if sync:
       return self.xmms_s.playback_seek_ms(ms)
     else:
       self.xmms.playback_seek_ms(ms, cb=cb)
 
-  def playback_start(self, cb=None, sync=False):
+  def playback_start(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playback_start()
     else:
       self.xmms.playback_start(cb=cb)
 
-  def playback_status(self, cb=None, sync=False):
+  def playback_status(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playback_status()
     else:
       self.xmms.playback_status(cb=cb)
 
-  def playback_stop(self, cb=None, sync=False):
+  def playback_stop(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playback_stop()
     else:
       self.xmms.playback_stop(cb=cb)
 
-  def playback_tickle(self, cb=None, sync=False):
+  def playback_tickle(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playback_tickle()
     else:
       self.xmms.playback_tickle(cb=cb)
 
-  def playlist_add_id(self, id, playlist, cb=None, sync=False):
+  def playlist_add_id(self, id, playlist, cb=None, sync=True):
     if sync:
       return self.xmms_s.playlist_add_id(id, playlist)
     else:
       self.xmms.playlist_add_id(id, playlist, cb=cb)
 
-  def playlist_create(self, playlist, cb=None, sync=False):
+  def playlist_create(self, playlist, cb=None, sync=True):
     if sync:
       return self.xmms_s.playlist_create(playlist)
     else:
       self.xmms.playlist_create(playlist, cb=cb)
 
-  def playlist_current_active(self, cb=None, sync=False):
+  def playlist_current_active(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playlist_current_active()
     else:
       self.xmms.playlist_current_active(cb=cb)
 
-  def playlist_current_pos(self, cb=None, sync=False):
+  def playlist_current_pos(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playlist_current_pos()
     else:
       self.xmms.playlist_current_pos(cb=cb)
 
-  def playlist_list(self, cb=None, sync=False):
+  def playlist_list(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playlist_list()
     else:
       self.xmms.playlist_list(cb=cb)
 
-  def playlist_list_entries(self, playlist=None, cb=None, sync=False):
+  def playlist_list_entries(self, playlist=None, cb=None, sync=True):
     if sync:
       return self.xmms_s.playlist_list_entries(playlist)
     else:
       self.xmms.playlist_list_entries(playlist, cb=cb)
 
-  def playlist_load(self, playlist, cb=None, sync=False):
+  def playlist_load(self, playlist, cb=None, sync=True):
     if sync:
       return self.xmms_s.playlist_load(playlist)
     else:
@@ -276,11 +276,11 @@ class XmmsService(object):
   def playlist_play_pos(self, pos, relative=False):
     def __status_cb(res):
       if res.value() != xmmsclient.PLAYBACK_STATUS_PLAY:
-        self.playback_start()
+        self.playback_start(sync=False)
 
-      self.playlist_set_next(pos, relative=relative)
-      self.playback_tickle()
-    self.playback_status(cb=__status_cb)
+      self.playlist_set_next(pos, relative=relative, sync=False)
+      self.playback_tickle(sync=False)
+    self.playback_status(cb=__status_cb, sync=False)
 
   def playlist_play(self, playlist=None, pos=0, relative=False):
     def __load_cb(res):
@@ -291,17 +291,17 @@ class XmmsService(object):
       self.playlist_play_pos(pos)
 
     if playlist is not None:
-      self.playlist_load(playlist, __load_cb)
+      self.playlist_load(playlist, __load_cb, sync=False)
     else:
       self.playlist_play_pos(pos, relative=relative)
 
-  def playlist_remove(self, playlist, cb=None, sync=False):
+  def playlist_remove(self, playlist, cb=None, sync=True):
     if sync:
       return self.xmms_s.playlist_remove(playlist)
     else:
       self.xmms.playlist_remove(playlist, cb=cb)
 
-  def playlist_set_next(self, pos, relative=False, cb=None, sync=False):
+  def playlist_set_next(self, pos, relative=False, cb=None, sync=True):
     if sync:
       if relative:
         return self.xmms_s.playlist_set_next_rel(pos)
