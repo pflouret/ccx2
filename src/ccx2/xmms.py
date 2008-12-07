@@ -79,6 +79,8 @@ class XmmsService(object):
       self.xmms.signal_playback_playtime(self._callback_wrapper(cb))
     elif signal == 'playlist-current-pos':
       self.xmms.broadcast_playlist_current_pos(self._callback_wrapper(cb))
+    elif signal == 'playlist-loaded':
+      self.xmms.broadcast_playlist_loaded(self._callback_wrapper(cb))
 
     if self.xmms.want_ioout():
       self.xmms.ioout()
