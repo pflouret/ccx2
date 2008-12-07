@@ -35,20 +35,42 @@ from ccx2.config import keybindings
 
 xs = xmms.get()
 
+class GlobalCommandsHandler(object):
+  def __init__(self):
+    self._key_action = {}
+
+    for action, fun in (('play', lambda: xs.playback_play(sync=True)),
+                        ('play-pause-toggle', lambda: xs.playback_play_pause_toggle(sync=True)),
+                        ('stop', lambda: xs.playback_stop(sync=True)),
+                        ('next-track', lambda: xs.playback_next(sync=True)),
+                        ('previous-track', lambda: xs.playback_prev(sync=True)),
+                       ):
+      for key in keybindings['playback'][action]:
+        self._key_action[key] = fun
+
+  def keypress(self, size, key):
+    if key in self._key_action:
+      self._key_action[key]()
+    else:
+      return key
+
 class Ccx2(object):
   palette = [
     ('body','dark cyan','black', 'standout'),
-    ('reverse','black','dark cyan', 'standout'),
-    ('current_song','light red','black', 'standout'),
+    ('reverse','black','dark green', 'standout'),
+    ('current_song','dark red', 'default'),
+    ('current_playlist','light red','default', 'standout'),
     ('statusbar','light gray', 'black'),
     ('key','light cyan', 'black', 'underline'),
     ('title', 'white', 'black',),
     ]
     
   def __init__(self):
+    self.gch = GlobalCommandsHandler()
     self.playlist = playlist.Playlist()
+    self.switcher = playlist.PlaylistSwitcher()
     self.statusbar = statusbar.StatusBar()
-    self.view = urwid.Frame(urwid.AttrWrap(self.playlist, 'body'), footer=self.statusbar.widget)
+    self.view = urwid.Frame(self.playlist, footer=self.statusbar.widget)
 
   def main(self):
     self.ui = urwid.curses_display.Screen()
@@ -76,10 +98,16 @@ class Ccx2(object):
       for k in keys:
         if k == 'window resize':
           self.size = self.ui.get_cols_rows()
+        elif k in keybindings['general']['goto-playlist']:
+          self.view.body = self.playlist
+        elif k in keybindings['general']['goto-playlist-switcher']:
+          self.view.body = self.switcher
         elif k in keybindings['general']['quit']:
           return
-
-        self.view.keypress(self.size, k)
+        elif self.view.keypress(self.size, k) is None:
+          continue
+        elif self.gch.keypress(self.size, k) is None:
+          continue
 
 if __name__ == '__main__':
   Ccx2().main()

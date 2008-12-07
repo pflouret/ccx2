@@ -24,6 +24,7 @@
 
 import urwid
 from xmmsclient import collections as coll
+from xmmsclient.sync import XMMSError
 
 from ccx2 import widgets
 from ccx2 import xmms
@@ -32,24 +33,32 @@ from ccx2.config import keybindings
 xs = xmms.get()
 
 class PlaylistWalker(urwid.ListWalker):
-  def __init__(self):
+  def __init__(self, pls, active_pls):
     self.focus = 0
     self.rows = {}
     self.songs = []
 
-    self.current = xs.playlist_current_active(sync=True)
-    self.current_pos = xs.playlist_current_pos(sync=True)['position']
+    self.pls = pls
+    self.active_pls = active_pls
+
+    if self.pls == self.active_pls:
+      try:
+        self.current_pos = xs.playlist_current_pos(sync=True)['position']
+      except XMMSError:
+        self.current_pos = -1
+    else:
+      self.current_pos = -1
+
     xs.register_callback('playlist-current-pos', self._on_xmms_playlist_current_pos)
 
-    self.load()
+    self._load()
 
-  def load(self, pls_name=None):
-    if pls_name is None:
-      pls_name = xs.playlist_current_active(sync=True)
-    ids = xs.playlist_list_entries(pls_name, sync=True)
-    songs = xs.coll_query_infos(coll.Reference(pls_name, 'Playlists'),
+  def _load(self):
+    ids = xs.playlist_list_entries(self.pls, sync=True)
+    songs = xs.coll_query_infos(coll.Reference(self.pls, 'Playlists'),
                                 fields=['artist', 'album', 'title'],
                                 sync=True)
+
     songs = dict([(s['id'], s) for s in songs])
 
     self.songs = []
@@ -57,7 +66,7 @@ class PlaylistWalker(urwid.ListWalker):
       self.songs.append(songs[id])
 
   def _on_xmms_playlist_current_pos(self, value):
-    if value['name'] == self.current:
+    if value['name'] == self.pls:
       self.current_pos = value['position']
       self._modified()
 
@@ -101,9 +110,32 @@ class Playlist(widgets.CustomKeysListBox):
                    ('page-up', 'page up'),
                    ('page-down', 'page down')):
       keys.update([(k, action[1]) for k in keybindings['general'][action[0]]])
-    self.__super.__init__(keys, PlaylistWalker())
+
+    self.__super.__init__(keys, [])
 
     self._key_action = self._make_key_action_mapping()
+    self._walkers = {} # pls => walker
+    self.active_pls = xs.playlist_current_active(sync=True)
+    self.view_pls = self.active_pls
+
+    self.load(self.active_pls)
+
+  def load(self, pls):
+    if pls not in self._walkers:
+      self._walkers[pls] = PlaylistWalker(pls, self.active_pls)
+
+    self._set_body(self._walkers[pls])
+    self.view_pls = pls
+
+  def keypress(self, size, key):
+    if key in self._key_action:
+      self._key_action[key]()
+    elif key == 'c':
+      self.load('Default')
+    elif key == 'l':
+      self.load('lala')
+    else:
+      return self.__super.keypress(size, key)
 
   def _make_key_action_mapping(self):
     m = {}
@@ -115,7 +147,89 @@ class Playlist(widgets.CustomKeysListBox):
 
   def _play_highlighted(self):
     pos = self.get_focus()[1]
-    xs.playlist_play_pos(pos)
+    xs.playlist_play(playlist=self.view_pls, pos=pos)
+
+  def _set_body(self, body):
+    self.body = body
+    self._invalidate()
+
+class PlaylistSwitcherWalker(urwid.ListWalker):
+  def __init__(self):
+    self.focus = 0
+    self.rows = {}
+    self.playlists = []
+
+    xs.register_callback('playlist-loaded', self._on_xmms_playlist_loaded)
+
+    self._load()
+
+  def _load(self):
+    self.playlists = [p for p in xs.playlist_list(sync=True) if p != '_active']
+    self.cur_active = xs.playlist_current_active(sync=True)
+
+  def _on_xmms_playlist_loaded(self, value):
+    self.cur_active = value
+    self._modified()
+
+  def _get_at_pos(self, pos):
+    if pos < 0 or pos >= len(self.playlists):
+      return None, None
+
+    pls_name = self.playlists[pos]
+
+    if pls_name == self.cur_active:
+      widget = urwid.AttrWrap(widgets.SelectableText(
+          pls_name, highlight_on_focus=True), 'current_playlist')
+      widget.pls_name = pls_name
+      return widget, pos
+
+    try:
+      return self.rows[pos], pos
+    except KeyError:
+      self.rows[pos] = widgets.SelectableText(self.playlists[pos], highlight_on_focus=True)
+      self.rows[pos].pls_name = pls_name
+      return self.rows[pos], pos
+
+  def get_focus(self):
+    return self._get_at_pos(self.focus)
+
+  def set_focus(self, focus):
+    self.focus = focus
+    self._modified()
+
+  def get_prev(self, pos):
+    return self._get_at_pos(pos-1)
+
+  def get_next(self, pos):
+    return self._get_at_pos(pos+1)
+
+class PlaylistSwitcher(widgets.CustomKeysListBox):
+  def __init__(self):
+    keys = {}
+    for action in (('move-up', 'up'),
+                   ('move-down', 'down'),
+                   ('page-up', 'page up'),
+                   ('page-down', 'page down')):
+      keys.update([(k, action[1]) for k in keybindings['general'][action[0]]])
+
+    self.__super.__init__(keys, PlaylistSwitcherWalker())
+
+    self._key_action = self._make_key_action_mapping()
+
+  def _make_key_action_mapping(self):
+    m = {}
+    for action, fun in (('load-highlighted', self._load_highlighted),
+                        ('delete-highlighted', lambda: None),
+                        ('new-playlist', lambda: None),
+                       ):
+      for key in keybindings['playlist-switcher'][action]:
+        m[key] = fun
+
+    return m
+
+  def _load_highlighted(self):
+    pls_name = self.get_focus()[0].pls_name
+    xs.playlist_load(pls_name, sync=True)
 
   def keypress(self, size, key):
     if key in self._key_action:

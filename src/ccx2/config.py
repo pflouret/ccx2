@@ -28,12 +28,26 @@ default_keybindings = {
         'move-down': ['j', 'down'],
         'page-up': ['ctrl u', 'page up'],
         'page-down': ['ctrl d', 'page down'],
+        'goto-playlist': ['2', 'f2'],
+        'goto-playlist-switcher': ['3', 'f3'],
         'quit': ['q', 'ctrl q'],
+    },
+    'playback': {
+        'play': ['x'],
+        'play-pause-toggle': ['p', 'c'],
+        'stop': ['s', 'backspace', 'v'],
+        'next-track': ['>', 'b'],
+        'previous-track': ['<', 'z'],
     },
     'playlist': {
         'select': ['space'],
         'play-highlighted': ['enter'],
-    }
+    },
+    'playlist-switcher': {
+        'load-highlighted': ['enter'],
+        'delete-highlighted': ['d'],
+        'new-playlist': ['n'],
+    },
 }
 
 keybindings = default_keybindings
