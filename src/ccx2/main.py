@@ -28,6 +28,7 @@ import urwid
 import urwid.curses_display
 
 from ccx2 import playlist
+from ccx2 import signals
 from ccx2 import statusbar
 from ccx2 import xmms
 
@@ -72,6 +73,8 @@ class Ccx2(object):
     self.statusbar = statusbar.StatusBar()
     self.view = urwid.Frame(self.playlist, footer=self.statusbar.widget)
 
+    signals.connect('xmms-have-ioin', self.redraw)
+
   def main(self):
     self.ui = urwid.curses_display.Screen()
     self.ui.register_palette(self.palette)
@@ -91,9 +94,9 @@ class Ccx2(object):
       keys = None
       while not keys:
         keys = self.ui.get_input()
+        # FIXME: put these in a thread
+        xs.ioout()
         xs.ioin()
-        if xs.have_ioin:
-          self.redraw()
 
       for k in keys:
         if k == 'window resize':

@@ -24,15 +24,15 @@
 
 import urwid
 
+from ccx2 import signals
 from ccx2 import xmms
 
 xs = xmms.get()
 
 class StatusBar(object):
   def __init__(self):
-    self._timer = xmms.PlaybackPlaytimeTimer(0.5, self._on_xmms_playback_playtime)
-    self._timer.start()
     self._widget = urwid.AttrWrap(urwid.Text(''), 'statusbar')
+    signals.connect('xmms-playback-playtime', self._on_xmms_playback_playtime)
 
   def _get_widget(self):
     return self._widget
@@ -48,10 +48,6 @@ class StatusBar(object):
     else:
       hours, min, sec
 
-  def _on_xmms_playback_playtime(self, data=None):
-    if data:
-      self._widget.set_text(self._humanize_time(data))
-    else:
-      xs.register_callback('playback-playtime', self._on_xmms_playback_playtime)
-      xs.ioout()
+  def _on_xmms_playback_playtime(self, milli):
+    self._widget.set_text(self._humanize_time(milli))
 

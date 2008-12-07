@@ -28,6 +28,32 @@ import threading
 import xmmsclient
 from xmmsclient import collections as coll
 
+from ccx2 import signals
+
+signals.register('xmms-have-ioin')
+# args -- id:int
+signals.register('xmms-playback-current-id')
+# args -- info:dict
+signals.register('xmms-playback-current-info')
+# args -- milliseconds:int
+signals.register('xmms-playback-playtime')
+# args -- status:int
+# one of:
+#  xmmsclient.PLAYBACK_STATUS_PLAY
+#  xmmsclient.PLAYBACK_STATUS_STOP
+#  xmmsclient.PLAYBACK_STATUS_PAUSE
+signals.register('xmms-playback-status')
+# args -- playlist_name:string
+signals.register('xmms-playlist-loaded')
+signals.register('xmms-playlist-changed')
+signals.register('xmms-collection-changed')
+signals.register('xmms-configval-changed')
+signals.register('xmms-mediainfo-reader-status')
+signals.register('xmms-medialib-entry-added')
+signals.register('xmms-medialib-entry-changed')
+signals.register('xmms-playback-volume-changed')
+signals.register('xmms-playlist-current-pos')
+
 _objects = {}
 
 def get(name='ccx2', **kwargs):
@@ -58,9 +84,7 @@ class XmmsService(object):
     self.xmms.connect()
     self.xmms_s.connect()
 
-    self.create_signals()
-
-    self.have_ioin = False
+    self.connect_signals()
 
   def _callback_wrapper(self, cb):
     def _w(r):
@@ -93,12 +117,22 @@ class XmmsService(object):
     if self.xmms.want_ioout():
       self.xmms.ioout()
 
-  def create_signals(self):
-    pass
-    # TODO: handle errors
-    #self.xmms.broadcast_playback_current_id(self._on_xmms_playback_current_id)
-    #self.xmms.broadcast_playback_status(lambda res: self.emit('xmms-playback-status', res.value()))
-    #self.xmms.broadcast_playlist_loaded( lambda res: self.emit('xmms-playlist-loaded', res.value()))
+  def _simple_emit_fun(self, signal_name):
+    def _fun(r):
+      signals.emit(signal_name, r.value())
+      signals.emit('xmms-have-ioin')
+
+  def connect_signals(self):
+    self.timer = PlaybackPlaytimeTimer(0.5, self._on_playback_playtime)
+    self.timer.start()
+
+    self.xmms.broadcast_playback_current_id(self._on_playback_current_id)
+    self.xmms.broadcast_playback_status(self._simple_emit_fun('xmms-playback-status'))
+    self.xmms.broadcast_playlist_loaded(self._simple_emit_fun('xmms-playlist-loaded'))
+    self.xmms.broadcast_playlist_current_pos(self._on_playlist_current_pos)
+
+    self.ioout()
+
     #self.xmms.broadcast_playlist_changed(
     #    lambda res: self.emit('xmms-playlist-changed', res.value()))
     #self.xmms.broadcast_collection_changed()
@@ -107,23 +141,28 @@ class XmmsService(object):
     #self.xmms.broadcast_medialib_entry_added()
     #self.xmms.broadcast_medialib_entry_changed()
     #self.xmms.broadcast_playback_volume_changed()
-    #self.xmms.broadcast_playlist_current_pos()
 
-  def _on_xmms_playback_playtime(self, res=None):
-    if res:
-      # came from the xmms2 signal
-      self.emit('xmms-playback-playtime', res.value())
-    else:
-      # came from gobject.timeout, reinstate the signal
-      self.xmms.signal_playback_playtime(self._on_xmms_playback_playtime)
-    return True
+  def _on_playlist_current_pos(self, r):
+    if not r.iserror():
+      v = r.value()
+      signals.emit('xmms-playlist-current-pos', v['name'], v['position'])
+      signals.emit('xmms-have-ioin')
 
-  def _on_xmms_playback_current_id(self, res):
-    id = res.value()
-    self.emit('xmms-playback-current-id', id)
+  def _on_playback_current_id(self, r):
+    id = r.value()
+    signals.emit('xmms-playback-current-id', id)
     self.xmms.medialib_get_info(
-        id,
-        lambda res: self.emit('xmms-playback-current-info', res.value()))
+        id, lambda r: signals.emit('xmms-playback-current-info', r.value()))
+    signals.emit('xmms-have-ioin')
+
+  def _on_playback_playtime(self, r=None):
+    if r:
+      # came from the xmms2 signal
+      signals.emit('xmms-playback-playtime', r.value())
+      signals.emit('xmms-have-ioin')
+    else:
+      # came from the timer
+      self.xmms.signal_playback_playtime(self._on_playback_playtime)
 
   def bindata_retrieve(self, hash, cb=None, sync=True):
     if sync:
@@ -275,20 +314,18 @@ class XmmsService(object):
 
   def playlist_play_pos(self, pos, relative=False):
     def __status_cb(res):
+      self.playlist_set_next(pos, relative=relative, sync=False)
+      self.playback_tickle(sync=False)
+
       if res.value() != xmmsclient.PLAYBACK_STATUS_PLAY:
         self.playback_start(sync=False)
 
-      self.playlist_set_next(pos, relative=relative, sync=False)
-      self.playback_tickle(sync=False)
     self.playback_status(cb=__status_cb, sync=False)
 
   def playlist_play(self, playlist=None, pos=0, relative=False):
     def __load_cb(res):
-      if res.iserror():
-        print >> sys.stderr, res.get_error()
-        return
-      # TODO: relative makes sense?
-      self.playlist_play_pos(pos)
+      if not res.iserror():
+        self.playlist_play_pos(pos)
 
     if playlist is not None:
       self.playlist_load(playlist, __load_cb, sync=False)

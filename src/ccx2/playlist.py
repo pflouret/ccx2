@@ -26,6 +26,7 @@ import urwid
 from xmmsclient import collections as coll
 from xmmsclient.sync import XMMSError
 
+from ccx2 import signals
 from ccx2 import widgets
 from ccx2 import xmms
 from ccx2.config import keybindings
@@ -49,7 +50,8 @@ class PlaylistWalker(urwid.ListWalker):
     else:
       self.current_pos = -1
 
-    xs.register_callback('playlist-current-pos', self._on_xmms_playlist_current_pos)
+
+    signals.connect('xmms-playlist-current-pos', self._on_xmms_playlist_current_pos)
 
     self._load()
 
@@ -64,10 +66,15 @@ class PlaylistWalker(urwid.ListWalker):
     for id in ids:
       self.songs.append(songs[id])
 
-  def _on_xmms_playlist_current_pos(self, value):
-    if value['name'] == self.pls:
-      self.current_pos = value['position']
+  def _on_xmms_playlist_current_pos(self, pls, pos):
+    if pls == self.pls:
+      self.current_pos = pos
       self._modified()
+
+  #def _on_xmms_playlist_current_pos(self, value):
+  #  if value['name'] == self.pls:
+  #    self.current_pos = value['position']
+  #    self._modified()
 
   def _get_at_pos(self, pos):
     if pos < 0 or pos >= len(self.songs):
@@ -158,7 +165,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     self.rows = {}
     self.playlists = []
 
-    xs.register_callback('playlist-loaded', self._on_xmms_playlist_loaded)
+    signals.connect('xmms-playlist-loaded', self._on_xmms_playlist_loaded)
 
     self._load()
 
@@ -166,8 +173,8 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     self.playlists = [p for p in xs.playlist_list() if p != '_active']
     self.cur_active = xs.playlist_current_active()
 
-  def _on_xmms_playlist_loaded(self, value):
-    self.cur_active = value
+  def _on_xmms_playlist_loaded(self, pls):
+    self.cur_active = pls
     self._modified()
 
   def _get_at_pos(self, pos):
