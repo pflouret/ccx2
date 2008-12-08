@@ -144,7 +144,7 @@ class Playlist(widgets.CustomKeysListBox):
 
     self.view_pls = pls
 
-  def _on_xmms_playlist_changed(self, pls, type, namespace, pls_new_name, id, pos):
+  def _on_xmms_playlist_changed(self, pls, type, id, pos):
     if type == xmmsclient.PLAYLIST_CHANGED_ADD:
       return
 
@@ -204,6 +204,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     self.playlists = []
 
     signals.connect('xmms-playlist-loaded', self._on_xmms_playlist_loaded)
+    signals.connect('xmms-playlist-changed', self._on_xmms_playlist_changed)
 
     self._load()
 
@@ -214,6 +215,14 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
   def _on_xmms_playlist_loaded(self, pls):
     self.cur_active = pls
     self._modified()
+
+  def _on_xmms_playlist_changed(self, pls, type, id, pos):
+    if type in (xmmsclient.PLAYLIST_CHANGED_ADD,
+                xmmsclient.PLAYLIST_CHANGED_MOVE,
+                xmmsclient.PLAYLIST_CHANGED_REMOVE):
+      self.rows = {}
+      self._load()
+      self._modified()
 
   def _get_at_pos(self, pos):
     if pos < 0 or pos >= len(self.playlists):
