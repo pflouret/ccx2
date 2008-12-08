@@ -121,6 +121,7 @@ class XmmsService(object):
     def _fun(r):
       signals.emit(signal_name, r.value())
       signals.emit('xmms-have-ioin')
+    return _fun
 
   def connect_signals(self):
     self.timer = PlaybackPlaytimeTimer(0.5, self._on_playback_playtime)
