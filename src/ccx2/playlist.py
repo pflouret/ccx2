@@ -38,6 +38,7 @@ class PlaylistWalker(urwid.ListWalker):
     self.focus = 0
     self.rows = {}
     self.songs = []
+    self.nsongs = 0
 
     self.pls = pls
     self.active_pls = active_pls
@@ -65,6 +66,7 @@ class PlaylistWalker(urwid.ListWalker):
     self.songs = []
     for id in ids:
       self.songs.append(songs[id])
+    self.nsongs = len(self.songs)
 
   def _on_xmms_playlist_current_pos(self, pls, pos):
     if pls == self.pls:
@@ -77,7 +79,7 @@ class PlaylistWalker(urwid.ListWalker):
   #    self._modified()
 
   def _get_at_pos(self, pos):
-    if pos < 0 or pos >= len(self.songs):
+    if pos < 0 or pos >= self.nsongs:
       return None, None
 
     song = self.songs[pos]
