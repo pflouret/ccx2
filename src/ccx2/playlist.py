@@ -91,11 +91,11 @@ class PlaylistWalker(urwid.ListWalker):
           'current_song'), pos
 
     try:
-      return self.rows[pos]
+      return self.rows[pos], pos
     except KeyError:
       text = '%s - %s - %s' % (song['artist'], song['album'], song['title'])
-      self.rows[pos] = widgets.SongWidget(song['id'], text, highlight_on_focus=True), pos
-      return self.rows[pos]
+      self.rows[pos] = widgets.SongWidget(song['id'], text, highlight_on_focus=True)
+      return self.rows[pos], pos
   
   def get_focus(self): 
     return self._get_at_pos(self.focus)
