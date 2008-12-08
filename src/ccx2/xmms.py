@@ -30,19 +30,26 @@ from xmmsclient import collections as coll
 
 from ccx2 import signals
 
+# TODO: better doc (rst)
+
 signals.register('xmms-have-ioin')
+
 # args -- id:int
 signals.register('xmms-playback-current-id')
+
 # args -- info:dict
 signals.register('xmms-playback-current-info')
+
 # args -- milliseconds:int
 signals.register('xmms-playback-playtime')
+
 # args -- status:int
-# one of:
+#  status values:
 #  xmmsclient.PLAYBACK_STATUS_PLAY
 #  xmmsclient.PLAYBACK_STATUS_STOP
 #  xmmsclient.PLAYBACK_STATUS_PAUSE
 signals.register('xmms-playback-status')
+
 # args -- playlist_name:string
 signals.register('xmms-playlist-loaded')
 
@@ -62,6 +69,12 @@ signals.register('xmms-playlist-loaded')
 # xmmsclient.PLAYLIST_CHANGED_INSERT
 # xmmsclient.PLAYLIST_CHANGED_SHUFFLE
 signals.register('xmms-playlist-changed')
+
+# args --
+# name:string
+# type:int
+# namespace:string (if present, or None)
+# new_name:string (if present, or None)
 signals.register('xmms-collection-changed')
 signals.register('xmms-configval-changed')
 signals.register('xmms-mediainfo-reader-status')

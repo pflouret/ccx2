@@ -35,6 +35,7 @@ from ccx2.config import keybindings
 
 xs = xmms.get()
 
+
 class PlaylistWalker(urwid.ListWalker):
   def __init__(self, pls, active_pls):
     self.focus = 0
@@ -45,6 +46,8 @@ class PlaylistWalker(urwid.ListWalker):
     self.pls = pls
     self.active_pls = active_pls
 
+    signals.connect('xmms-playlist-current-pos', self._on_xmms_playlist_current_pos)
+
     if self.pls == self.active_pls:
       try:
         self.current_pos = xs.playlist_current_pos()['position']
@@ -52,9 +55,6 @@ class PlaylistWalker(urwid.ListWalker):
         self.current_pos = -1
     else:
       self.current_pos = -1
-
-
-    signals.connect('xmms-playlist-current-pos', self._on_xmms_playlist_current_pos)
 
     self._load()
 
@@ -74,11 +74,6 @@ class PlaylistWalker(urwid.ListWalker):
     if pls == self.pls:
       self.current_pos = pos
       self._modified()
-
-  #def _on_xmms_playlist_current_pos(self, value):
-  #  if value['name'] == self.pls:
-  #    self.current_pos = value['position']
-  #    self._modified()
 
   def _get_at_pos(self, pos):
     if pos < 0 or pos >= self.nsongs:
@@ -115,6 +110,7 @@ class PlaylistWalker(urwid.ListWalker):
 
   def get_next(self, pos):
     return self._get_at_pos(pos+1)
+
 
 class Playlist(widgets.CustomKeysListBox):
   def __init__(self):
@@ -200,6 +196,7 @@ class Playlist(widgets.CustomKeysListBox):
     self.body = body
     self._invalidate()
 
+
 class PlaylistSwitcherWalker(urwid.ListWalker):
   def __init__(self):
     self.focus = 0
@@ -227,7 +224,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     if pls_name == self.cur_active:
       widget = urwid.AttrWrap(widgets.SelectableText(
           pls_name, highlight_on_focus=True), 'current_playlist')
-      widget.pls_name = pls_name
+      widget.pls_name = pls_name # FIXME: make a widget class or whatever
       return widget, pos
 
     try:
@@ -249,6 +246,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
 
   def get_next(self, pos):
     return self._get_at_pos(pos+1)
+
 
 class PlaylistSwitcher(widgets.CustomKeysListBox):
   def __init__(self):
