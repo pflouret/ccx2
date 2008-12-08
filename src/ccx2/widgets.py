@@ -50,7 +50,7 @@ class SelectableText(urwid.Text):
   def keypress(self, size, key):
     return key
 
-class Song(SelectableText):
+class SongWidget(SelectableText):
   def __init__(self, id, *args, **kwargs):
     self.id = id
     self.__super.__init__(*args, **kwargs)
