@@ -124,13 +124,19 @@ class Playlist(widgets.CustomKeysListBox):
     self.active_pls = xs.playlist_current_active()
     self.view_pls = self.active_pls
 
+    signals.connect('xmms-playlist-loaded', self.load)
+
     self.load(self.active_pls)
 
-  def load(self, pls):
+  def load(self, pls, from_xmms=True):
     if pls not in self._walkers:
       self._walkers[pls] = PlaylistWalker(pls, self.active_pls)
 
     self._set_body(self._walkers[pls])
+
+    if from_xmms:
+      self.active_pls = pls
+
     self.view_pls = pls
 
   def keypress(self, size, key):
