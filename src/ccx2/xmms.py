@@ -45,6 +45,22 @@ signals.register('xmms-playback-playtime')
 signals.register('xmms-playback-status')
 # args -- playlist_name:string
 signals.register('xmms-playlist-loaded')
+
+# args --
+# playlist_name:string
+# type:int
+# id:long (if present, or None)
+# position:long (if present, or None)
+#
+# type values:
+# xmmsclient.PLAYLIST_CHANGED_ADD
+# xmmsclient.PLAYLIST_CHANGED_MOVE
+# xmmsclient.PLAYLIST_CHANGED_SORT
+# xmmsclient.PLAYLIST_CHANGED_CLEAR
+# xmmsclient.PLAYLIST_CHANGED_REMOVE
+# xmmsclient.PLAYLIST_CHANGED_UPDATE
+# xmmsclient.PLAYLIST_CHANGED_INSERT
+# xmmsclient.PLAYLIST_CHANGED_SHUFFLE
 signals.register('xmms-playlist-changed')
 signals.register('xmms-collection-changed')
 signals.register('xmms-configval-changed')
@@ -131,11 +147,10 @@ class XmmsService(object):
     self.xmms.broadcast_playback_status(self._simple_emit_fun('xmms-playback-status'))
     self.xmms.broadcast_playlist_loaded(self._simple_emit_fun('xmms-playlist-loaded'))
     self.xmms.broadcast_playlist_current_pos(self._on_playlist_current_pos)
+    self.xmms.broadcast_playlist_changed(self._on_playlist_changed)
 
     self.ioout()
 
-    #self.xmms.broadcast_playlist_changed(
-    #    lambda res: self.emit('xmms-playlist-changed', res.value()))
     #self.xmms.broadcast_collection_changed()
     #self.xmms.broadcast_configval_changed()
     #self.xmms.broadcast_mediainfo_reader_status()
@@ -147,6 +162,16 @@ class XmmsService(object):
     if not r.iserror():
       v = r.value()
       signals.emit('xmms-playlist-current-pos', v['name'], v['position'])
+      signals.emit('xmms-have-ioin')
+
+  def _on_playlist_changed(self, r):
+    if not r.iserror():
+      v = r.value()
+      signals.emit('xmms-playlist-changed',
+                   v['name'],
+                   v['type'],
+                   v.get('id'),
+                   v.get('position'))
       signals.emit('xmms-have-ioin')
 
   def _on_playback_current_id(self, r):
