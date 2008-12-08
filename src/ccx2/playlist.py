@@ -136,10 +136,6 @@ class Playlist(widgets.CustomKeysListBox):
   def keypress(self, size, key):
     if key in self._key_action:
       self._key_action[key]()
-    elif key == 'c':
-      self.load('Default')
-    elif key == 'l':
-      self.load('lala')
     else:
       return self.__super.keypress(size, key)
 
