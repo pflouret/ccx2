@@ -101,6 +101,10 @@ class PlaylistWalker(urwid.ListWalker):
     return self._get_at_pos(self.focus)
   
   def set_focus(self, focus):
+    if focus <= 0:
+      focus = 0
+    elif focus >= self.nsongs:
+      focus = self.nsongs-1
     self.focus = focus
     self._modified()
   
