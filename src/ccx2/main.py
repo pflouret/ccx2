@@ -40,7 +40,7 @@ class GlobalCommandsHandler(object):
   def __init__(self):
     self._key_action = {}
 
-    for action, fun in (('play', lambda: xs.playback_play(sync=False)),
+    for action, fun in (('play', lambda: xs.playback_start(sync=False)),
                         ('play-pause-toggle', lambda: xs.playback_play_pause_toggle(sync=False)),
                         ('stop', lambda: xs.playback_stop(sync=False)),
                         ('next-track', lambda: xs.playback_next(sync=False)),
