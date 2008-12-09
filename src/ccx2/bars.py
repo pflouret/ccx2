@@ -23,6 +23,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import urwid
+import xmmsclient
 
 from ccx2 import signals
 from ccx2 import xmms
@@ -30,7 +31,7 @@ from ccx2 import xmms
 xs = xmms.get()
 
 class StatusBar(urwid.WidgetWrap):
-  def __init__(self, *args, **kwargs):
+  def __init__(self):
     self.__super.__init__(urwid.AttrWrap(urwid.Text(''), 'statusbar'))
     signals.connect('xmms-playback-playtime', self._on_xmms_playback_playtime)
 
@@ -45,4 +46,33 @@ class StatusBar(urwid.WidgetWrap):
 
   def _on_xmms_playback_playtime(self, milli):
     self._w.set_text(self._humanize_time(milli))
+
+class HeaderBar(urwid.WidgetWrap):
+  status_desc = {xmmsclient.PLAYBACK_STATUS_PLAY: 'playing',
+                 xmmsclient.PLAYBACK_STATUS_STOP: 'stopped',
+                 xmmsclient.PLAYBACK_STATUS_PAUSE: 'paused'}
+
+  def __init__(self):
+    self.__super.__init__(urwid.AttrWrap(urwid.Text(''), 'headerbar'))
+    self._info = {}
+    self._status = xs.playback_status()
+    self._make_text()
+
+    signals.connect('xmms-playback-status', self._on_xmms_playback_status)
+    signals.connect('xmms-playback-current-info', self._on_xmms_playback_current_info)
+
+  def _make_text(self):
+    status = HeaderBar.status_desc[self._status]
+    text = u'%s | %s - %s' % (status, self._info.get('artist', ''), self._info.get('title', ''))
+    self._w.set_text(text)
+
+  def _on_xmms_playback_status(self, status):
+    self._status = status
+    self._make_text()
+    self._invalidate()
+
+  def _on_xmms_playback_current_info(self, info):
+    self._info = info
+    self._make_text()
+    self._invalidate()
 

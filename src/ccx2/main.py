@@ -61,7 +61,8 @@ class Ccx2(object):
     ('reverse','black','dark green', 'standout'),
     ('current_song','dark red', 'default'),
     ('current_playlist','light red','default', 'standout'),
-    ('statusbar','light gray', 'black'),
+    ('statusbar','light gray', 'default'),
+    ('headerbar','yellow', 'default'),
     ('key','light cyan', 'black', 'underline'),
     ('title', 'white', 'black',),
     ]
@@ -71,7 +72,8 @@ class Ccx2(object):
     self.playlist = playlist.Playlist()
     self.switcher = playlist.PlaylistSwitcher()
     self.statusbar = bars.StatusBar()
-    self.view = urwid.Frame(self.playlist, footer=self.statusbar)
+    self.headerbar = bars.HeaderBar()
+    self.view = urwid.Frame(self.playlist, header=self.headerbar, footer=self.statusbar)
 
     signals.connect('xmms-have-ioin', self.redraw)
 
