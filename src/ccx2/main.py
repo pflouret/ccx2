@@ -29,7 +29,7 @@ import urwid.curses_display
 
 from ccx2 import playlist
 from ccx2 import signals
-from ccx2 import statusbar
+from ccx2 import bars
 from ccx2 import xmms
 
 from ccx2.config import keybindings
@@ -70,7 +70,7 @@ class Ccx2(object):
     self.gch = GlobalCommandsHandler()
     self.playlist = playlist.Playlist()
     self.switcher = playlist.PlaylistSwitcher()
-    self.statusbar = statusbar.StatusBar()
+    self.statusbar = bars.StatusBar()
     self.view = urwid.Frame(self.playlist, footer=self.statusbar.widget)
 
     signals.connect('xmms-have-ioin', self.redraw)
