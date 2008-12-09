@@ -161,15 +161,25 @@ class XmmsService(object):
     self.xmms.broadcast_playlist_loaded(self._simple_emit_fun('xmms-playlist-loaded'))
     self.xmms.broadcast_playlist_current_pos(self._on_playlist_current_pos)
     self.xmms.broadcast_playlist_changed(self._on_playlist_changed)
+    self.xmms.broadcast_collection_changed(self._on_collection_changed)
 
     self.ioout()
 
-    #self.xmms.broadcast_collection_changed()
     #self.xmms.broadcast_configval_changed()
     #self.xmms.broadcast_mediainfo_reader_status()
     #self.xmms.broadcast_medialib_entry_added()
     #self.xmms.broadcast_medialib_entry_changed()
     #self.xmms.broadcast_playback_volume_changed()
+
+  def _on_collection_changed(self, r):
+    if not r.iserror():
+      v = r.value()
+      signals.emit('xmms-collection-changed',
+                   v['name'],
+                   v['type'],
+                   v.get('namespace'),
+                   v.get('newname'))
+      signals.emit('xmms-have-ioin')
 
   def _on_playlist_current_pos(self, r):
     if not r.iserror():
