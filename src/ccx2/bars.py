@@ -29,15 +29,10 @@ from ccx2 import xmms
 
 xs = xmms.get()
 
-class StatusBar(object):
-  def __init__(self):
-    self._widget = urwid.AttrWrap(urwid.Text(''), 'statusbar')
+class StatusBar(urwid.WidgetWrap):
+  def __init__(self, *args, **kwargs):
+    self.__super.__init__(urwid.AttrWrap(urwid.Text(''), 'statusbar'))
     signals.connect('xmms-playback-playtime', self._on_xmms_playback_playtime)
-
-  def _get_widget(self):
-    return self._widget
-
-  widget = property(_get_widget)
 
   def _humanize_time(self, milli, str_output=True):
     sec, milli = divmod(milli, 1000)
@@ -49,5 +44,5 @@ class StatusBar(object):
       hours, min, sec
 
   def _on_xmms_playback_playtime(self, milli):
-    self._widget.set_text(self._humanize_time(milli))
+    self._w.set_text(self._humanize_time(milli))
 

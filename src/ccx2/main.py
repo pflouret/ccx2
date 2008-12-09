@@ -71,7 +71,7 @@ class Ccx2(object):
     self.playlist = playlist.Playlist()
     self.switcher = playlist.PlaylistSwitcher()
     self.statusbar = bars.StatusBar()
-    self.view = urwid.Frame(self.playlist, footer=self.statusbar.widget)
+    self.view = urwid.Frame(self.playlist, footer=self.statusbar)
 
     signals.connect('xmms-have-ioin', self.redraw)
 
