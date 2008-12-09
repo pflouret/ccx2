@@ -202,7 +202,9 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     self.focus = 0
     self.rows = {}
     self.playlists = []
+    self.nplaylists = 0
 
+    signals.connect('xmms-collection-changed', self._on_xmms_collection_changed)
     signals.connect('xmms-playlist-loaded', self._on_xmms_playlist_loaded)
     signals.connect('xmms-playlist-changed', self._on_xmms_playlist_changed)
 
@@ -210,7 +212,19 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
 
   def _load(self):
     self.playlists = [p for p in xs.playlist_list() if p != '_active']
+    self.nplaylists = len(self.playlists)
     self.cur_active = xs.playlist_current_active()
+
+  def _reload(self):
+    self.rows = {}
+    self._load()
+    if self.focus >= self.nplaylists:
+      self.focus = self.nplaylists-1
+    self._modified()
+
+  def _on_xmms_collection_changed(self, pls, type, namespace, newname):
+    if namespace == 'Playlists' and type != xmmsclient.COLLECTION_CHANGED_UPDATE:
+      self._reload()
 
   def _on_xmms_playlist_loaded(self, pls):
     self.cur_active = pls
@@ -220,12 +234,10 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     if type in (xmmsclient.PLAYLIST_CHANGED_ADD,
                 xmmsclient.PLAYLIST_CHANGED_MOVE,
                 xmmsclient.PLAYLIST_CHANGED_REMOVE):
-      self.rows = {}
-      self._load()
-      self._modified()
+      self._reload()
 
   def _get_at_pos(self, pos):
-    if pos < 0 or pos >= len(self.playlists):
+    if pos < 0 or pos >= self.nplaylists:
       return None, None
 
     pls_name = self.playlists[pos]
@@ -247,6 +259,10 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     return self._get_at_pos(self.focus)
 
   def set_focus(self, focus):
+    if focus <= 0:
+      focus = 0
+    elif focus >= self.nplaylists:
+      focus = self.nplaylists-1
     self.focus = focus
     self._modified()
 
