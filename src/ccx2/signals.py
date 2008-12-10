@@ -45,12 +45,12 @@ def disconnect(name, callback, user_data=None):
     pass
 
 def emit(name, *args):
-  try:
-    for callback, user_data in _signals[name]:
-      argsc = [a for a in args]
-      if user_data:
-        argsc.append(user_data)
-      callback(*argsc)
-  except KeyError:
+  if name not in _signals:
     raise NameError("No signal named %r" % name)
+
+  for callback, user_data in _signals[name]:
+    argsc = [a for a in args]
+    if user_data:
+      argsc.append(user_data)
+    callback(*argsc)
 
