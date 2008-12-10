@@ -30,28 +30,86 @@ class CustomKeysListBox(urwid.ListBox):
     self.__super.__init__(*args, **kwargs)
 
   def keypress(self, size, key):
-    return self.__super.keypress(size, self.key_mapping.get(key, key))
+    key = self.__super.keypress(size, self.key_mapping.get(key, key))
+
+    if key == ' ':
+      focus = self.get_focus()
+      if focus[1] is not None:
+        self.change_focus(size, focus[1]+1)
+    return key
 
 
-class SelectableText(urwid.Text):
-  _selectable = True
+class SelectableText(urwid.WidgetWrap):
+  def __init__(self,
+               text,
+               attr='body',
+               focus_attr='focus',
+               sel_attr='selected',
+               sel_focus_attr='selected-focus'):
+    self.attr = attr
+    self.focus_attr = focus_attr
+    self.sel_attr = sel_attr
+    self.sel_focus_attr = sel_focus_attr
 
-  def __init__(self, *args, **kwargs):
-    self.highlight_on_focus = 'highlight_on_focus' in kwargs and kwargs.pop('highlight_on_focus')
-    self.__super.__init__(*args, **kwargs)
+    self.selected = False
+    w = urwid.AttrWrap(urwid.Text(text), None)
+    self.__super.__init__(w)
+    self.update_w()
 
-  def render(self, size, focus=False):
-    c = self.__super.render(size, focus)
-    if self.highlight_on_focus and focus:
-      c = urwid.CompositeCanvas(c)
-      c.fill_attr('reverse')
-    return c
+  def selectable(self):
+    return True
+
+  def update_w(self):
+    if self.selected:
+      self._w.attr = self.sel_attr
+      self._w.focus_attr = self.sel_focus_attr
+    else:
+      self._w.attr = self.attr
+      self._w.focus_attr = self.focus_attr
 
   def keypress(self, size, key):
+    if key == ' ':
+      self.selected = not self.selected
+      self.update_w()
+
     return key
 
 class SongWidget(SelectableText):
   def __init__(self, id, *args, **kwargs):
     self.id = id
     self.__super.__init__(*args, **kwargs)
+    self._old_attr = self.attr
+    self._old_focus_attr = self.focus_attr
+
+  def set_active(self):
+    self._old_attr = self.attr
+    self._old_focus_attr = self.focus_attr
+    self.attr = 'active'
+    self.focus_attr = 'active-focus'
+    self.update_w()
+
+  def unset_active(self):
+    self.attr = self._old_attr
+    self.focus_attr = self._old_focus_attr
+    self.update_w()
+
+# TODO: refactor
+class PlaylistWidget(SelectableText):
+  def __init__(self, name, *args, **kwargs):
+    self.name = name
+    self.__super.__init__(name, *args, **kwargs)
+    self._old_attr = self.attr
+    self._old_focus_attr = self.focus_attr
+
+  def set_active(self):
+    self._old_attr = self.attr
+    self._old_focus_attr = self.focus_attr
+    self.attr = 'active'
+    self.focus_attr = 'active-focus'
+    self.update_w()
+
+  def unset_active(self):
+    self.attr = self._old_attr
+    self.focus_attr = self._old_focus_attr
+    self.update_w()
 

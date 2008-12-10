@@ -57,14 +57,14 @@ class GlobalCommandsHandler(object):
 
 class Ccx2(object):
   palette = [
-    ('body','dark cyan','black', 'standout'),
-    ('reverse','black','dark green', 'standout'),
-    ('current_song','dark red', 'default'),
-    ('current_playlist','light red','default', 'standout'),
+    ('body','default','default', 'standout'),
+    ('selected','yellow','default', 'standout'),
+    ('selected-focus','yellow','dark green', 'standout'),
+    ('focus','black','dark green', 'standout'),
+    ('active','dark red', 'default'),
+    ('active-focus','dark red', 'dark green'),
     ('statusbar','light gray', 'default'),
-    ('headerbar','yellow', 'default'),
-    ('key','light cyan', 'black', 'underline'),
-    ('title', 'white', 'black',),
+    ('headerbar','dark cyan', 'default'),
     ]
     
   def __init__(self):

@@ -72,6 +72,11 @@ class PlaylistWalker(urwid.ListWalker):
 
   def _on_xmms_playlist_current_pos(self, pls, pos):
     if pls == self.pls:
+      if pos in self.rows:
+        self.rows[pos].set_active()
+      if self.current_pos in self.rows:
+        self.rows[self.current_pos].unset_active()
+
       self.current_pos = pos
       self._modified()
 
@@ -81,17 +86,13 @@ class PlaylistWalker(urwid.ListWalker):
 
     song = self.songs[pos]
 
-    if pos == self.current_pos:
-      text = u'%s - %s - %s' % (song['artist'], song['album'], song['title'])
-      return urwid.AttrWrap(
-          widgets.SongWidget(song['id'], text, highlight_on_focus=True),
-          'current_song'), pos
-
     try:
       return self.rows[pos], pos
     except KeyError:
       text = '%s - %s - %s' % (song['artist'], song['album'], song['title'])
-      self.rows[pos] = widgets.SongWidget(song['id'], text, highlight_on_focus=True)
+      self.rows[pos] = widgets.SongWidget(song['id'], text)
+      if pos == self.current_pos:
+        self.rows[pos].set_active()
       return self.rows[pos], pos
   
   def get_focus(self): 
@@ -227,6 +228,14 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
       self._reload()
 
   def _on_xmms_playlist_loaded(self, pls):
+    i = self.playlists.index(pls)
+    if i in self.rows:
+      self.rows[i].set_active()
+
+    i = self.playlists.index(self.cur_active)
+    if i in self.rows:
+      self.rows[i].unset_active()
+
     self.cur_active = pls
     self._modified()
 
@@ -240,19 +249,16 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     if pos < 0 or pos >= self.nplaylists:
       return None, None
 
-    pls_name = self.playlists[pos]
-
-    if pls_name == self.cur_active:
-      widget = urwid.AttrWrap(widgets.SelectableText(
-          pls_name, highlight_on_focus=True), 'current_playlist')
-      widget.pls_name = pls_name # FIXME: make a widget class or whatever
-      return widget, pos
+    pls = self.playlists[pos]
 
     try:
       return self.rows[pos], pos
     except KeyError:
-      self.rows[pos] = widgets.SelectableText(self.playlists[pos], highlight_on_focus=True)
-      self.rows[pos].pls_name = pls_name
+      self.rows[pos] = widgets.PlaylistWidget(pls)
+
+      if pls == self.cur_active:
+        self.rows[pos].set_active()
+
       return self.rows[pos], pos
 
   def get_focus(self):
@@ -298,7 +304,7 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
     return m
 
   def _load_highlighted(self):
-    pls_name = self.get_focus()[0].pls_name
+    pls_name = self.get_focus()[0].name
     xs.playlist_load(pls_name)
 
   def keypress(self, size, key):
