@@ -36,7 +36,7 @@ class CustomKeysListBox(urwid.ListBox):
       focus = self.get_focus()
       delta = key == ' ' and 1 or -1
       if focus[1] is not None:
-        self.change_focus(size, focus[1]+delta)
+        self.set_focus(focus[1]+delta)
     return key
 
 
