@@ -301,18 +301,24 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
 
   def _make_key_action_mapping(self):
     m = {}
-    for action, fun in (('load-highlighted', self._load_highlighted),
-                        ('delete-highlighted', lambda: None),
-                        ('new-playlist', lambda: None),
-                       ):
-      for key in keybindings['playlist-switcher'][action]:
+    for section, action, fun in \
+        (('playlist-switcher', 'load-highlighted', self._load_highlighted),
+         ('general', 'delete', self._delete_highlighted),
+         ('playlist-switcher', 'new-playlist', lambda: None),):
+      for key in keybindings[section][action]:
         m[key] = fun
 
     return m
 
   def _load_highlighted(self):
-    pls_name = self.get_focus()[0].name
-    xs.playlist_load(pls_name)
+    w = self.get_focus()[0]
+    if w:
+      xs.playlist_load(w.name, sync=False)
+
+  def _delete_highlighted(self):
+    w = self.get_focus()[0]
+    if w:
+      xs.playlist_remove(w.name, sync=False)
 
   def keypress(self, size, key):
     if key in self._key_action:
