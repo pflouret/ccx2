@@ -252,6 +252,12 @@ class XmmsService(object):
     else:
       self.xmms.configval_set(key, val, cb=cb)
 
+  def medialib_get_info(self, id, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.medialib_get_info(id)
+    else:
+      return self.xmms.medialib_get_info(id, cb=cb)
+
   def playback_current_id(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playback_current_id()
@@ -386,6 +392,12 @@ class XmmsService(object):
       return self.xmms_s.playlist_remove(playlist)
     else:
       self.xmms.playlist_remove(playlist, cb=cb)
+
+  def playlist_remove_entry(self, id, playlist=None, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.playlist_remove_entry(id, playlist)
+    else:
+      self.xmms.playlist_remove_entry(id, playlist, cb=cb)
 
   def playlist_set_next(self, pos, relative=False, cb=None, sync=True):
     if sync:
