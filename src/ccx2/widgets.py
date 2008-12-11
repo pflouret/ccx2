@@ -73,6 +73,7 @@ class SelectableText(urwid.WidgetWrap):
       self._w.focus_attr = self.focus_attr
 
   def keypress(self, size, key):
+    # FIXME: this whole selected handling thing stinks badly, clean up
     keys_up = keybindings['general']['select-and-move-up'] 
     keys_down = keybindings['general']['select-and-move-down']
     if key in keys_up + keys_down:
@@ -119,4 +120,41 @@ class PlaylistWidget(SelectableText):
     self.attr = self._old_attr
     self.focus_attr = self._old_focus_attr
     self.update_w()
+
+class InputDialog(urwid.WidgetWrap):
+  def __init__(self, title, width, height, body, attr=('dialog', 'body')):
+    _blank = urwid.Text('')
+
+    msgw = urwid.Padding(urwid.Text(title), 'center', width - 4)
+    self.editw = urwid.AttrWrap(urwid.Edit(wrap=urwid.CLIP), attr[1])
+    padded_editw = urwid.Padding(self.editw, 'center', width - 4)
+
+    w = urwid.Pile([msgw, _blank, padded_editw])
+    w = urwid.Filler(w)
+    w = urwid.AttrWrap(w, attr[0])
+
+    overlay = urwid.Overlay(w, body, 'center', width, 'middle', height);
+
+    self.__super.__init__(overlay);
+
+  def get_text(self):
+    return self.editw.get_text()
+
+  def show(self, ui, size):
+    keys = True
+
+    while True:
+      if keys:
+        ui.draw_screen(size, self.render(size, True))
+      keys = ui.get_input()
+
+      for k in keys:
+        if k == 'window resize':
+          size = ui.get_cols_rows()
+        elif k == 'esc':
+          return ''
+        elif k == 'enter':
+          return self.get_text()[0]
+        else:
+          self.keypress(size, k);
 
