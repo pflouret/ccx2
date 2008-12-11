@@ -32,10 +32,11 @@ class CustomKeysListBox(urwid.ListBox):
   def keypress(self, size, key):
     key = self.__super.keypress(size, self.key_mapping.get(key, key))
 
-    if key == ' ':
+    if key in (' ', '<0>'):
       focus = self.get_focus()
+      delta = key == ' ' and 1 or -1
       if focus[1] is not None:
-        self.change_focus(size, focus[1]+1)
+        self.change_focus(size, focus[1]+delta)
     return key
 
 
@@ -68,7 +69,7 @@ class SelectableText(urwid.WidgetWrap):
       self._w.focus_attr = self.focus_attr
 
   def keypress(self, size, key):
-    if key == ' ':
+    if key in (' ', '<0>'):
       self.selected = not self.selected
       self.update_w()
 
