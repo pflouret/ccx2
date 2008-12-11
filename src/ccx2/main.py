@@ -58,6 +58,7 @@ class GlobalCommandsHandler(object):
 class Ccx2(object):
   palette = [
     ('body','default','default', 'standout'),
+    ('dialog', 'black', 'light gray'),
     ('selected','yellow','default', 'standout'),
     ('selected-focus','yellow','dark green', 'standout'),
     ('focus','black','dark green', 'standout'),
@@ -70,7 +71,7 @@ class Ccx2(object):
   def __init__(self):
     self.gch = GlobalCommandsHandler()
     self.playlist = playlist.Playlist()
-    self.switcher = playlist.PlaylistSwitcher()
+    self.switcher = playlist.PlaylistSwitcher(self)
     self.statusbar = bars.StatusBar()
     self.headerbar = bars.HeaderBar()
     self.view = urwid.Frame(self.playlist, header=self.headerbar, footer=self.statusbar)

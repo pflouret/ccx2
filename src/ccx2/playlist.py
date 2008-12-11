@@ -287,7 +287,9 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
 
 
 class PlaylistSwitcher(widgets.CustomKeysListBox):
-  def __init__(self):
+  def __init__(self, app):
+    self.app = app
+
     keys = {}
     for action in (('move-up', 'up'),
                    ('move-down', 'down'),
@@ -304,7 +306,7 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
     for section, action, fun in \
         (('playlist-switcher', 'load-highlighted', self._load_highlighted),
          ('general', 'delete', self._delete_highlighted),
-         ('playlist-switcher', 'new-playlist', lambda: None),):
+         ('playlist-switcher', 'new-playlist', self._new_playlist),):
       for key in keybindings[section][action]:
         m[key] = fun
 
@@ -319,6 +321,12 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
     w = self.get_focus()[0]
     if w:
       xs.playlist_remove(w.name, sync=False)
+
+  def _new_playlist(self):
+    dialog = widgets.InputDialog('playlist name', 55, 5, self.app.view)
+    name = dialog.show(self.app.ui, self.app.size)
+    if name:
+      xs.playlist_create(name, sync=False)
 
   def keypress(self, size, key):
     if key in self._key_action:
