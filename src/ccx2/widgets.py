@@ -24,6 +24,8 @@
 
 import urwid
 
+from ccx2.config import keybindings
+
 class CustomKeysListBox(urwid.ListBox):
   def __init__(self, key_mapping, *args, **kwargs):
     self.key_mapping = key_mapping
@@ -32,9 +34,11 @@ class CustomKeysListBox(urwid.ListBox):
   def keypress(self, size, key):
     key = self.__super.keypress(size, self.key_mapping.get(key, key))
 
-    if key in (' ', '<0>'):
+    keys_up = keybindings['general']['select-and-move-up']
+    keys_down = keybindings['general']['select-and-move-down']
+    if key in keys_up + keys_down:
       focus = self.get_focus()
-      delta = key == ' ' and 1 or -1
+      delta = key in keys_down and 1 or -1
       if focus[1] is not None:
         self.set_focus(focus[1]+delta)
     return key
@@ -69,7 +73,9 @@ class SelectableText(urwid.WidgetWrap):
       self._w.focus_attr = self.focus_attr
 
   def keypress(self, size, key):
-    if key in (' ', '<0>'):
+    keys_up = keybindings['general']['select-and-move-up'] 
+    keys_down = keybindings['general']['select-and-move-down']
+    if key in keys_up + keys_down:
       self.selected = not self.selected
       self.update_w()
 

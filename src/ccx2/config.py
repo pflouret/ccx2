@@ -30,6 +30,8 @@ default_keybindings = {
         'page-down': ['ctrl d', 'page down'],
         'goto-playlist': ['2', 'f2'],
         'goto-playlist-switcher': ['3', 'f3'],
+        'select-and-move-down': [' '], # space
+        'select-and-move-up': ['<0>'], # ctrl space
         'quit': ['q', 'ctrl q'],
     },
     'playback': {
@@ -40,7 +42,6 @@ default_keybindings = {
         'previous-track': ['<', 'z'],
     },
     'playlist': {
-        'select': ['space'],
         'play-highlighted': ['enter'],
     },
     'playlist-switcher': {
