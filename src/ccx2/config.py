@@ -32,6 +32,7 @@ default_keybindings = {
         'goto-playlist-switcher': ['3', 'f3'],
         'select-and-move-down': [' '], # space
         'select-and-move-up': ['<0>'], # ctrl space
+        'delete': ['d', 'delete'],
         'quit': ['q', 'ctrl q'],
     },
     'playback': {

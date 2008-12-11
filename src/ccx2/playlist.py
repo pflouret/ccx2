@@ -87,6 +87,7 @@ class PlaylistWalker(urwid.ListWalker):
     song = self.songs[pos]
 
     try:
+      # TODO: cache only a couple of pages, not the whole playlist
       return self.rows[pos], pos
     except KeyError:
       text = '%s - %s - %s' % (song['artist'], song['album'], song['title'])
@@ -183,15 +184,21 @@ class Playlist(widgets.CustomKeysListBox):
 
   def _make_key_action_mapping(self):
     m = {}
-    for action, fun in (('play-highlighted', self._play_highlighted),):
-      for key in keybindings['playlist'][action]:
+    for section, action, fun in (('playlist', 'play-highlighted', self._play_highlighted),
+                                 ('general', 'delete', self._delete_songs),):
+      for key in keybindings[section][action]:
         m[key] = fun
 
     return m
 
   def _play_highlighted(self):
     pos = self.get_focus()[1]
-    xs.playlist_play(playlist=self.view_pls, pos=pos)
+    xs.playlist_play(playlist=self.view_pls, pos=pos, sync=False)
+
+  def _delete_songs(self):
+    pos = self.get_focus()[1]
+    if pos:
+      xs.playlist_remove_entry(pos, self.view_pls, sync=False)
 
   def _set_body(self, body):
     self.body = body
