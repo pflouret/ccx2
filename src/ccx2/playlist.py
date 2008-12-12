@@ -323,8 +323,8 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
       xs.playlist_remove(w.name, sync=False)
 
   def _new_playlist(self):
-    dialog = widgets.InputDialog('playlist name', 55, 5, self.app.view)
-    name = dialog.show(self.app.ui, self.app.size)
+    dialog = widgets.InputDialog('playlist name', 55, 5)
+    name = self.app.show_dialog(dialog)
     if name:
       xs.playlist_create(name, sync=False)
 

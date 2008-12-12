@@ -122,25 +122,36 @@ class PlaylistWidget(SelectableText):
     self.update_w()
 
 class InputDialog(urwid.WidgetWrap):
-  def __init__(self, title, width, height, body, attr=('dialog', 'body')):
-    _blank = urwid.Text('')
+  def __init__(self, title, width, height, attr=('dialog', 'body')):
+    self._blank = urwid.Text('')
+    self._width = width
+    self._height = height
+    self._attr = attr
 
-    msgw = urwid.Padding(urwid.Text(title), 'center', width - 4)
-    self.editw = urwid.AttrWrap(urwid.Edit(wrap=urwid.CLIP), attr[1])
-    padded_editw = urwid.Padding(self.editw, 'center', width - 4)
+    self._title = urwid.Padding(urwid.Text(title), 'center', width - 4)
+    self._edit = urwid.Edit(wrap=urwid.CLIP)
 
-    w = urwid.Pile([msgw, _blank, padded_editw])
+    self._initialized = False
+
+    self.__super.__init__(self._blank);
+
+  def _init_w(self, body):
+    w = urwid.AttrWrap(self._edit, self._attr[1])
+    w = urwid.Padding(w, 'center', self._width - 4)
+    w = urwid.Pile([self._title, self._blank, w])
     w = urwid.Filler(w)
-    w = urwid.AttrWrap(w, attr[0])
+    w = urwid.AttrWrap(w, self._attr[0])
+    self._w = urwid.Overlay(w, body, 'center', self._width, 'middle', self._height);
 
-    overlay = urwid.Overlay(w, body, 'center', width, 'middle', height);
-
-    self.__super.__init__(overlay);
+    self._initialized = True
 
   def get_text(self):
-    return self.editw.get_text()
+    return self._edit.get_text()[0]
 
-  def show(self, ui, size):
+  def show(self, ui, size, body):
+    if not self._initialized:
+      self._init_w(body)
+
     keys = True
 
     while True:
@@ -154,7 +165,7 @@ class InputDialog(urwid.WidgetWrap):
         elif k == 'esc':
           return ''
         elif k == 'enter':
-          return self.get_text()[0]
+          return self.get_text()
         else:
           self.keypress(size, k);
 

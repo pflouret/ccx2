@@ -84,6 +84,9 @@ class Ccx2(object):
     self.ui.set_input_timeouts(max_wait=0.1)
     self.ui.run_wrapper(self.run)
 
+  def show_dialog(self, dialog):
+    return dialog.show(self.ui, self.size, self.view)
+
   def redraw(self):
     canvas = self.view.render(self.size, focus=1)
     self.ui.draw_screen(self.size, canvas)
