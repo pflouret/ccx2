@@ -147,9 +147,6 @@ class Playlist(widgets.CustomKeysListBox):
     self.view_pls = pls
 
   def _on_xmms_playlist_changed(self, pls, type, id, pos):
-    if type == xmmsclient.PLAYLIST_CHANGED_ADD:
-      return
-
     try:
       focus_pos = self._walkers[pls].get_focus()[1]
 
@@ -164,6 +161,8 @@ class Playlist(widgets.CustomKeysListBox):
           if pos < focus_pos:
             focus_pos -= 1
           self._walkers[pls].set_focus(focus_pos)
+        else:
+          self.load(pls)
     except KeyError:
       pass
 
