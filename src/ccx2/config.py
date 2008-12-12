@@ -33,6 +33,7 @@ default_keybindings = {
         'select-and-move-down': [' '], # space
         'select-and-move-up': ['<0>'], # ctrl space
         'delete': ['d', 'delete'],
+        'cancel': ['esc', 'ctrl g'],
         'quit': ['q', 'ctrl q'],
     },
     'playback': {

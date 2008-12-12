@@ -162,7 +162,7 @@ class InputDialog(urwid.WidgetWrap):
       for k in keys:
         if k == 'window resize':
           size = ui.get_cols_rows()
-        elif k == 'esc':
+        elif k in keybindings['general']['cancel']:
           return ''
         elif k == 'enter':
           return self.get_text()
