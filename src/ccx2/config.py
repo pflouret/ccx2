@@ -49,6 +49,7 @@ default_keybindings = {
         'load-highlighted': ['enter'],
         'delete-highlighted': ['d'],
         'new-playlist': ['n'],
+        'rename': ['r'],
     },
 }
 

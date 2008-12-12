@@ -306,6 +306,7 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
     for section, action, fun in \
         (('playlist-switcher', 'load-highlighted', self._load_highlighted),
          ('general', 'delete', self._delete_highlighted),
+         ('playlist-switcher', 'rename', self._rename_highlighted),
          ('playlist-switcher', 'new-playlist', self._new_playlist),):
       for key in keybindings[section][action]:
         m[key] = fun
@@ -321,6 +322,14 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
     w = self.get_focus()[0]
     if w:
       xs.playlist_remove(w.name, sync=False)
+
+  def _rename_highlighted(self):
+    w = self.get_focus()[0]
+    if w:
+      dialog = widgets.InputDialog('new playlist name', 55, 5)
+      new_name = self.app.show_dialog(dialog)
+      if new_name:
+        xs.coll_rename(w.name, new_name, 'Playlists', sync=False)
 
   def _new_playlist(self):
     dialog = widgets.InputDialog('playlist name', 55, 5)
