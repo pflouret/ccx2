@@ -90,7 +90,8 @@ class PlaylistWalker(urwid.ListWalker):
       # TODO: cache only a couple of pages, not the whole playlist
       return self.rows[pos], pos
     except KeyError:
-      text = '%s - %s - %s' % (song['artist'], song['album'], song['title'])
+      text = ('%%%dd| %%s - %%s - %%s' % len(str(self.nsongs))) % \
+              (pos, song['artist'], song['album'], song['title']) # heh
       self.rows[pos] = widgets.SongWidget(song['id'], text)
       if pos == self.current_pos:
         self.rows[pos].set_active()
