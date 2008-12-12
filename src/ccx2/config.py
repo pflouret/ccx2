@@ -49,6 +49,7 @@ default_keybindings = {
         'load': ['enter'],
         'new': ['n'],
         'rename': ['r'],
+        'add-playlist-to-current': ['a'],
     },
 }
 

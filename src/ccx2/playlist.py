@@ -307,6 +307,7 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
         (('playlist-switcher', 'load', self._load_highlighted),
          ('general', 'delete', self._delete_highlighted),
          ('playlist-switcher', 'rename', self._rename_highlighted),
+         ('playlist-switcher', 'add-playlist-to-current', self._add_playlist_to_current),
          ('playlist-switcher', 'new', self._new_playlist),):
       for key in keybindings[section][action]:
         m[key] = fun
@@ -330,6 +331,22 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
       new_name = self.app.show_dialog(dialog)
       if new_name:
         xs.coll_rename(w.name, new_name, 'Playlists', sync=False)
+
+  def _add_playlist_to_current(self):
+    w = self.get_focus()[0]
+    if w:
+      # this awfulness stems from the fact that you have to use playlist_add_collection,
+      # but collections in the playlist namespace don't have order, doh
+      # coll2.0 should fix this mess
+      idl = coll.IDList()
+      cur_active = xs.playlist_current_active()
+      ids_from = xs.playlist_list_entries(w.name, 'Playlists')
+      ids_to = xs.playlist_list_entries(cur_active, 'Playlists')
+
+      for id in ids_to+ids_from:
+        idl.ids.append(id)
+
+      xs.coll_save(idl, cur_active, 'Playlists')
 
   def _new_playlist(self):
     dialog = widgets.InputDialog('playlist name', 55, 5)
