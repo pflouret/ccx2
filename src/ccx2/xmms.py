@@ -219,6 +219,12 @@ class XmmsService(object):
     else:
       self.xmms.bindata_retrieve(hash, cb)
 
+  def coll_query_ids(self, collection, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.coll_query_ids(collection)
+    else:
+      self.xmms.coll_query_ids(collection, cb=cb)
+
   def coll_query_infos(self, collection, fields, cb=None, sync=True):
     if 'id' not in fields:
       fields = fields + ['id']
