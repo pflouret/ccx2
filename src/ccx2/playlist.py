@@ -304,10 +304,10 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
   def _make_key_action_mapping(self):
     m = {}
     for section, action, fun in \
-        (('playlist-switcher', 'load-highlighted', self._load_highlighted),
+        (('playlist-switcher', 'load', self._load_highlighted),
          ('general', 'delete', self._delete_highlighted),
          ('playlist-switcher', 'rename', self._rename_highlighted),
-         ('playlist-switcher', 'new-playlist', self._new_playlist),):
+         ('playlist-switcher', 'new', self._new_playlist),):
       for key in keybindings[section][action]:
         m[key] = fun
 

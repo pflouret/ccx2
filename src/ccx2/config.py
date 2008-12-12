@@ -46,9 +46,8 @@ default_keybindings = {
         'play-highlighted': ['enter'],
     },
     'playlist-switcher': {
-        'load-highlighted': ['enter'],
-        'delete-highlighted': ['d'],
-        'new-playlist': ['n'],
+        'load': ['enter'],
+        'new': ['n'],
         'rename': ['r'],
     },
 }
