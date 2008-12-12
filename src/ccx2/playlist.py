@@ -192,11 +192,12 @@ class Playlist(widgets.CustomKeysListBox):
 
   def _play_highlighted(self):
     pos = self.get_focus()[1]
-    xs.playlist_play(playlist=self.view_pls, pos=pos, sync=False)
+    if pos is not None:
+      xs.playlist_play(playlist=self.view_pls, pos=pos)
 
   def _delete_songs(self):
     pos = self.get_focus()[1]
-    if pos:
+    if pos is not None:
       xs.playlist_remove_entry(pos, self.view_pls, sync=False)
 
   def _set_body(self, body):
