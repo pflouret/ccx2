@@ -219,7 +219,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     self._load()
 
   def _load(self):
-    self.playlists = [p for p in xs.playlist_list() if p != '_active']
+    self.playlists = [p for p in sorted(xs.playlist_list()) if p != '_active']
     self.nplaylists = len(self.playlists)
     self.cur_active = xs.playlist_current_active()
 
