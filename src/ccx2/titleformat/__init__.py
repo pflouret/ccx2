@@ -24,6 +24,9 @@
 
 from ccx2.titleformat.functions import *
 
+__all__ = ['register_function', 'TitleformatParser', 'eval', 'ScriptError', 'ParseError',
+           'EndOfFile', 'SyntaxError', 'UnknownFunction']
+
 # TODO: make a parser that's not completely ugly
 
 class ScriptError(Exception): pass
