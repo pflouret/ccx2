@@ -225,8 +225,8 @@ class XmmsService(object):
     else:
       self.xmms.coll_query_ids(collection, cb=cb)
 
-  def coll_query_infos(self, collection, fields, cb=None, sync=True):
-    if 'id' not in fields:
+  def coll_query_infos(self, collection, fields, cb=None, sync=True, add_id=True):
+    if add_id and 'id' not in fields:
       fields = fields + ['id']
 
     if sync:
