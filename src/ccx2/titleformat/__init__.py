@@ -52,6 +52,8 @@ register_function(f_puts, name='puts')
 register_function(f_get, name='get')
 register_function(f_pad, name='pad')
 
+BRANCH_SEPARATOR = u'\0'
+
 class Text(unicode):
   def eval(self, parser):
     return self, False
@@ -242,7 +244,7 @@ class TitleformatParser(object):
       elif (not top and not cond and ch in ',)') or (not top and cond and ch == ']'):
         break
       elif ch == '|':
-        expr.add(Text(u'\0'))
+        expr.add(Text(BRANCH_SEPARATOR))
         expr.has_branches = True
       elif ch == '[':
         expr.add(self._parse_cond())
@@ -267,7 +269,7 @@ class TitleformatParser(object):
       split = []
       prev = 0
       for i,e in enumerate(toplevel):
-        if e == u'\0':
+        if e == BRANCH_SEPARATOR:
           split.append(toplevel[prev:i])
           prev = i+1
       split.append(toplevel[prev:])
@@ -294,7 +296,8 @@ class TitleformatParser(object):
   def eval(self, context):
     self.context = context
     res = self._parsed_expr.eval(self)[0]
-    return res.find(u'\0') >= 0 and res.split(u'\0') or res
+    return res.find(BRANCH_SEPARATOR) >= 0 and res.split(BRANCH_SEPARATOR) or res
 
 def eval(format, context, level=0):
   return TitleformatParser(format).eval(context, level)
+
