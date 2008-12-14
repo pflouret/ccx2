@@ -259,8 +259,24 @@ class TitleformatParser(object):
   def _parse(self):
     self._parsed_expr = self._parse_expr(True)[0]
 
-  def get_field_names(self):
-    queue = list(self._parsed_expr.exprs)
+  def get_field_names(self, level=None):
+    if level is None:
+      queue = list(self._parsed_expr.exprs)
+    else:
+      toplevel = self._parsed_expr.exprs
+      split = []
+      prev = 0
+      for i,e in enumerate(toplevel):
+        if e == u'\0':
+          split.append(toplevel[prev:i])
+          prev = i+1
+      split.append(toplevel[prev:])
+
+      try:
+        queue = split[level]
+      except IndexError:
+        queue = []
+
     names = []
 
     while queue:
