@@ -27,9 +27,10 @@ import sys
 import urwid
 import urwid.curses_display
 
+from ccx2 import bars
+from ccx2 import medialib
 from ccx2 import playlist
 from ccx2 import signals
-from ccx2 import bars
 from ccx2 import xmms
 
 from ccx2.config import keybindings
@@ -72,6 +73,7 @@ class Ccx2(object):
     self.gch = GlobalCommandsHandler()
     self.playlist = playlist.Playlist()
     self.switcher = playlist.PlaylistSwitcher(self)
+    self.medialib = medialib.MediaLib()
     self.statusbar = bars.StatusBar()
     self.headerbar = bars.HeaderBar()
     self.view = urwid.Frame(self.playlist, header=self.headerbar, footer=self.statusbar)
@@ -111,6 +113,8 @@ class Ccx2(object):
           self.view.body = self.playlist
         elif k in keybindings['general']['goto-playlist-switcher']:
           self.view.body = self.switcher
+        elif k == '4':
+          self.view.body = self.medialib
         elif k in keybindings['general']['quit']:
           return
         elif self.view.keypress(self.size, k) is None:
