@@ -73,7 +73,7 @@ class Ccx2(object):
     self.gch = GlobalCommandsHandler()
     self.playlist = playlist.Playlist()
     self.switcher = playlist.PlaylistSwitcher(self)
-    self.medialib = medialib.MediaLib()
+    self.medialib = None
     self.statusbar = bars.StatusBar()
     self.headerbar = bars.HeaderBar()
     self.view = urwid.Frame(self.playlist, header=self.headerbar, footer=self.statusbar)
@@ -114,6 +114,8 @@ class Ccx2(object):
         elif k in keybindings['general']['goto-playlist-switcher']:
           self.view.body = self.switcher
         elif k in keybindings['general']['goto-medialib']:
+          if not self.medialib:
+            self.medialib = medialib.MediaLib()
           self.view.body = self.medialib
         elif k in keybindings['general']['quit']:
           return
