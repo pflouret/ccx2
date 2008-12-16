@@ -113,7 +113,7 @@ class Ccx2(object):
           self.view.body = self.playlist
         elif k in keybindings['general']['goto-playlist-switcher']:
           self.view.body = self.switcher
-        elif k == '4':
+        elif k in keybindings['general']['goto-medialib']:
           self.view.body = self.medialib
         elif k in keybindings['general']['quit']:
           return

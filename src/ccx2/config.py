@@ -30,6 +30,7 @@ default_keybindings = {
         'page-down': ['ctrl d', 'page down'],
         'goto-playlist': ['2', 'f2'],
         'goto-playlist-switcher': ['3', 'f3'],
+        'goto-medialib': ['4', 'f4'],
         'select-and-move-down': [' '], # space
         'select-and-move-up': ['<0>'], # ctrl space
         'delete': ['d', 'delete'],
