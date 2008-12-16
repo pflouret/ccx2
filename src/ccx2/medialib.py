@@ -126,6 +126,7 @@ class MediaLib(widgets.CustomKeysListBox):
 
     self.load()
 
+  # TODO: split this up and clean up the signature which is confusing
   def load(self, collection=coll.Universe(), format=None, direction=None):
     if not format:
       format = self._cur_format
@@ -189,8 +190,9 @@ class MediaLib(widgets.CustomKeysListBox):
   def keypress(self, size, key):
     if key in ['l', 'enter']:
       _w, pos = self.body.get_focus()
-      ids = self.body.entries[self.body.formatted_data[pos]]
 
+      # TODO: this shouldn't be here
+      ids = self.body.entries[self.body.formatted_data[pos]]
       if ids:
         idl = coll.IDList()
         for id in ids:
