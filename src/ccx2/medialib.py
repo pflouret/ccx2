@@ -150,9 +150,6 @@ class MediaLib(widgets.CustomKeysListBox):
       self._positions[format][cur_level] = focus
 
       target_level = cur_level + 1
-      #if target_level > self._parsers[format].nbranches:
-      #  return
-      self._levels[format] = target_level
 
       try:
         focus = self._positions[format][target_level]
@@ -170,8 +167,6 @@ class MediaLib(widgets.CustomKeysListBox):
       if target_level < 0:
         return
 
-      self._levels[format] = target_level
-
       path = tuple([self._positions[format][l] for l in range(target_level)])
       focus = self._positions[format][target_level]
 
@@ -181,8 +176,15 @@ class MediaLib(widgets.CustomKeysListBox):
       self.body.set_focus(focus)
     except KeyError:
       w = FormattedSongListWalker(self._parsers[format], collection, target_level)
+
+      # FIXME: ugh
+      if w.is_empty_level():
+        return
+
       self._walkers.setdefault(format, {})[path] = w
       self._set_body(w)
+
+    self._levels[format] = target_level
 
   def keypress(self, size, key):
     if key in ['l', 'enter']:
