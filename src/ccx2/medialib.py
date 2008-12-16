@@ -36,7 +36,8 @@ from ccx2.config import keybindings
 
 xs = xmms.get()
 
-_formats = {'default': '$if2(%performer%,%artist%)|%album%|%title%'}
+# TODO: move to config
+_formats = {'default': "$if2(%performer%,%artist%)|['['%date%']' ]%album%|[CD%partofset%|]%title%"}
 
 class FormattedSongListWalker(urwid.ListWalker):
   def __init__(self, parser, collection, level=0):
@@ -49,11 +50,13 @@ class FormattedSongListWalker(urwid.ListWalker):
     self.formatted_data = []
     self.nformated_data = 0
 
+    # FIXME: probably wasteful to have this here if not getting level specific info
+    fields = self._parser.get_field_names()
+    self.data = xs.coll_query_infos(self.collection, fields=fields)
+
     self._load()
 
   def _load(self):
-    fields = self._parser.get_field_names(self._level)
-    self.data = xs.coll_query_infos(self.collection, fields=fields)
     formatted_data = [(d['id'], self._parser.eval(d)) for d in self.data]
 
     self.entries = {}
