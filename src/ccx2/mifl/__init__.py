@@ -33,7 +33,7 @@ class Text(ParserElement):
     self.name = 'Text(%r)' % self.text
 
   def symbol_names(self):
-    return set()
+    return []
 
   def eval(self, context):
     if not self.text.strip():
@@ -50,7 +50,7 @@ class Symbol(ParserElement):
     self.name = 'Symbol(%r)' % self.symbol
 
   def symbol_names(self):
-    return set([self.symbol])
+    return [self.symbol]
 
   def eval(self, context):
     if self.symbol in context:
@@ -75,7 +75,7 @@ class Function(ParserElement):
       vals = e.symbol_names()
       if vals:
         symbols.update(vals)
-    return symbols
+    return list(symbols)
 
   def eval(self, context):
     if self.f_name in g_functions:
@@ -102,7 +102,7 @@ class Branch(ParserElement):
       vals = e.symbol_names()
       if vals:
         symbols.update(vals)
-    return symbols
+    return list(symbols)
 
   def eval(self, context):
     vals = []
