@@ -32,6 +32,9 @@ class Text(ParserElement):
     ParserElement.__init__(self, *args, **kwargs)
     self.name = 'Text(%r)' % self.text
 
+  def symbol_names(self):
+    return set()
+
   def eval(self, context):
     if not self.text.strip():
       return u'', False
@@ -45,6 +48,9 @@ class Symbol(ParserElement):
 
     ParserElement.__init__(self, *args, **kwargs)
     self.name = 'Symbol(%r)' % self.symbol
+
+  def symbol_names(self):
+    return set([self.symbol])
 
   def eval(self, context):
     if self.symbol in context:
@@ -63,6 +69,14 @@ class Function(ParserElement):
     ParserElement.__init__(self, *args, **kwargs)
     self.name = 'Function:  (%s %r)' % (self.f_name, self.args)
 
+  def symbol_names(self):
+    symbols = set()
+    for e in self.args:
+      vals = e.symbol_names()
+      if vals:
+        symbols.update(vals)
+    return symbols
+
   def eval(self, context):
     if self.f_name in g_functions:
       f, eval_args = g_functions[self.f_name]
@@ -80,6 +94,15 @@ class Branch(ParserElement):
 
     ParserElement.__init__(self, *args, **kwargs)
     self.name = 'Branch(%r)' % self.exprs
+
+  def symbol_names(self):
+    # XXX: do we care about order?
+    symbols = set()
+    for e in self.exprs:
+      vals = e.symbol_names()
+      if vals:
+        symbols.update(vals)
+    return symbols
 
   def eval(self, context):
     vals = []
