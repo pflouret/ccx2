@@ -134,70 +134,59 @@ class CollectionBrowser(widgets.CustomKeysListBox):
 
     self.load()
 
-  # TODO: split this up and clean up the signature which is confusing
-  def load(self, collection=coll.Universe(), direction=None):
-    if direction not in (None, 'in', 'out'):
-      raise ValueError("direction must be one of None, 'in' or 'out'")
+  def _set_walker(self, path, collection=None):
+    # TODO: go_out() should pass a collection and not required the walker to be cached
+    assert(path in self.walkers or collection)
 
+    if path in self.walkers:
+      w = self.walkers[path]
+    else:
+      w = CollectionListWalker(self.parser, collection, self.level)
+      self.walkers[path] = w
+    self._set_body(w)
+
+  def go_in(self):
     _widget, focus = self.body.get_focus()
 
-    if direction is None or focus is None:
-      target_level = 0
-      self.positions[target_level] = 0
-      path = ()
-    elif direction == 'in':
-      cur_level = self.level
-      self.positions[cur_level] = focus
+    self.positions[self.level] = focus
+    target_level = self.level + 1
 
-      target_level = cur_level + 1
+    if target_level >= len(self.parser) - self.body.skipped_levels: # FIXME: ugly
+      return
 
-      if target_level >= len(self.parser) - self.body.skipped_levels: # FIXME: ugly
-        return
-
-      try:
-        focus = self.positions[target_level]
-      except:
-        focus = 0
-
-      path = tuple([self.positions[l] for l in range(target_level)])
-
-    elif direction == 'out':
-      cur_level = self.level
-      self.positions[cur_level] = focus
-
-      target_level = cur_level - 1
-
-      if target_level < 0:
-        return
-
-      path = tuple([self.positions[l] for l in range(target_level)])
-      focus = self.positions[target_level]
-
+    path = tuple([self.positions[l] for l in range(target_level)])
     self.level = target_level
 
-    try:
-      w = self.walkers[path]
-      self._set_body(w)
-      self.body.set_focus(focus)
-    except KeyError:
-      w = CollectionListWalker(self.parser, collection, target_level)
-      self.walkers[path] = w
-      self._set_body(w)
+    # FIXME: stuff the ids in the widget or somewhere
+    ids = self.body.ids[self.body.formatted_data[focus]]
+    if ids:
+      idl = coll.IDList()
+      for id in ids:
+        idl.ids.append(id)
+
+    self._set_walker(path, idl)
+
+  def go_out(self):
+    target_level = self.level - 1
+
+    if target_level < 0:
+      return
+
+    path = tuple([self.positions[l] for l in range(target_level)])
+    self.level = target_level
+
+    self._set_walker(path)
+
+  def load(self, collection=coll.Universe()):
+    self.level = 0
+    self.positions[0] = 0
+    self._set_walker((), collection) # must be an empty tuple!
 
   def keypress(self, size, key):
     if key in ['l', 'enter']:
-      _w, pos = self.body.get_focus()
-
-      # TODO: this shouldn't be here
-      ids = self.body.ids[self.body.formatted_data[pos]]
-      if ids:
-        idl = coll.IDList()
-        for id in ids:
-          idl.ids.append(id)
-
-        self.load(idl, direction='in')
+      self.go_in()
     elif key in ['h', 'backspace']:
-      self.load(direction='out')
+      self.go_out()
     else:
       return self.__super.keypress(size, key)
 
