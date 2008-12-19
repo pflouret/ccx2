@@ -82,14 +82,14 @@ class Branch(ParserElement):
     self.name = 'Branch(%r)' % self.exprs
 
   def eval(self, context):
-    result = []
-    result_bool = False
+    vals = []
+    bool_val = False
     for e in self.exprs:
-      s, b = e.eval(context)
-      result.append(s)
-      result_bool = result_bool or b
+      v, b = e.eval(context)
+      vals.append(v)
+      bool_val = bool_val or b
 
-    return ''.join(result), result_bool
+    return ''.join(vals), bool_val
 
 
 class MiflParser(list):
@@ -141,10 +141,10 @@ class MiflParser(list):
     return top
 
   def eval_all(self, context):
-    result = []
+    vals = []
     for e in self.exprs:
-      s, b = e.eval(context)
+      v, b = e.eval(context)
       if b:
-        result.append(s)
-    return ''.join(result)
+        vals.append(v)
+    return ''.join(vals)
 
