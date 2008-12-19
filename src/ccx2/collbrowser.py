@@ -89,7 +89,7 @@ class CollectionListWalker(urwid.ListWalker):
       return self.rows[pos], pos
     except KeyError:
       d = self.formatted_data[pos]
-      self.rows[pos] = widgets.SelectableText(d)
+      self.rows[pos] = widgets.CollectionListEntryWidget(self.ids[d], d)
       return self.rows[pos], pos
 
   def get_focus(self):
@@ -132,7 +132,7 @@ class CollectionBrowser(widgets.CustomKeysListBox):
     self.load()
 
   def _set_walker(self, path, collection=None):
-    # TODO: go_out() should pass a collection and not required the walker to be cached
+    # TODO: go_out() should pass a collection and not require the walker to be cached
     assert(path in self.walkers or collection)
 
     if path in self.walkers:
@@ -143,7 +143,7 @@ class CollectionBrowser(widgets.CustomKeysListBox):
     self._set_body(w)
 
   def go_in(self):
-    _widget, focus = self.body.get_focus()
+    widget, focus = self.body.get_focus()
 
     self.positions[self.level] = focus
     target_level = self.level + 1
@@ -154,14 +154,7 @@ class CollectionBrowser(widgets.CustomKeysListBox):
     path = tuple([self.positions[l] for l in range(target_level)])
     self.level = target_level
 
-    # FIXME: stuff the ids in the widget or somewhere
-    ids = self.body.ids[self.body.formatted_data[focus]]
-    if ids:
-      idl = coll.IDList()
-      for id in ids:
-        idl.ids.append(id)
-
-    self._set_walker(path, idl)
+    self._set_walker(path, widget.child_idlist)
 
   def go_out(self):
     target_level = self.level - 1

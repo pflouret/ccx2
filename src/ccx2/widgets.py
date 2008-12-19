@@ -24,6 +24,8 @@
 
 import urwid
 
+from xmmsclient import collections as coll
+
 from ccx2.config import keybindings
 
 class CustomKeysListBox(urwid.ListBox):
@@ -168,4 +170,17 @@ class InputDialog(urwid.WidgetWrap):
           return self.get_text()
         else:
           self.keypress(size, k);
+
+class CollectionListEntryWidget(SelectableText):
+  def __init__(self, child_ids, *args, **kwargs):
+    self.child_ids = child_ids
+    self.__super.__init__(*args, **kwargs)
+
+  def _get_child_idlist(self):
+    idl = coll.IDList()
+    for id in self.child_ids:
+      idl.ids.append(id)
+    return idl
+
+  child_idlist = property(_get_child_idlist)
 
