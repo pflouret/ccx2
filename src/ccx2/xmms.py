@@ -331,6 +331,12 @@ class XmmsService(object):
     else:
       self.xmms.playback_tickle(cb=cb)
 
+  def playlist_add_collection(self, coll, order, playlist=None, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.playlist_add_collection(coll, order, playlist)
+    else:
+      self.xmms.playlist_add_collection(coll, order, playlist, cb=cb)
+
   def playlist_add_id(self, id, playlist, cb=None, sync=True):
     if sync:
       return self.xmms_s.playlist_add_id(id, playlist)
