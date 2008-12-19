@@ -28,7 +28,7 @@ import urwid
 import urwid.curses_display
 
 from ccx2 import bars
-from ccx2 import medialib
+from ccx2 import collbrowser
 from ccx2 import playlist
 from ccx2 import signals
 from ccx2 import xmms
@@ -73,7 +73,7 @@ class Ccx2(object):
     self.gch = GlobalCommandsHandler()
     self.playlist = playlist.Playlist()
     self.switcher = playlist.PlaylistSwitcher(self)
-    self.collbrowsermgr = medialib.CollectionBrowserManager()
+    self.collbrowsermgr = collbrowser.CollectionBrowserManager()
     self.statusbar = bars.StatusBar()
     self.headerbar = bars.HeaderBar()
     self.view = urwid.Frame(self.playlist, header=self.headerbar, footer=self.statusbar)
