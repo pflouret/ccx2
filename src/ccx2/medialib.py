@@ -28,8 +28,8 @@ import xmmsclient
 from xmmsclient import collections as coll
 from xmmsclient.sync import XMMSError
 
+from ccx2 import mifl
 from ccx2 import signals
-from ccx2 import titleformat
 from ccx2 import widgets
 from ccx2 import xmms
 from ccx2.config import keybindings
@@ -38,6 +38,8 @@ xs = xmms.get()
 
 # TODO: move to config
 _formats = {'default': "$if2(%performer%,%artist%)|['['%date%']' ]%album%|[CD%partofset%|]%title%"}
+_formats = {'default':
+            '(or :performer :artist) > :album > (if :partofset (cat "CD" :partofset)) > :title'}
 
 class FormattedSongListWalker(urwid.ListWalker):
   def __init__(self, parser, collection, level=0):
@@ -46,34 +48,35 @@ class FormattedSongListWalker(urwid.ListWalker):
     self.collection = collection
     self._parser = parser
     self._level = level
+    self.skipped_levels = 0
 
     self.formatted_data = []
     self.nformated_data = 0
-
-    # FIXME: probably wasteful to have this here if not getting level specific info
-    fields = self._parser.get_field_names()
-    self.data = xs.coll_query_infos(self.collection, fields=fields)
+    self.ids = {}
 
     self._load()
 
   def _load(self):
-    formatted_data = [(d['id'], self._parser.eval(d)) for d in self.data]
+    for e in self._parser[self._level:]:
+      data = xs.coll_query_infos(self.collection, fields=e.symbol_names())
+      formatted_data = []
+      self.ids = {}
+      for d in data:
+        import sys
+        v, b = e.eval(d)
+        #print >> sys.stderr, v
+        if b:
+          formatted_data.append(v)
+        self.ids.setdefault(v, []).append(d['id'])
+      if formatted_data:
+        break
+      self.skipped_levels += 1
+    else:
+      self.ids = {}
+      return
 
-    self.entries = {}
-
-    for id, d in formatted_data:
-      if type(d) == list:
-        try:
-          d = d[self._level]
-        except IndexError:
-          continue
-      self.entries.setdefault(d, []).append(id)
-
-    self.formatted_data = list(sorted(self.entries))
+    self.formatted_data = list(sorted(self.ids))
     self.nformated_data = len(self.formatted_data)
-
-  def is_empty_level(self):
-    return self.nformated_data == 0
 
   def _get_at_pos(self, pos):
     if pos < 0 or pos >= self.nformated_data:
@@ -84,8 +87,8 @@ class FormattedSongListWalker(urwid.ListWalker):
       return self.rows[pos], pos
     except KeyError:
       d = self.formatted_data[pos]
-      text = type(d) == list and d[0] or d
-      self.rows[pos] = widgets.SelectableText(text)
+      #text = type(d) == list and d[0] or d
+      self.rows[pos] = widgets.SelectableText(d)
       return self.rows[pos], pos
 
   def get_focus(self):
@@ -122,7 +125,7 @@ class MediaLib(widgets.CustomKeysListBox):
     self._parsers = {}
 
     self._cur_format = 'default'
-    self._parsers['default'] = titleformat.TitleformatParser(_formats['default'])
+    self._parsers['default'] = mifl.MiflParser(_formats['default'])
 
     self.load()
 
@@ -132,7 +135,7 @@ class MediaLib(widgets.CustomKeysListBox):
       format = self._cur_format
 
     if format not in self._parsers:
-      self._parsers[format] = titleformat.TitleformatParser(_formats[format])
+      self._parsers[format] = mifl.MiflParser(_formats[format])
 
     self._cur_format = format
 
@@ -151,6 +154,9 @@ class MediaLib(widgets.CustomKeysListBox):
       self._positions[format][cur_level] = focus
 
       target_level = cur_level + 1
+
+      if target_level >= len(self._parsers[format]) - self.body.skipped_levels: # FIXME: ugly
+        return
 
       try:
         focus = self._positions[format][target_level]
@@ -171,28 +177,23 @@ class MediaLib(widgets.CustomKeysListBox):
       path = tuple([self._positions[format][l] for l in range(target_level)])
       focus = self._positions[format][target_level]
 
+    self._levels[format] = target_level
+
     try:
       w = self._walkers[format][path]
       self._set_body(w)
       self.body.set_focus(focus)
     except KeyError:
       w = FormattedSongListWalker(self._parsers[format], collection, target_level)
-
-      # FIXME: ugh
-      if w.is_empty_level():
-        return
-
       self._walkers.setdefault(format, {})[path] = w
       self._set_body(w)
-
-    self._levels[format] = target_level
 
   def keypress(self, size, key):
     if key in ['l', 'enter']:
       _w, pos = self.body.get_focus()
 
       # TODO: this shouldn't be here
-      ids = self.body.entries[self.body.formatted_data[pos]]
+      ids = self.body.ids[self.body.formatted_data[pos]]
       if ids:
         idl = coll.IDList()
         for id in ids:
