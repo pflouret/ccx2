@@ -129,7 +129,18 @@ class CollectionBrowser(widgets.CustomKeysListBox):
 
     self.parser = mifl.MiflParser(_formats['default'])
 
+    self._key_action = self._make_key_action_mapping()
+
     self.load()
+
+  def _make_key_action_mapping(self):
+    m = {}
+    for section, action, fun in \
+        (('collection-browser', 'navigate-in', self.go_in),
+         ('collection-browser', 'navigate-out', self.go_out),):
+      for key in keybindings[section][action]:
+        m[key] = fun
+    return m
 
   def _set_walker(self, path, collection=None):
     # TODO: go_out() should pass a collection and not require the walker to be cached
@@ -173,10 +184,8 @@ class CollectionBrowser(widgets.CustomKeysListBox):
     self._set_walker((), collection) # must be an empty tuple!
 
   def keypress(self, size, key):
-    if key in ['l', 'enter']:
-      self.go_in()
-    elif key in ['h', 'backspace']:
-      self.go_out()
+    if key in self._key_action:
+      self._key_action[key]()
     else:
       return self.__super.keypress(size, key)
 

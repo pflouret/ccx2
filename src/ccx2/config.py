@@ -53,6 +53,10 @@ default_keybindings = {
         'rename': ['r'],
         'add-playlist-to-current': ['a'],
     },
+    'collection-browser': {
+        'navigate-in': ['l', 'right'],
+        'navigate-out': ['h', 'left', 'backspace'],
+    },
 }
 
 keybindings = default_keybindings
