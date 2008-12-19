@@ -1,5 +1,5 @@
 from pyparsing import OneOrMore, CharsNotIn, Combine, Forward, Group
-from pyparsing import ParserElement, Suppress,  White, Word, ZeroOrMore
+from pyparsing import ParserElement, Optional, Suppress,  White, Word, ZeroOrMore
 from pyparsing import alphanums, dblQuotedString, oneOf, printables, removeQuotes
 
 from ccx2.mifl.functions import *
@@ -132,7 +132,7 @@ class MiflParser(list):
   def _make_parser(self):
     punct = "!#$%&*+,-./;<=>?@[\\]^_`{|}~"
     lparen, rparen = Suppress('('), Suppress(')')
-    white = ZeroOrMore(White('\r\n').suppress()|White())
+    white = ZeroOrMore(White('\r\n').suppress()|White()).suppress()
     function_name = Word(alphanums + punct)
 
     symbol = Combine(Suppress(':') + Word(alphanums))
@@ -147,7 +147,7 @@ class MiflParser(list):
 
     sexp << Group(lparen + function_name + ZeroOrMore(atom^sexp) + rparen)
 
-    branch = (Suppress('>') ^ Suppress('> '))
+    branch = (Optional(White()) + Suppress('>') + Optional(White())).suppress()
     escaped_char = (Suppress('\\') + oneOf(' '.join(printables)))
     text = (escaped_char | OneOrMore(CharsNotIn(':()>"\\\'\n\r')).setWhitespaceChars('\n\r'))
     text = text.setParseAction(lambda s,l,t: Text(t[0]))
