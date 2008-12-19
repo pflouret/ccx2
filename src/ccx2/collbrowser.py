@@ -66,9 +66,7 @@ class CollectionListWalker(urwid.ListWalker):
       formatted_data = []
       self.ids = {}
       for d in data:
-        import sys
         v, b = e.eval(d)
-        #print >> sys.stderr, v
         if b:
           formatted_data.append(v)
         self.ids.setdefault(v, []).append(d['id'])
@@ -91,7 +89,6 @@ class CollectionListWalker(urwid.ListWalker):
       return self.rows[pos], pos
     except KeyError:
       d = self.formatted_data[pos]
-      #text = type(d) == list and d[0] or d
       self.rows[pos] = widgets.SelectableText(d)
       return self.rows[pos], pos
 
