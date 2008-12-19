@@ -23,6 +23,14 @@ register_function(f_pad, name='pad')
 register_function(f_plus, name='+')
 register_function(f_set, name='set', eval_args=False)
 
+def remove_duplicates(l):
+  # quick and dirty
+  acc = []
+  for e in l:
+    if e not in acc:
+      acc.append(e)
+  return acc
+
 # TODO: Text always has a True bool value for now, consider making a convenient [cond]
 # TODO: construct to not pollute the code too much with "and", "or" and "if" functions.
 # TODO: In such case Text should always return False within conds.
@@ -71,12 +79,12 @@ class Function(ParserElement):
     self.name = 'Function:  (%s %r)' % (self.f_name, self.args)
 
   def symbol_names(self):
-    symbols = set()
+    symbols = []
     for e in self.args:
       vals = e.symbol_names()
       if vals:
-        symbols.update(vals)
-    return list(symbols)
+        symbols.extend(vals)
+    return remove_duplicates(symbols)
 
   def eval(self, context):
     if self.f_name in g_functions:
@@ -97,13 +105,12 @@ class Branch(ParserElement):
     self.name = 'Branch(%r)' % self.exprs
 
   def symbol_names(self):
-    # XXX: do we care about order?
-    symbols = set()
+    symbols = []
     for e in self.exprs:
       vals = e.symbol_names()
       if vals:
-        symbols.update(vals)
-    return list(symbols)
+        symbols.extend(vals)
+    return remove_duplicates(symbols)
 
   def eval(self, context):
     vals = []
