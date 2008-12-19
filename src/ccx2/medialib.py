@@ -39,9 +39,13 @@ xs = xmms.get()
 # TODO: move to config
 _formats = {'default': "$if2(%performer%,%artist%)|['['%date%']' ]%album%|[CD%partofset%|]%title%"}
 _formats = {'default':
-            '(or :performer :artist) > :album > (if :partofset (cat "CD" :partofset)) > :title'}
+            """(or :performer :artist)
+               > :album
+               > (if :partofset (cat "CD" :partofset))
+               > (pad :tracknr "2" "0"). (if (not (= :artist :performer)) (cat :artist " - ")):title'}
+            """}
 
-class FormattedSongListWalker(urwid.ListWalker):
+class CollectionListWalker(urwid.ListWalker):
   def __init__(self, parser, collection, level=0):
     self.focus = 0
     self.rows = {}
@@ -109,8 +113,8 @@ class FormattedSongListWalker(urwid.ListWalker):
     return self._get_at_pos(pos+1)
 
 
-class MediaLib(widgets.CustomKeysListBox):
-  def __init__(self):
+class CollectionBrowser(widgets.CustomKeysListBox):
+  def __init__(self, format):
     keys = {}
     for action in (('move-up', 'up'),
                    ('move-down', 'down'),
@@ -119,73 +123,65 @@ class MediaLib(widgets.CustomKeysListBox):
       keys.update([(k, action[1]) for k in keybindings['general'][action[0]]])
 
     self.__super.__init__(keys, [])
-    self._walkers = {} # formatname => path => walker
-    self._levels = {} # formatname => level
-    self._positions = {} # formatname => level => position
-    self._parsers = {}
 
-    self._cur_format = 'default'
-    self._parsers['default'] = mifl.MiflParser(_formats['default'])
+    self.format = format
+
+    self.walkers = {} # path => walker
+    self.level = 0
+    self.positions = {} # level => position
+
+    self.parser = mifl.MiflParser(_formats['default'])
 
     self.load()
 
   # TODO: split this up and clean up the signature which is confusing
-  def load(self, collection=coll.Universe(), format=None, direction=None):
-    if not format:
-      format = self._cur_format
-
-    if format not in self._parsers:
-      self._parsers[format] = mifl.MiflParser(_formats[format])
-
-    self._cur_format = format
-
+  def load(self, collection=coll.Universe(), direction=None):
     if direction not in (None, 'in', 'out'):
       raise ValueError("direction must be one of None, 'in' or 'out'")
 
     _widget, focus = self.body.get_focus()
 
-    if direction is None or focus is None or format not in self._levels:
+    if direction is None or focus is None:
       target_level = 0
-      self._levels[format] = target_level
-      self._positions.setdefault(format, {})[target_level] = 0
+      self.positions[target_level] = 0
       path = ()
     elif direction == 'in':
-      cur_level = self._levels[format]
-      self._positions[format][cur_level] = focus
+      cur_level = self.level
+      self.positions[cur_level] = focus
 
       target_level = cur_level + 1
 
-      if target_level >= len(self._parsers[format]) - self.body.skipped_levels: # FIXME: ugly
+      if target_level >= len(self.parser) - self.body.skipped_levels: # FIXME: ugly
         return
 
       try:
-        focus = self._positions[format][target_level]
+        focus = self.positions[target_level]
       except:
         focus = 0
 
-      path = tuple([self._positions[format][l] for l in range(target_level)])
+      path = tuple([self.positions[l] for l in range(target_level)])
 
     elif direction == 'out':
-      cur_level = self._levels[format]
-      self._positions[format][cur_level] = focus
+      cur_level = self.level
+      self.positions[cur_level] = focus
 
       target_level = cur_level - 1
 
       if target_level < 0:
         return
 
-      path = tuple([self._positions[format][l] for l in range(target_level)])
-      focus = self._positions[format][target_level]
+      path = tuple([self.positions[l] for l in range(target_level)])
+      focus = self.positions[target_level]
 
-    self._levels[format] = target_level
+    self.level = target_level
 
     try:
-      w = self._walkers[format][path]
+      w = self.walkers[path]
       self._set_body(w)
       self.body.set_focus(focus)
     except KeyError:
-      w = FormattedSongListWalker(self._parsers[format], collection, target_level)
-      self._walkers.setdefault(format, {})[path] = w
+      w = CollectionListWalker(self.parser, collection, target_level)
+      self.walkers[path] = w
       self._set_body(w)
 
   def keypress(self, size, key):
@@ -208,4 +204,22 @@ class MediaLib(widgets.CustomKeysListBox):
   def _set_body(self, body):
     self.body = body
     self._invalidate()
+
+
+class CollectionBrowserManager(object):
+  def __init__(self):
+    self.cur_format = 'default'
+    self.browsers = {}
+
+  def get_browser(self, format=None):
+    if format is not None:
+      self.cur_format = format
+
+    if self.cur_format in self.browsers:
+      browser = self.browsers[self.cur_format]
+    else:
+      browser = CollectionBrowser(_formats[self.cur_format])
+      self.browsers[self.cur_format] = browser
+
+    return browser
 
