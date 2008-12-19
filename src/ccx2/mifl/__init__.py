@@ -57,7 +57,7 @@ class Symbol(ParserElement):
       s = context[self.symbol]
       b = bool(s)
       if b:
-        return s, b
+        return unicode(s), b
 
     return self.default, False
 
