@@ -73,7 +73,7 @@ class Ccx2(object):
     self.gch = GlobalCommandsHandler()
     self.playlist = playlist.Playlist()
     self.switcher = playlist.PlaylistSwitcher(self)
-    self.collbrowsermgr = collbrowser.CollectionBrowserManager()
+    self.collbrowsermgr = collbrowser.CollectionBrowserManager(self)
     self.statusbar = bars.StatusBar()
     self.headerbar = bars.HeaderBar()
     self.view = urwid.Frame(self.playlist, header=self.headerbar, footer=self.statusbar)

@@ -56,6 +56,7 @@ default_keybindings = {
     'collection-browser': {
         'navigate-in': ['l', 'right'],
         'navigate-out': ['h', 'left', 'backspace'],
+        'add-to-playlist': ['a'],
     },
 }
 

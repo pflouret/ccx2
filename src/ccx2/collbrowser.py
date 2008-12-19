@@ -111,7 +111,7 @@ class CollectionListWalker(urwid.ListWalker):
 
 
 class CollectionBrowser(widgets.CustomKeysListBox):
-  def __init__(self, format):
+  def __init__(self, app, format):
     keys = {}
     for action in (('move-up', 'up'),
                    ('move-down', 'down'),
@@ -121,6 +121,7 @@ class CollectionBrowser(widgets.CustomKeysListBox):
 
     self.__super.__init__(keys, [])
 
+    self.app = app
     self.format = format
 
     self.walkers = {} # path => walker
@@ -137,7 +138,8 @@ class CollectionBrowser(widgets.CustomKeysListBox):
     m = {}
     for section, action, fun in \
         (('collection-browser', 'navigate-in', self.go_in),
-         ('collection-browser', 'navigate-out', self.go_out),):
+         ('collection-browser', 'navigate-out', self.go_out),
+         ('collection-browser', 'add-to-playlist', self.add_selected_to_playlist),):
       for key in keybindings[section][action]:
         m[key] = fun
     return m
@@ -183,6 +185,16 @@ class CollectionBrowser(widgets.CustomKeysListBox):
     self.positions[0] = 0
     self._set_walker((), collection) # must be an empty tuple!
 
+  def add_selected_to_playlist(self):
+    widget, focus = self.body.get_focus()
+
+    fields = []
+    for e in self.parser[self.level:]:
+      fields.extend(e.symbol_names())
+
+    pls = self.app.playlist.view_pls # hmmm, coupling much?
+    xs.playlist_add_collection(widget.child_idlist, fields, pls, sync=False)
+
   def keypress(self, size, key):
     if key in self._key_action:
       self._key_action[key]()
@@ -195,7 +207,8 @@ class CollectionBrowser(widgets.CustomKeysListBox):
 
 
 class CollectionBrowserManager(object):
-  def __init__(self):
+  def __init__(self, app):
+    self.app = app
     self.cur_format = 'default'
     self.browsers = {}
 
@@ -206,7 +219,7 @@ class CollectionBrowserManager(object):
     if self.cur_format in self.browsers:
       browser = self.browsers[self.cur_format]
     else:
-      browser = CollectionBrowser(_formats[self.cur_format])
+      browser = CollectionBrowser(self.app, _formats[self.cur_format])
       self.browsers[self.cur_format] = browser
 
     return browser
