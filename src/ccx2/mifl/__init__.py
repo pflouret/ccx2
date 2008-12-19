@@ -19,6 +19,7 @@ register_function(f_left, name='left')
 register_function(f_minus, name='-')
 register_function(f_not, name='not')
 register_function(f_or, name='or', eval_args=False)
+register_function(f_pad, name='pad')
 register_function(f_plus, name='+')
 register_function(f_set, name='set', eval_args=False)
 

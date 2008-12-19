@@ -67,6 +67,20 @@ def f_or(context, *args):
     return u'', False
   return v, True
 
+def f_pad(context, s, num, ch):
+  v, b = s
+  l = len(v)
+
+  try:
+    num = int(num[0]) # FIXME: remove when parser understands numbers
+  except ValueError:
+    num = 0
+
+  if l < num:
+    v = '%s%s' % (ch[0]*(num-l), v)
+
+  return v, b
+
 def f_plus(context, *args):
   s = sum([a[0] for a in args])
   if not s:
