@@ -28,20 +28,23 @@ import xmmsclient
 from xmmsclient import collections as coll
 from xmmsclient.sync import XMMSError
 
+from ccx2 import mifl
 from ccx2 import signals
 from ccx2 import widgets
 from ccx2 import xmms
-from ccx2.config import keybindings
+from ccx2 import config
 
 xs = xmms.get()
 
 
 class PlaylistWalker(urwid.ListWalker):
-  def __init__(self, pls, active_pls, app):
+  def __init__(self, pls, active_pls, app, format):
     self.focus = 0
     self.cache = []
     self.cache_bounds = (0,0)
     self.app = app
+    self.format = format
+    self.parser = mifl.MiflParser(config.formatting['playlist'][format])
 
     self.pls = pls
     self.active_pls = active_pls
@@ -75,14 +78,14 @@ class PlaylistWalker(urwid.ListWalker):
 
     idl = coll.IDList()
     idl.ids += ids
-    infos = xs.coll_query_infos(idl, fields=['artist', 'album', 'title'])
+    fields = self.parser[0].symbol_names()
+    infos = xs.coll_query_infos(idl, fields=fields)
     infos = dict([(i['id'], i) for i in infos])
 
     self.cache = []
     for i, id in enumerate(ids):
       info = infos[id]
-      text = ('%%%dd| %%s - %%s - %%s' % len(str(self.pls_len))) % \
-              (min_pos+i+1, info['artist'], info['album'], info['title']) # heh
+      text = self.parser[0].eval(info)[0]
       self.cache.append(widgets.SongWidget(id, text))
 
   #def _on_xmms_playlist_changed(self, pls, type, id, pos):
@@ -140,11 +143,12 @@ class Playlist(widgets.CustomKeysListBox):
                    ('move-down', 'down'),
                    ('page-up', 'page up'),
                    ('page-down', 'page down')):
-      keys.update([(k, action[1]) for k in keybindings['general'][action[0]]])
+      keys.update([(k, action[1]) for k in config.keybindings['general'][action[0]]])
 
     self.__super.__init__(keys, [])
 
     self.app = app
+    self.format = 'simple'
 
     self._key_action = self._make_key_action_mapping()
     self._walkers = {} # pls => walker
@@ -158,7 +162,7 @@ class Playlist(widgets.CustomKeysListBox):
 
   def load(self, pls, from_xmms=True):
     if pls not in self._walkers:
-      self._walkers[pls] = PlaylistWalker(pls, self.active_pls, self.app)
+      self._walkers[pls] = PlaylistWalker(pls, self.active_pls, self.app, self.format)
 
     self._set_body(self._walkers[pls])
 
@@ -206,7 +210,7 @@ class Playlist(widgets.CustomKeysListBox):
     m = {}
     for section, action, fun in (('playlist', 'play-highlighted', self._play_highlighted),
                                  ('general', 'delete', self._delete_songs),):
-      for key in keybindings[section][action]:
+      for key in config.keybindings[section][action]:
         m[key] = fun
 
     return m
@@ -316,7 +320,7 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
                    ('move-down', 'down'),
                    ('page-up', 'page up'),
                    ('page-down', 'page down')):
-      keys.update([(k, action[1]) for k in keybindings['general'][action[0]]])
+      keys.update([(k, action[1]) for k in config.keybindings['general'][action[0]]])
 
     self.__super.__init__(keys, PlaylistSwitcherWalker())
 
@@ -330,7 +334,7 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
          ('playlist-switcher', 'rename', self._rename_highlighted),
          ('playlist-switcher', 'add-playlist-to-current', self._add_playlist_to_current),
          ('playlist-switcher', 'new', self._new_playlist),):
-      for key in keybindings[section][action]:
+      for key in config.keybindings[section][action]:
         m[key] = fun
 
     return m
