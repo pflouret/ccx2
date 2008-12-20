@@ -60,5 +60,24 @@ default_keybindings = {
     },
 }
 
+default_formatting = {
+    'collbrowser': {
+        'by_albumartist':
+            """(or :performer :artist)
+               > :album
+               > (if :partofset (cat "CD" :partofset))
+               > (pad :tracknr "2" "0").
+                 (if (not (= :artist :performer)) (cat :artist " - ")):title'}
+            """
+    },
+    'playlist': {
+        'simple':
+            """(if :partofset (cat :partofset "."))(pad :tracknr "2" "0"). 
+               (or :performer :artist) 
+               - :title (if :compilation (cat "| " :artist))"""
+    },
+}
+
 keybindings = default_keybindings
+formatting = default_formatting
 

@@ -32,18 +32,9 @@ from ccx2 import mifl
 from ccx2 import signals
 from ccx2 import widgets
 from ccx2 import xmms
-from ccx2.config import keybindings
+from ccx2 import config
 
 xs = xmms.get()
-
-# TODO: move to config
-_formats = {'default': "$if2(%performer%,%artist%)|['['%date%']' ]%album%|[CD%partofset%|]%title%"}
-_formats = {'default':
-            """(or :performer :artist)
-               > :album
-               > (if :partofset (cat "CD" :partofset))
-               > (pad :tracknr "2" "0"). (if (not (= :artist :performer)) (cat :artist " - ")):title'}
-            """}
 
 class CollectionListWalker(urwid.ListWalker):
   def __init__(self, parser, collection, level=0):
@@ -117,7 +108,7 @@ class CollectionBrowser(widgets.CustomKeysListBox):
                    ('move-down', 'down'),
                    ('page-up', 'page up'),
                    ('page-down', 'page down')):
-      keys.update([(k, action[1]) for k in keybindings['general'][action[0]]])
+      keys.update([(k, action[1]) for k in config.keybindings['general'][action[0]]])
 
     self.__super.__init__(keys, [])
 
@@ -128,7 +119,7 @@ class CollectionBrowser(widgets.CustomKeysListBox):
     self.level = 0
     self.positions = {} # level => position
 
-    self.parser = mifl.MiflParser(_formats['default'])
+    self.parser = mifl.MiflParser(format)
 
     self._key_action = self._make_key_action_mapping()
 
@@ -140,7 +131,7 @@ class CollectionBrowser(widgets.CustomKeysListBox):
         (('collection-browser', 'navigate-in', self.go_in),
          ('collection-browser', 'navigate-out', self.go_out),
          ('collection-browser', 'add-to-playlist', self.add_selected_to_playlist),):
-      for key in keybindings[section][action]:
+      for key in config.keybindings[section][action]:
         m[key] = fun
     return m
 
@@ -209,7 +200,7 @@ class CollectionBrowser(widgets.CustomKeysListBox):
 class CollectionBrowserManager(object):
   def __init__(self, app):
     self.app = app
-    self.cur_format = 'default'
+    self.cur_format = 'by_albumartist'
     self.browsers = {}
 
   def get_browser(self, format=None):
@@ -219,7 +210,7 @@ class CollectionBrowserManager(object):
     if self.cur_format in self.browsers:
       browser = self.browsers[self.cur_format]
     else:
-      browser = CollectionBrowser(self.app, _formats[self.cur_format])
+      browser = CollectionBrowser(self.app, config.formatting['collbrowser'][self.cur_format])
       self.browsers[self.cur_format] = browser
 
     return browser
