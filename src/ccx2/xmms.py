@@ -219,6 +219,12 @@ class XmmsService(object):
     else:
       self.xmms.bindata_retrieve(hash, cb)
 
+  def coll_get(self, name, ns='Collections', cb=None, sync=True):
+    if sync:
+      return self.xmms_s.coll_get(name, ns)
+    else:
+      self.xmms.coll_get(name, ns, cb=cb)
+
   def coll_query_ids(self, collection, cb=None, sync=True):
     if sync:
       return self.xmms_s.coll_query_ids(collection)
