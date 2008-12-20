@@ -37,16 +37,17 @@ xs = xmms.get()
 
 
 class PlaylistWalker(urwid.ListWalker):
-  def __init__(self, pls, active_pls):
+  def __init__(self, pls, active_pls, app):
     self.focus = 0
-    self.rows = {}
-    self.songs = []
-    self.nsongs = 0
+    self.cache = []
+    self.cache_bounds = (0,0)
+    self.app = app
 
     self.pls = pls
     self.active_pls = active_pls
 
     signals.connect('xmms-playlist-current-pos', self._on_xmms_playlist_current_pos)
+    #signals.connect('xmms-playlist-changed', self._on_xmms_playlist_changed)
 
     if self.pls == self.active_pls:
       try:
@@ -56,55 +57,72 @@ class PlaylistWalker(urwid.ListWalker):
     else:
       self.current_pos = -1
 
-    self._load()
+    self.pls_ids = list(xs.coll_get(self.pls, 'Playlists').ids)
+    self.pls_len = len(self.pls_ids)
 
-  def _load(self):
-    ids = xs.playlist_list_entries(self.pls)
-    songs = xs.coll_query_infos(coll.Reference(self.pls, 'Playlists'),
-                                fields=['artist', 'album', 'title'])
+  def _in_bounds(self, n):
+    return n >= self.cache_bounds[0] and n < self.cache_bounds[1]
 
-    songs = dict([(s['id'], s) for s in songs])
+  def _load_cache(self, pos):
+    screen_rows = self.app.ui.get_cols_rows()[1]
 
-    self.songs = []
-    for id in ids:
-      self.songs.append(songs[id])
-    self.nsongs = len(self.songs)
+    n = int(1.5*screen_rows)
+    min_pos = max(pos - n, 0)
+    max_pos = min(pos + n, self.pls_len)
+    self.cache_bounds = (min_pos, max_pos)
+
+    ids = self.pls_ids[min_pos:max_pos]
+
+    idl = coll.IDList()
+    idl.ids += ids
+    infos = xs.coll_query_infos(idl, fields=['artist', 'album', 'title'])
+    infos = dict([(i['id'], i) for i in infos])
+
+    self.cache = []
+    for i, id in enumerate(ids):
+      info = infos[id]
+      text = ('%%%dd| %%s - %%s - %%s' % len(str(self.pls_len))) % \
+              (min_pos+i+1, info['artist'], info['album'], info['title']) # heh
+      self.cache.append(widgets.SongWidget(id, text))
+
+  #def _on_xmms_playlist_changed(self, pls, type, id, pos):
+  #  if pls != self.pls:
+  #    return
+
+  #  if type == xmmsclient.PLAYLIST_CHANGED_ADD:
+  #    info = xs.medialib_get_info(id)
 
   def _on_xmms_playlist_current_pos(self, pls, pos):
     if pls == self.pls:
-      if pos in self.rows:
-        self.rows[pos].set_active()
-      if self.current_pos in self.rows:
-        self.rows[self.current_pos].unset_active()
+      if self._in_bounds(self.current_pos):
+        self.cache[self.current_pos-self.cache_bounds[0]].unset_active()
 
       self.current_pos = pos
       self._modified()
 
   def _get_at_pos(self, pos):
-    if pos < 0 or pos >= self.nsongs:
+    if pos < 0 or pos >= self.pls_len:
       return None, None
 
-    song = self.songs[pos]
+    if not self._in_bounds(pos):
+      self._load_cache(pos)
 
-    try:
-      # TODO: cache only a couple of pages, not the whole playlist
-      return self.rows[pos], pos
-    except KeyError:
-      text = ('%%%dd| %%s - %%s - %%s' % len(str(self.nsongs))) % \
-              (pos, song['artist'], song['album'], song['title']) # heh
-      self.rows[pos] = widgets.SongWidget(song['id'], text)
-      if pos == self.current_pos:
-        self.rows[pos].set_active()
-      return self.rows[pos], pos
-  
+    w = self.cache[pos-self.cache_bounds[0]]
+
+    if pos == self.current_pos:
+      w.set_active()
+
+    return w, pos
+
   def get_focus(self): 
     return self._get_at_pos(self.focus)
   
   def set_focus(self, focus):
     if focus <= 0:
       focus = 0
-    elif focus >= self.nsongs:
-      focus = self.nsongs-1
+    elif focus >= self.pls_len:
+      focus = self.pls_len - 1
+
     self.focus = focus
     self._modified()
   
@@ -116,7 +134,7 @@ class PlaylistWalker(urwid.ListWalker):
 
 
 class Playlist(widgets.CustomKeysListBox):
-  def __init__(self):
+  def __init__(self, app):
     keys = {}
     for action in (('move-up', 'up'),
                    ('move-down', 'down'),
@@ -125,6 +143,8 @@ class Playlist(widgets.CustomKeysListBox):
       keys.update([(k, action[1]) for k in keybindings['general'][action[0]]])
 
     self.__super.__init__(keys, [])
+
+    self.app = app
 
     self._key_action = self._make_key_action_mapping()
     self._walkers = {} # pls => walker
@@ -138,7 +158,7 @@ class Playlist(widgets.CustomKeysListBox):
 
   def load(self, pls, from_xmms=True):
     if pls not in self._walkers:
-      self._walkers[pls] = PlaylistWalker(pls, self.active_pls)
+      self._walkers[pls] = PlaylistWalker(pls, self.active_pls, self.app)
 
     self._set_body(self._walkers[pls])
 

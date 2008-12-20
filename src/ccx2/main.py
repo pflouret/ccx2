@@ -71,7 +71,7 @@ class Ccx2(object):
 
   def __init__(self):
     self.gch = GlobalCommandsHandler()
-    self.playlist = playlist.Playlist()
+    self.playlist = playlist.Playlist(self)
     self.switcher = playlist.PlaylistSwitcher(self)
     self.collbrowsermgr = collbrowser.CollectionBrowserManager(self)
     self.statusbar = bars.StatusBar()
