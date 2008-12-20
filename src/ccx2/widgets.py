@@ -92,11 +92,12 @@ class SongWidget(SelectableText):
     self._old_focus_attr = self.focus_attr
 
   def set_active(self):
-    self._old_attr = self.attr
-    self._old_focus_attr = self.focus_attr
-    self.attr = 'active'
-    self.focus_attr = 'active-focus'
-    self.update_w()
+    if self.attr != 'active':
+      self._old_attr = self.attr
+      self._old_focus_attr = self.focus_attr
+      self.attr = 'active'
+      self.focus_attr = 'active-focus'
+      self.update_w()
 
   def unset_active(self):
     self.attr = self._old_attr
