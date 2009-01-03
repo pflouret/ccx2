@@ -85,7 +85,7 @@ class PlaylistWalker(urwid.ListWalker):
     self.cache = []
     for i, id in enumerate(ids):
       info = infos[id]
-      pls_pos = ('%%%dd.' % len(str(self.pls_len))) % (i+min_pos)
+      pls_pos = ('%%%dd.' % len(str(self.pls_len))) % (i+min_pos+1)
       text = '%s %s' % (pls_pos, self.parser[0].eval(info)[0])
       self.cache.append(widgets.SongWidget(id, text))
 
