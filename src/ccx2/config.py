@@ -66,15 +66,15 @@ default_formatting = {
             """(or :performer :artist)
                > :album
                > (if :partofset (cat "CD" :partofset))
-               > (pad :tracknr "2" "0").
+               > (pad :tracknr "2" "0"). 
                  (if (not (= :artist :performer)) (cat :artist " - ")):title'}
             """
     },
     'playlist': {
         'simple':
-            """(if :partofset (cat :partofset "."))(pad :tracknr "2" "0"). 
-               (or :performer :artist) 
-               - :title (if :compilation (cat "| " :artist))"""
+            """(or :performer :artist) - 
+               (if :partofset (cat :partofset "."))(pad :tracknr "2" "0") - 
+               :title (if :compilation (cat "| " :artist))"""
     },
 }
 

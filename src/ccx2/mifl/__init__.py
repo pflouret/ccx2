@@ -140,7 +140,7 @@ class MiflParser(list):
   def _make_parser(self):
     punct = "!#$%&*+,-./;<=>?@[\\]^_`{|}~"
     lparen, rparen = Suppress('('), Suppress(')')
-    white = ZeroOrMore(White('\r\n').suppress()|White()).suppress()
+    #white = (ZeroOrMore(White('\r\n').suppress())|Optional(White())).suppress()
     function_name = Word(alphanums + punct)
 
     symbol = Combine(Suppress(':') + Word(alphanums))
@@ -159,11 +159,10 @@ class MiflParser(list):
     escaped_char = (Suppress('\\') + oneOf(' '.join(printables)))
     text = (escaped_char | OneOrMore(CharsNotIn(':()>"\\\'\n\r')).setWhitespaceChars('\n\r'))
     text = text.setParseAction(lambda s,l,t: Text(t[0]))
-    sexptop = (white + sexp + white)
 
     branch_level = OneOrMore(
         symbol.copy().setWhitespaceChars('\n\r') ^
-        sexptop ^
+        sexp ^
         text)
     branch_level = branch_level.setParseAction(lambda s,l,t: Branch(t))
 
