@@ -50,7 +50,7 @@ class PlaylistWalker(urwid.ListWalker):
     self.active_pls = active_pls
 
     signals.connect('xmms-playlist-current-pos', self._on_xmms_playlist_current_pos)
-    #signals.connect('xmms-playlist-changed', self._on_xmms_playlist_changed)
+    signals.connect('xmms-playlist-changed', self._on_xmms_playlist_changed)
 
     if self.pls == self.active_pls:
       try:
@@ -89,12 +89,41 @@ class PlaylistWalker(urwid.ListWalker):
       text = '%s %s' % (pls_pos, self.parser[0].eval(info)[0])
       self.cache.append(widgets.SongWidget(id, text))
 
-  #def _on_xmms_playlist_changed(self, pls, type, id, pos):
-  #  if pls != self.pls:
-  #    return
+  def _clear_cache(self):
+    # delete the cache object and b0rk the cache_bounds so the cache will
+    # be loaded the next time the playlist comes in view
+    del self.cache
+    self.cache_bounds = (0xDEADBEEF, -1) # -1 will always fail the boundary check
 
-  #  if type == xmmsclient.PLAYLIST_CHANGED_ADD:
-  #    info = xs.medialib_get_info(id)
+  def _on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
+    if pos is None:
+      return
+
+    if type == xmmsclient.PLAYLIST_CHANGED_ADD:
+      self.pls_ids.append(id)
+      self.pls_len += 1
+    elif type == xmmsclient.PLAYLIST_CHANGED_INSERT:
+      self.pls_ids.insert(pos, id)
+      self.pls_len += 1
+    elif type == xmmsclient.PLAYLIST_CHANGED_REMOVE:
+      del self.pls_ids[pos]
+      self.pls_len -= 1
+      if pos == self.focus:
+        self.focus -= 1
+    elif type == xmmsclient.PLAYLIST_CHANGED_MOVE:
+      self.pls_ids.insert(newpos, self.pls_ids.pop(pos))
+    else:
+      # hard reload everything just in case
+      self.pls_ids = list(xs.coll_get(self.pls, 'Playlists').ids)
+      self.pls_len = len(self.pls_ids)
+      self._clear_cache()
+
+    if pos >= self.cache_bounds[0] and pos < self.cache_bounds[1]:
+      if pls == self.pls:
+        self._load_cache(self.focus)
+        signals.emit('need-redraw')
+      else:
+        self._clear_cache()
 
   def _on_xmms_playlist_current_pos(self, pls, pos):
     if pls == self.pls:
@@ -159,7 +188,7 @@ class Playlist(widgets.CustomKeysListBox):
     self.view_pls = self.active_pls
 
     signals.connect('xmms-playlist-loaded', self.load)
-    signals.connect('xmms-playlist-changed', self._on_xmms_playlist_changed)
+    #signals.connect('xmms-playlist-changed', self._on_xmms_playlist_changed)
 
     self.load(self.active_pls)
 
@@ -176,22 +205,8 @@ class Playlist(widgets.CustomKeysListBox):
 
   def _on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     try:
-      focus_pos = self._walkers[pls].get_focus()[1]
-
-      # TODO: less brute force would be cool
-      del self._walkers[pls]
-
-      if pls == self.view_pls:
-        if type == xmmsclient.PLAYLIST_CHANGED_REMOVE and not pos:
-          self.load(self.active_pls)
-        elif type == xmmsclient.PLAYLIST_CHANGED_REMOVE:
-          self.load(pls)
-          if pos < focus_pos:
-            focus_pos -= 1
-          self._walkers[pls].set_focus(focus_pos)
-        else:
-          self.load(pls)
-        signals.emit('need-redraw')
+      if type == xmmsclient.PLAYLIST_CHANGED_REMOVE and not pos:
+        del self._walkers[pls]
     except KeyError:
       pass
 
