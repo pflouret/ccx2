@@ -56,6 +56,8 @@ class GlobalCommandsHandler(object):
     else:
       return key
 
+signals.register('need-redraw')
+
 class Ccx2(object):
   palette = [
     ('body','default','default', 'standout'),
@@ -78,7 +80,11 @@ class Ccx2(object):
     self.headerbar = bars.HeaderBar()
     self.view = urwid.Frame(self.playlist, header=self.headerbar, footer=self.statusbar)
 
-    signals.connect('xmms-have-ioin', self.redraw)
+    signals.connect('need-redraw', self._on_need_redraw)
+
+  def _on_need_redraw(self):
+    # TODO: do something smart to queue multiple redraw requests, or decide based on who's asking
+    self.redraw()
 
   def main(self):
     self.ui = urwid.curses_display.Screen()

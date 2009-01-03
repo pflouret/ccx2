@@ -100,9 +100,11 @@ class PlaylistWalker(urwid.ListWalker):
     if pls == self.pls:
       if self._in_bounds(self.current_pos):
         self.cache[self.current_pos-self.cache_bounds[0]].unset_active()
+      else:
+        pass # TODO: scroll
 
       self.current_pos = pos
-      self._modified()
+      signals.emit('need-redraw')
 
   def _get_at_pos(self, pos):
     if pos < 0 or pos >= self.pls_len:
@@ -189,6 +191,7 @@ class Playlist(widgets.CustomKeysListBox):
           self._walkers[pls].set_focus(focus_pos)
         else:
           self.load(pls)
+        signals.emit('need-redraw')
     except KeyError:
       pass
 
@@ -259,6 +262,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
   def _on_xmms_collection_changed(self, pls, type, namespace, newname):
     if namespace == 'Playlists' and type != xmmsclient.COLLECTION_CHANGED_UPDATE:
       self._reload()
+      signals.emit('need-redraw')
 
   def _on_xmms_playlist_loaded(self, pls):
     i = self.playlists.index(pls)
@@ -270,13 +274,13 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
       self.rows[i].unset_active()
 
     self.cur_active = pls
-    self._modified()
 
   def _on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     if type in (xmmsclient.PLAYLIST_CHANGED_ADD,
                 xmmsclient.PLAYLIST_CHANGED_MOVE,
                 xmmsclient.PLAYLIST_CHANGED_REMOVE):
       self._reload()
+      signals.emit('need-redraw')
 
   def _get_at_pos(self, pos):
     if pos < 0 or pos >= self.nplaylists:
