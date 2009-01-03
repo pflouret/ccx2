@@ -46,6 +46,7 @@ class StatusBar(urwid.WidgetWrap):
 
   def _on_xmms_playback_playtime(self, milli):
     self._w.set_text(self._humanize_time(milli))
+    signals.emit('need-redraw')
 
 class HeaderBar(urwid.WidgetWrap):
   status_desc = {xmmsclient.PLAYBACK_STATUS_PLAY: 'playing',
@@ -70,9 +71,11 @@ class HeaderBar(urwid.WidgetWrap):
     self._status = status
     self._make_text()
     self._invalidate()
+    signals.emit('need-redraw')
 
   def _on_xmms_playback_current_info(self, info):
     self._info = info
     self._make_text()
     self._invalidate()
+    signals.emit('need-redraw')
 
