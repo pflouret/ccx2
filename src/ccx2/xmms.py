@@ -58,6 +58,7 @@ signals.register('xmms-playlist-loaded')
 # type:int
 # id:long (if present, or None)
 # position:long (if present, or None)
+# newposition:long (if present, or None)
 #
 # type values:
 # xmmsclient.PLAYLIST_CHANGED_ADD
@@ -194,7 +195,8 @@ class XmmsService(object):
                    v['name'],
                    v['type'],
                    v.get('id'),
-                   v.get('position'))
+                   v.get('position'),
+                   v.get('newposition'))
       signals.emit('xmms-have-ioin')
 
   def _on_playback_current_id(self, r):

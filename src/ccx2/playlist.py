@@ -172,7 +172,7 @@ class Playlist(widgets.CustomKeysListBox):
 
     self.view_pls = pls
 
-  def _on_xmms_playlist_changed(self, pls, type, id, pos):
+  def _on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     try:
       focus_pos = self._walkers[pls].get_focus()[1]
 
@@ -272,7 +272,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     self.cur_active = pls
     self._modified()
 
-  def _on_xmms_playlist_changed(self, pls, type, id, pos):
+  def _on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     if type in (xmmsclient.PLAYLIST_CHANGED_ADD,
                 xmmsclient.PLAYLIST_CHANGED_MOVE,
                 xmmsclient.PLAYLIST_CHANGED_REMOVE):
