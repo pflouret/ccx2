@@ -85,7 +85,8 @@ class PlaylistWalker(urwid.ListWalker):
     self.cache = []
     for i, id in enumerate(ids):
       info = infos[id]
-      text = self.parser[0].eval(info)[0]
+      pls_pos = ('%%%dd.' % len(str(self.pls_len))) % (i+min_pos)
+      text = '%s %s' % (pls_pos, self.parser[0].eval(info)[0])
       self.cache.append(widgets.SongWidget(id, text))
 
   #def _on_xmms_playlist_changed(self, pls, type, id, pos):
