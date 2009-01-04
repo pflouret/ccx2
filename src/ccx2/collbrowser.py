@@ -103,14 +103,7 @@ class CollectionListWalker(urwid.ListWalker):
 
 class CollectionBrowser(widgets.CustomKeysListBox):
   def __init__(self, app, format):
-    keys = {}
-    for action in (('move-up', 'up'),
-                   ('move-down', 'down'),
-                   ('page-up', 'page up'),
-                   ('page-down', 'page down')):
-      keys.update([(k, action[1]) for k in config.keybindings['general'][action[0]]])
-
-    self.__super.__init__(keys, [])
+    self.__super.__init__([])
 
     self.app = app
     self.format = format

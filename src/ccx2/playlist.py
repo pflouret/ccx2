@@ -42,14 +42,7 @@ class SongListBox(widgets.CustomKeysListBox):
   def __init__(self, app, body=[]):
     self.app = app
 
-    keys = {}
-    for action in (('move-up', 'up'),
-                   ('move-down', 'down'),
-                   ('page-up', 'page up'),
-                   ('page-down', 'page down')):
-      keys.update([(k, action[1]) for k in config.keybindings['general'][action[0]]])
-
-    self.__super.__init__(keys, body)
+    self.__super.__init__(body)
 
     self._key_action = {}
     self._make_key_action_mapping()
@@ -271,17 +264,9 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
 
 class PlaylistSwitcher(widgets.CustomKeysListBox):
   def __init__(self, app):
+    self.__super.__init__(PlaylistSwitcherWalker())
+
     self.app = app
-
-    keys = {}
-    for action in (('move-up', 'up'),
-                   ('move-down', 'down'),
-                   ('page-up', 'page up'),
-                   ('page-down', 'page down')):
-      keys.update([(k, action[1]) for k in config.keybindings['general'][action[0]]])
-
-    self.__super.__init__(keys, PlaylistSwitcherWalker())
-
     self._key_action = self._make_key_action_mapping()
 
   def _make_key_action_mapping(self):

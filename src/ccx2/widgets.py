@@ -29,12 +29,18 @@ from xmmsclient import collections as coll
 from ccx2 import config
 
 class CustomKeysListBox(urwid.ListBox):
-  def __init__(self, key_mapping, *args, **kwargs):
-    self.key_mapping = key_mapping
+  def __init__(self, *args, **kwargs):
+    self.keys = {}
+    for action in (('move-up', 'up'),
+                   ('move-down', 'down'),
+                   ('page-up', 'page up'),
+                   ('page-down', 'page down')):
+      self.keys.update([(k, action[1]) for k in config.keybindings['general'][action[0]]])
+
     self.__super.__init__(*args, **kwargs)
 
   def keypress(self, size, key):
-    key = self.__super.keypress(size, self.key_mapping.get(key, key))
+    key = self.__super.keypress(size, self.keys.get(key, key))
 
     keys_up = config.keybindings['general']['select-and-move-up']
     keys_down = config.keybindings['general']['select-and-move-down']
