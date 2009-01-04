@@ -31,6 +31,7 @@ from ccx2 import bars
 from ccx2 import collbrowser
 from ccx2 import playlist
 from ccx2 import signals
+from ccx2 import tabcontainer
 from ccx2 import xmms
 
 from ccx2.config import keybindings
@@ -73,12 +74,10 @@ class Ccx2(object):
 
   def __init__(self):
     self.gch = GlobalCommandsHandler()
-    self.playlist = playlist.Playlist(self)
-    self.switcher = playlist.PlaylistSwitcher(self)
-    self.collbrowsermgr = collbrowser.CollectionBrowserManager(self)
+    self.tabcontainer = tabcontainer.TabContainer(self)
     self.statusbar = bars.StatusBar()
     self.headerbar = bars.HeaderBar()
-    self.view = urwid.Frame(self.playlist, header=self.headerbar, footer=self.statusbar)
+    self.view = urwid.Frame(self.tabcontainer, header=self.headerbar, footer=self.statusbar)
 
     signals.connect('need-redraw', self._on_need_redraw)
 
@@ -115,12 +114,6 @@ class Ccx2(object):
       for k in keys:
         if k == 'window resize':
           self.size = self.ui.get_cols_rows()
-        elif k in keybindings['general']['goto-playlist']:
-          self.view.body = self.playlist
-        elif k in keybindings['general']['goto-playlist-switcher']:
-          self.view.body = self.switcher
-        elif k in keybindings['general']['goto-medialib']:
-          self.view.body = self.collbrowsermgr.get_browser()
         elif k in keybindings['general']['quit']:
           return
         elif self.view.keypress(self.size, k) is None:

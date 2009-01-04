@@ -109,7 +109,7 @@ class PlaylistWalker(urwid.ListWalker):
       del self.pls_ids[pos]
       self.pls_len -= 1
       if pos == self.focus:
-        self.focus -= 1
+        self.set_focus(self.focus)
     elif type == xmmsclient.PLAYLIST_CHANGED_MOVE:
       self.pls_ids.insert(newpos, self.pls_ids.pop(pos))
     else:
@@ -247,6 +247,9 @@ class Playlist(widgets.CustomKeysListBox):
   def _set_body(self, body):
     self.body = body
     self._invalidate()
+
+  def get_widget(self):
+    return self
 
 
 class PlaylistSwitcherWalker(urwid.ListWalker):
@@ -404,4 +407,7 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
       self._key_action[key]()
     else:
       return self.__super.keypress(size, key)
+
+  def get_widget(self):
+    return self
 

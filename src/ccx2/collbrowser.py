@@ -183,7 +183,7 @@ class CollectionBrowser(widgets.CustomKeysListBox):
     for e in self.parser[self.level:]:
       fields.extend(e.symbol_names())
 
-    pls = self.app.playlist.view_pls # hmmm, coupling much?
+    pls = self.app.tabcontainer.playlist.view_pls # hmmm, coupling much?
     xs.playlist_add_collection(widget.child_idlist, fields, pls, sync=False)
 
   def keypress(self, size, key):
@@ -203,7 +203,7 @@ class CollectionBrowserManager(object):
     self.cur_format = 'by_albumartist'
     self.browsers = {}
 
-  def get_browser(self, format=None):
+  def get_widget(self, format=None):
     if format is not None:
       self.cur_format = format
 
