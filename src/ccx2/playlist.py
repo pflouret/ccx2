@@ -38,7 +38,7 @@ from ccx2 import xmms
 xs = xmms.get()
 
 
-class SongListBox(CustomKeysListBox):
+class SongListBox(widgets.CustomKeysListBox):
   def __init__(self, app, body=[]):
     self.app = app
 
