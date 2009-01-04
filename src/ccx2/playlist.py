@@ -246,6 +246,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
       self.rows[i].unset_active()
 
     self.cur_active = pls
+    signals.emit('need-redraw')
 
   def _on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     if type in (xmmsclient.PLAYLIST_CHANGED_ADD,
