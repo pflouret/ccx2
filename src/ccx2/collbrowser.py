@@ -45,8 +45,8 @@ class CollectionListWalker(urwid.ListWalker):
     self._level = level
     self.skipped_levels = 0
 
-    self.formatted_data = []
-    self.nformated_data = 0
+    self.fdata = [] # formatted data
+    self.fdata_len = 0
     self.ids = {}
 
     self._load()
@@ -54,32 +54,32 @@ class CollectionListWalker(urwid.ListWalker):
   def _load(self):
     for e in self._parser[self._level:]:
       data = xs.coll_query_infos(self.collection, fields=e.symbol_names())
-      formatted_data = []
+      fdata = []
       self.ids = {}
       for d in data:
         v, b = e.eval(d)
         if b:
-          formatted_data.append(v)
+          fdata.append(v)
         self.ids.setdefault(v, []).append(d['id'])
-      if formatted_data:
+      if fdata:
         break
       self.skipped_levels += 1
     else:
       self.ids = {}
       return
 
-    self.formatted_data = list(sorted(self.ids))
-    self.nformated_data = len(self.formatted_data)
+    self.fdata = list(sorted(self.ids))
+    self.fdata_len = len(self.fdata)
 
   def _get_at_pos(self, pos):
-    if pos < 0 or pos >= self.nformated_data:
+    if pos < 0 or pos >= self.fdata_len:
       return None, None
 
     try:
       # TODO: cache only a couple of pages, not the whole list
       return self.rows[pos], pos
     except KeyError:
-      d = self.formatted_data[pos]
+      d = self.fdata[pos]
       self.rows[pos] = widgets.CollectionListEntryWidget(self.ids[d], d)
       return self.rows[pos], pos
 
@@ -89,13 +89,13 @@ class CollectionListWalker(urwid.ListWalker):
   def set_focus(self, focus):
     if focus <= 0:
       focus = 0
-    elif focus >= self.nformated_data:
-      focus = self.nformated_data-1
+    elif focus >= self.fdata_len:
+      focus = self.fdata_len-1
     self.focus = focus
     self._modified()
 
   def set_focus_last(self):
-    self.set_focus(self.nformated_data)
+    self.set_focus(self.fdata_len)
 
   def get_prev(self, pos):
     return self._get_at_pos(pos-1)
