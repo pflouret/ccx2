@@ -115,9 +115,6 @@ class CachedCollectionWalker(urwid.ListWalker):
 
     w = self.cache[pos-self.cache_bounds[0]]
 
-    if pos == self.current_pos:
-      w.set_active()
-
     return w, pos
 
   def get_focus(self):
