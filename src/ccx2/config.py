@@ -28,6 +28,8 @@ default_keybindings = {
         'move-down': ['j', 'down'],
         'page-up': ['ctrl u', 'page up'],
         'page-down': ['ctrl d', 'page down'],
+        'move-top': ['home', 'meta <'],
+        'move-bottom': ['end', 'meta >'],
         'goto-tab-n': ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
         'goto-prev-tab': ['['],
         'goto-next-tab': [']'],

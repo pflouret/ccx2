@@ -94,6 +94,9 @@ class CollectionListWalker(urwid.ListWalker):
     self.focus = focus
     self._modified()
 
+  def set_focus_last(self):
+    self.set_focus(self.nformated_data)
+
   def get_prev(self, pos):
     return self._get_at_pos(pos-1)
 

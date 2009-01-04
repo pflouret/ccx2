@@ -49,6 +49,11 @@ class CustomKeysListBox(urwid.ListBox):
       delta = key in keys_down and 1 or -1
       if focus[1] is not None:
         self.set_focus(focus[1]+delta)
+    elif key in config.keybindings['general']['move-bottom']:
+      self.body.set_focus_last()
+    elif key in config.keybindings['general']['move-top']:
+      self.set_focus(0)
+
     return key
 
 
