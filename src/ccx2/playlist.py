@@ -28,24 +28,18 @@ import xmmsclient
 from xmmsclient import collections as coll
 from xmmsclient.sync import XMMSError
 
+from ccx2 import config
 from ccx2 import mifl
 from ccx2 import signals
+from ccx2 import util
 from ccx2 import widgets
 from ccx2 import xmms
-from ccx2 import config
 
 xs = xmms.get()
 
 
-class PlaylistWalker(urwid.ListWalker):
+class PlaylistWalker(util.CachedCollectionWalker):
   def __init__(self, pls, active_pls, app, format):
-    self.focus = 0
-    self.cache = []
-    self.cache_bounds = (0,0)
-    self.app = app
-    self.format = format
-    self.parser = mifl.MiflParser(config.formatting['playlist'][format])
-
     self.pls = pls
     self.active_pls = active_pls
 
@@ -60,62 +54,30 @@ class PlaylistWalker(urwid.ListWalker):
     else:
       self.current_pos = -1
 
-    self.pls_ids = list(xs.coll_get(self.pls, 'Playlists').ids)
-    self.pls_len = len(self.pls_ids)
+    c = xs.coll_get(self.pls, 'Playlists')
 
-  def _in_bounds(self, n):
-    return n >= self.cache_bounds[0] and n < self.cache_bounds[1]
-
-  def _load_cache(self, pos):
-    screen_rows = self.app.ui.get_cols_rows()[1]
-
-    n = int(1.5*screen_rows)
-    min_pos = max(pos - n, 0)
-    max_pos = min(pos + n, self.pls_len)
-    self.cache_bounds = (min_pos, max_pos)
-
-    ids = self.pls_ids[min_pos:max_pos]
-
-    idl = coll.IDList()
-    idl.ids += ids
-    fields = self.parser[0].symbol_names()
-    infos = xs.coll_query_infos(idl, fields=fields)
-    infos = dict([(i['id'], i) for i in infos])
-
-    self.cache = []
-    for i, id in enumerate(ids):
-      info = infos[id]
-      pls_pos = ('%%%dd.' % len(str(self.pls_len))) % (i+min_pos+1)
-      text = '%s %s' % (pls_pos, self.parser[0].eval(info)[0])
-      self.cache.append(widgets.SongWidget(id, text))
-
-  def _clear_cache(self):
-    # delete the cache object and b0rk the cache_bounds so the cache will
-    # be loaded the next time the playlist comes in view
-    del self.cache
-    self.cache_bounds = (0xDEADBEEF, -1) # -1 will always fail the boundary check
+    util.CachedCollectionWalker.__init__(self, c, format, app, widgets.SongWidget, True)
 
   def _on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     if pos is None:
       return
 
     if type == xmmsclient.PLAYLIST_CHANGED_ADD:
-      self.pls_ids.append(id)
-      self.pls_len += 1
+      self.ids.append(id)
+      self.ids_len += 1
     elif type == xmmsclient.PLAYLIST_CHANGED_INSERT:
-      self.pls_ids.insert(pos, id)
-      self.pls_len += 1
+      self.ids.insert(pos, id)
+      self.ids_len += 1
     elif type == xmmsclient.PLAYLIST_CHANGED_REMOVE:
-      del self.pls_ids[pos]
-      self.pls_len -= 1
+      del self.ids[pos]
+      self.ids_len -= 1
       if pos == self.focus:
         self.set_focus(self.focus)
     elif type == xmmsclient.PLAYLIST_CHANGED_MOVE:
-      self.pls_ids.insert(newpos, self.pls_ids.pop(pos))
+      self.ids.insert(newpos, self.ids.pop(pos))
     else:
       # hard reload everything just in case
-      self.pls_ids = list(xs.coll_get(self.pls, 'Playlists').ids)
-      self.pls_len = len(self.pls_ids)
+      self.collection = xs.coll_get(self.pls, 'Playlists')
       self._clear_cache()
 
     if pos >= self.cache_bounds[0] and pos < self.cache_bounds[1]:
@@ -134,38 +96,6 @@ class PlaylistWalker(urwid.ListWalker):
 
       self.current_pos = pos
       signals.emit('need-redraw')
-
-  def _get_at_pos(self, pos):
-    if pos < 0 or pos >= self.pls_len:
-      return None, None
-
-    if not self._in_bounds(pos):
-      self._load_cache(pos)
-
-    w = self.cache[pos-self.cache_bounds[0]]
-
-    if pos == self.current_pos:
-      w.set_active()
-
-    return w, pos
-
-  def get_focus(self):
-    return self._get_at_pos(self.focus)
-
-  def set_focus(self, focus):
-    if focus <= 0:
-      focus = 0
-    elif focus >= self.pls_len:
-      focus = self.pls_len - 1
-
-    self.focus = focus
-    self._modified()
-
-  def get_prev(self, pos):
-    return self._get_at_pos(pos-1)
-
-  def get_next(self, pos):
-    return self._get_at_pos(pos+1)
 
 
 class Playlist(widgets.CustomKeysListBox):
