@@ -34,6 +34,10 @@ xs = xmms.get()
 
 class CachedCollectionWalker(urwid.ListWalker):
   def __init__(self, collection, format, app, row_widget, show_pos_index=False):
+    self.focus = 0
+    self.cache = []
+    self.cache_bounds = (0,0)
+
     self._set_collection(collection)
     self.format = format
     self.app = app
@@ -42,16 +46,13 @@ class CachedCollectionWalker(urwid.ListWalker):
 
     self.parser = mifl.MiflParser(config.formatting['playlist'][format])
 
-    self.focus = 0
-    self.cache = []
-    self.cache_bounds = (0,0)
-
   def _get_ids(self):
     return self._ids
 
   def _set_ids(self, ids):
     self._ids = ids
     self.ids_len = len(self._ids)
+    self._clear_cache()
 
   ids = property(_get_ids, _set_ids)
 
