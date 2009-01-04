@@ -102,8 +102,9 @@ class CachedCollectionWalker(urwid.ListWalker):
   def _clear_cache(self):
     # delete the cache object and b0rk the cache_bounds so the cache will
     # be loaded the next time the playlist comes in view
-    del self.cache
-    self.cache_bounds = (0xDEADBEEF, -1) # -1 will always fail the boundary check
+    if hasattr(self, 'cache'):
+      del self.cache
+      self.cache_bounds = (0xDEADBEEF, -1) # -1 will always fail the boundary check
 
   def _get_at_pos(self, pos):
     if pos < 0 or pos >= self.ids_len:
