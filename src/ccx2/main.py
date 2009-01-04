@@ -32,6 +32,7 @@ from ccx2 import collbrowser
 from ccx2 import playlist
 from ccx2 import signals
 from ccx2 import tabcontainer
+from ccx2 import widgets
 from ccx2 import xmms
 
 from ccx2.config import keybindings
@@ -94,6 +95,23 @@ class Ccx2(object):
   def show_dialog(self, dialog):
     return dialog.show(self.ui, self.size, self.view)
 
+  def show_input(self, caption='', change_cb=None, done_cb=None, abort_cb=None):
+    def _restore(*args):
+      self.view.footer = self.statusbar
+      self.view.set_focus('body')
+
+    w = widgets.InputEdit(caption=caption)
+
+    urwid.connect_signal(w, 'done', _restore)
+    urwid.connect_signal(w, 'abort', _restore)
+
+    for signal, cb in (('change', change_cb), ('done', done_cb), ('abort', abort_cb)):
+      if cb:
+        urwid.connect_signal(w, signal, cb)
+
+    self.view.footer = urwid.AttrWrap(w, 'statusbar')
+    self.view.set_focus('footer')
+
   def redraw(self):
     canvas = self.view.render(self.size, focus=1)
     self.ui.draw_screen(self.size, canvas)
@@ -114,12 +132,12 @@ class Ccx2(object):
       for k in keys:
         if k == 'window resize':
           self.size = self.ui.get_cols_rows()
-        elif k in keybindings['general']['quit']:
-          return
         elif self.view.keypress(self.size, k) is None:
           continue
         elif self.gch.keypress(self.size, k) is None:
           continue
+        elif k in keybindings['general']['quit']:
+          return
 
 if __name__ == '__main__':
   Ccx2().main()

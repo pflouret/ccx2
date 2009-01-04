@@ -172,6 +172,18 @@ class InputDialog(urwid.WidgetWrap):
         else:
           self.keypress(size, k);
 
+class InputEdit(urwid.Edit):
+  signals = ['done', 'abort']
+
+  def keypress(self, size, key):
+    text = self.edit_text
+    if key == 'enter':
+      self._emit('done', self.edit_text)
+    elif key in keybindings['general']['cancel']:
+      self._emit('abort')
+    else:
+      return self.__super.keypress(size, key)
+
 class CollectionListEntryWidget(SelectableText):
   def __init__(self, child_ids, *args, **kwargs):
     self.child_ids = child_ids
