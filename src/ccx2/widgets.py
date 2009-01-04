@@ -1,6 +1,6 @@
 # Copyright (c) 2008, Pablo Flouret <quuxbaz@gmail.com>
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met: Redistributions of
 # source code must retain the above copyright notice, this list of conditions and
@@ -10,7 +10,7 @@
 # Neither the name of the software nor the names of its contributors may be
 # used to endorse or promote products derived from this software without specific
 # prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -26,7 +26,7 @@ import urwid
 
 from xmmsclient import collections as coll
 
-from ccx2.config import keybindings
+from ccx2 import config
 
 class CustomKeysListBox(urwid.ListBox):
   def __init__(self, key_mapping, *args, **kwargs):
@@ -36,8 +36,8 @@ class CustomKeysListBox(urwid.ListBox):
   def keypress(self, size, key):
     key = self.__super.keypress(size, self.key_mapping.get(key, key))
 
-    keys_up = keybindings['general']['select-and-move-up']
-    keys_down = keybindings['general']['select-and-move-down']
+    keys_up = config.keybindings['general']['select-and-move-up']
+    keys_down = config.keybindings['general']['select-and-move-down']
     if key in keys_up + keys_down:
       focus = self.get_focus()
       delta = key in keys_down and 1 or -1
@@ -76,8 +76,8 @@ class SelectableText(urwid.WidgetWrap):
 
   def keypress(self, size, key):
     # FIXME: this whole selected handling thing stinks badly, clean up
-    keys_up = keybindings['general']['select-and-move-up'] 
-    keys_down = keybindings['general']['select-and-move-down']
+    keys_up = config.keybindings['general']['select-and-move-up']
+    keys_down = config.keybindings['general']['select-and-move-down']
     if key in keys_up + keys_down:
       self.selected = not self.selected
       self.update_w()
@@ -165,7 +165,7 @@ class InputDialog(urwid.WidgetWrap):
       for k in keys:
         if k == 'window resize':
           size = ui.get_cols_rows()
-        elif k in keybindings['general']['cancel']:
+        elif k in config.keybindings['general']['cancel']:
           return ''
         elif k == 'enter':
           return self.get_text()
@@ -179,7 +179,7 @@ class InputEdit(urwid.Edit):
     text = self.edit_text
     if key == 'enter':
       self._emit('done', self.edit_text)
-    elif key in keybindings['general']['cancel']:
+    elif key in config.keybindings['general']['cancel']:
       self._emit('abort')
     else:
       return self.__super.keypress(size, key)
