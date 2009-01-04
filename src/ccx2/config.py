@@ -33,9 +33,6 @@ default_keybindings = {
         'goto-tab-n': ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
         'goto-prev-tab': ['['],
         'goto-next-tab': [']'],
-        'goto-playlist': ['2', 'f2'],
-        'goto-playlist-switcher': ['3', 'f3'],
-        'goto-medialib': ['4', 'f4'],
         'select-and-move-down': [' '], # space
         'select-and-move-up': ['<0>'], # ctrl space
         'delete': ['d', 'delete'],
