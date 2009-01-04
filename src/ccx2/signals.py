@@ -29,6 +29,7 @@ _signals = {}
 
 def register(name):
   if name in _signals:
+    # TODO: warn only
     raise ValueError("Signal with name %r already registered" % name)
   _signals[name] = []
 

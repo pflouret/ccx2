@@ -188,7 +188,7 @@ class Playlist(widgets.CustomKeysListBox):
     self.view_pls = self.active_pls
 
     signals.connect('xmms-playlist-loaded', self.load)
-    #signals.connect('xmms-playlist-changed', self._on_xmms_playlist_changed)
+    signals.connect('xmms-playlist-changed', self._on_xmms_playlist_changed)
 
     self.load(self.active_pls)
 
@@ -209,15 +209,6 @@ class Playlist(widgets.CustomKeysListBox):
         del self._walkers[pls]
     except KeyError:
       pass
-
-    #if type == xmmsclient.PLAYLIST_CHANGED_ADD:
-    #elif type == xmmsclient.PLAYLIST_CHANGED_MOVE:
-    #elif type == xmmsclient.PLAYLIST_CHANGED_SORT:
-    #elif type == xmmsclient.PLAYLIST_CHANGED_CLEAR:
-    #elif type == xmmsclient.PLAYLIST_CHANGED_REMOVE:
-    #elif type == xmmsclient.PLAYLIST_CHANGED_UPDATE:
-    #elif type == xmmsclient.PLAYLIST_CHANGED_INSERT:
-    #elif type == xmmsclient.PLAYLIST_CHANGED_SHUFFLE:
 
   def keypress(self, size, key):
     if key in self._key_action:
