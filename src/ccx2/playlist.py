@@ -1,6 +1,6 @@
 # Copyright (c) 2008, Pablo Flouret <quuxbaz@gmail.com>
 # All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without modification,
 # are permitted provided that the following conditions are met: Redistributions of
 # source code must retain the above copyright notice, this list of conditions and
@@ -10,7 +10,7 @@
 # Neither the name of the software nor the names of its contributors may be
 # used to endorse or promote products derived from this software without specific
 # prior written permission.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -149,9 +149,9 @@ class PlaylistWalker(urwid.ListWalker):
 
     return w, pos
 
-  def get_focus(self): 
+  def get_focus(self):
     return self._get_at_pos(self.focus)
-  
+
   def set_focus(self, focus):
     if focus <= 0:
       focus = 0
@@ -160,7 +160,7 @@ class PlaylistWalker(urwid.ListWalker):
 
     self.focus = focus
     self._modified()
-  
+
   def get_prev(self, pos):
     return self._get_at_pos(pos-1)
 
