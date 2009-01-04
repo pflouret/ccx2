@@ -95,21 +95,15 @@ class Ccx2(object):
   def show_dialog(self, dialog):
     return dialog.show(self.ui, self.size, self.view)
 
-  def show_input(self, caption='', change_cb=None, done_cb=None, abort_cb=None):
+  def show_input(self, widget):
     def _restore(*args):
       self.view.footer = self.statusbar
       self.view.set_focus('body')
 
-    w = widgets.InputEdit(caption=caption)
+    urwid.connect_signal(widget, 'done', _restore)
+    urwid.connect_signal(widget, 'abort', _restore)
 
-    urwid.connect_signal(w, 'done', _restore)
-    urwid.connect_signal(w, 'abort', _restore)
-
-    for signal, cb in (('change', change_cb), ('done', done_cb), ('abort', abort_cb)):
-      if cb:
-        urwid.connect_signal(w, signal, cb)
-
-    self.view.footer = urwid.AttrWrap(w, 'statusbar')
+    self.view.footer = urwid.AttrWrap(widget, 'statusbar')
     self.view.set_focus('footer')
 
   def redraw(self):
