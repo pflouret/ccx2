@@ -83,6 +83,30 @@ class TabContainer(urwid.Pile):
 
     signals.emit('need-redraw')
 
+  def add_tab(self, name, body, switch=False):
+    self.tabs.append((name, body))
+    index = len(self.tabs) - 1
+
+    if switch:
+      self.load_tab(index)
+    else:
+      self._update_tabbar_string()
+
+    return index
+
+  def remove_tab(self, n):
+    if n < 0:
+      n = len(self.tabs) + n
+
+    if self.cur_tab == n:
+      self.load_tab(n-1)
+
+    try:
+      del self.tabs[n]
+      self._update_tabbar_string()
+    except IndexError:
+      pass
+
   def keypress(self, size, key):
     if key in keybindings['general']['goto-tab-n']:
       self.load_tab(keybindings['general']['goto-tab-n'].index(key))
