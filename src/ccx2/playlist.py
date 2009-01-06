@@ -132,6 +132,14 @@ class PlaylistWalker(util.CachedCollectionWalker):
       self.current_pos = pos
       signals.emit('need-redraw')
 
+  def _get_at_pos(self, pos):
+    w, p = util.CachedCollectionWalker._get_at_pos(self, pos)
+
+    if w and p and p == self.current_pos:
+      w.set_active()
+
+    return w, p
+
 
 class Playlist(SongListBox):
   def __init__(self, app):
