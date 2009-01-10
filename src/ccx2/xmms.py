@@ -28,7 +28,7 @@ import threading
 import xmmsclient
 from xmmsclient import collections as coll
 
-from ccx2 import signals
+import signals
 
 # TODO: better doc (rst)
 

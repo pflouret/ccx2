@@ -28,12 +28,12 @@ import xmmsclient
 from xmmsclient import collections as coll
 from xmmsclient.sync import XMMSError
 
-from ccx2 import config
-from ccx2 import mifl
-from ccx2 import signals
-from ccx2 import util
-from ccx2 import widgets
-from ccx2 import xmms
+import config
+import mifl
+import signals
+import util
+import widgets
+import xmms
 
 xs = xmms.get()
 

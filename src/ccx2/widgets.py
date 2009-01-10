@@ -26,7 +26,7 @@ import urwid
 
 from xmmsclient import collections as coll
 
-from ccx2 import config
+import config
 
 class CustomKeysListBox(urwid.ListBox):
   def __init__(self, *args, **kwargs):

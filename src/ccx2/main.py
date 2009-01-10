@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright (c) 2008, Pablo Flouret <quuxbaz@gmail.com>
 # All rights reserved.
 #
@@ -27,15 +29,15 @@ import sys
 import urwid
 import urwid.curses_display
 
-from ccx2 import bars
-from ccx2 import collbrowser
-from ccx2 import playlist
-from ccx2 import signals
-from ccx2 import tabcontainer
-from ccx2 import widgets
-from ccx2 import xmms
+import bars
+import collbrowser
+import playlist
+import signals
+import tabcontainer
+import widgets
+import xmms
 
-from ccx2.config import keybindings
+from config import keybindings
 
 xs = xmms.get()
 

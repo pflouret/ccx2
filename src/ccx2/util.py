@@ -26,9 +26,9 @@ import urwid
 from xmmsclient import collections as coll
 from xmmsclient.sync import XMMSError
 
-from ccx2 import config
-from ccx2 import mifl
-from ccx2 import xmms
+import config
+import mifl
+import xmms
 
 xs = xmms.get()
 

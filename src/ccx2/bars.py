@@ -25,8 +25,8 @@
 import urwid
 import xmmsclient
 
-from ccx2 import signals
-from ccx2 import xmms
+import signals
+import xmms
 
 xs = xmms.get()
 

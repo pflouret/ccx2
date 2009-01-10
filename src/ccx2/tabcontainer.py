@@ -24,11 +24,11 @@
 
 import urwid
 
-from ccx2 import collbrowser
-from ccx2 import playlist
-from ccx2 import signals
+import collbrowser
+import playlist
+import signals
 
-from ccx2.config import keybindings
+from config import keybindings
 
 class TabContainer(urwid.Pile):
   def __init__(self, app):
