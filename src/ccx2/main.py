@@ -60,9 +60,9 @@ class GlobalCommandsHandler(object):
       return key
 
 class HeaderBar(urwid.WidgetWrap):
-  status_desc = {xmmsclient.PLAYBACK_STATUS_PLAY: 'playing',
-                 xmmsclient.PLAYBACK_STATUS_STOP: 'stopped',
-                 xmmsclient.PLAYBACK_STATUS_PAUSE: 'paused'}
+  status_desc = {xmmsclient.PLAYBACK_STATUS_PLAY: 'PLAYING',
+                 xmmsclient.PLAYBACK_STATUS_STOP: 'STOPPED',
+                 xmmsclient.PLAYBACK_STATUS_PAUSE: 'PAUSED '}
 
   def __init__(self):
     self.__super.__init__(urwid.AttrWrap(urwid.Text(''), 'headerbar'))
@@ -90,6 +90,7 @@ class HeaderBar(urwid.WidgetWrap):
 
   def _make_text(self):
     status = HeaderBar.status_desc[self.status]
+    c = self.info.get('compilation')
     p = self.info.get('performer')
     a = self.info.get('artist')
     t = self.info.get('title')
@@ -98,7 +99,7 @@ class HeaderBar(urwid.WidgetWrap):
       text += ' | '
     if p or a: text += p or a
     if t: text += ' - ' + t
-    if p: text += ' - ' + a
+    if c: text += ' - ' + a
     if self.time: text += ' [' + self._humanize_time(self.time) + ']'
 
     self._w.set_text(text)

@@ -145,7 +145,7 @@ class CachedCollectionWalker(urwid.ListWalker):
     for i, id in enumerate(ids):
       info = infos[id]
       if self.show_pos_index:
-        pos_index = ('%%%dd. ' % len(str(self.ids_len))) % (i+min_pos+1)
+        pos_index = ('%%-%dd. ' % len(str(self.ids_len))) % (i+min_pos+1)
       else:
         pos_index = ''
       text = '%s%s' % (pos_index, self.parser[0].eval(info)[0])

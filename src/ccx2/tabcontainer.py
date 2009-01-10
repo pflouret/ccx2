@@ -34,21 +34,21 @@ class TabContainer(urwid.Pile):
     self.tabs = tabs
 
     self.cur_tab = 1
-    self.tabbar = urwid.Text('', align='center', wrap=urwid.CLIP)
+    self.tabbar = urwid.Text('', align='left', wrap=urwid.CLIP)
     self._update_tabbar_string()
 
     w = self.tabs[self.cur_tab][1]
     self.tab_w = urwid.WidgetWrap(w)
 
-    self.__super.__init__([('flow', self.tabbar), self.tab_w], 1)
+    self.__super.__init__([('flow', self.tabbar),
+                           ('flow', urwid.Divider('-')), 
+                           self.tab_w],
+                          2)
 
   def _update_tabbar_string(self):
     texts = []
     for i, t in enumerate(self.tabs):
-      if i == self.cur_tab:
-        text = '<%d:%s>' % (i+1, t[0])
-      else:
-        text = ' %d:%s ' % (i+1, t[0])
+      text = '%d%s%s' % (i+1, i==self.cur_tab and '*' or ':', t[0])
       texts.append(text)
 
     self.tabbar.set_text(' '.join(texts))
