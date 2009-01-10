@@ -28,17 +28,17 @@ import xmmsclient
 from xmmsclient import collections as coll
 from xmmsclient.sync import XMMSError
 
+import common
 import config
 import mifl
 import signals
-import util
 import widgets
 import xmms
 
 xs = xmms.get()
 
 
-class PlaylistWalker(util.CachedCollectionWalker):
+class PlaylistWalker(common.CachedCollectionWalker):
   def __init__(self, pls, active_pls, app, format):
     self.pls = pls
     self.active_pls = active_pls
@@ -56,7 +56,7 @@ class PlaylistWalker(util.CachedCollectionWalker):
 
     c = xs.coll_get(self.pls, 'Playlists')
 
-    util.CachedCollectionWalker.__init__(self, c, format, app, widgets.SongWidget, True)
+    common.CachedCollectionWalker.__init__(self, c, format, app, widgets.SongWidget, True)
 
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     if pos is None:
@@ -98,7 +98,7 @@ class PlaylistWalker(util.CachedCollectionWalker):
       signals.emit('need-redraw')
 
   def get_pos(self, pos):
-    w, p = util.CachedCollectionWalker.get_pos(self, pos)
+    w, p = common.CachedCollectionWalker.get_pos(self, pos)
 
     if w and p and p == self.current_pos:
       w.set_active()
