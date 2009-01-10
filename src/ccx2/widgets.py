@@ -28,35 +28,6 @@ from xmmsclient import collections as coll
 
 import config
 
-class CustomKeysListBox(urwid.ListBox):
-  def __init__(self, *args, **kwargs):
-    self.keys = {}
-    for action in (('move-up', 'up'),
-                   ('move-down', 'down'),
-                   ('page-up', 'page up'),
-                   ('page-down', 'page down')):
-      self.keys.update([(k, action[1]) for k in config.keybindings['general'][action[0]]])
-
-    self.__super.__init__(*args, **kwargs)
-
-  def keypress(self, size, key):
-    key = self.__super.keypress(size, self.keys.get(key, key))
-
-    keys_up = config.keybindings['general']['select-and-move-up']
-    keys_down = config.keybindings['general']['select-and-move-down']
-    if key in keys_up + keys_down:
-      focus = self.get_focus()
-      delta = key in keys_down and 1 or -1
-      if focus[1] is not None:
-        self.set_focus(focus[1]+delta)
-    elif key in config.keybindings['general']['move-bottom']:
-      self.body.set_focus_last()
-    elif key in config.keybindings['general']['move-top']:
-      self.set_focus(0)
-
-    return key
-
-
 class SelectableText(urwid.WidgetWrap):
   def __init__(self,
                text,
@@ -136,7 +107,7 @@ class PlaylistWidget(SelectableText):
     self.update_w()
 
 class InputDialog(urwid.WidgetWrap):
-  def __init__(self, title, width, height, attr=('dialog', 'body')):
+  def __init__(self, title, width, height, attr=('dialog', 'default')):
     self._blank = urwid.Text('')
     self._width = width
     self._height = height

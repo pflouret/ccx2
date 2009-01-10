@@ -32,6 +32,58 @@ import xmms
 
 xs = xmms.get()
 
+class ActionsListBox(urwid.ListBox):
+  def __init__(self, *args, **kwargs):
+    self._movement_keys = {}
+    for action in (('move-up', 'up'),
+                   ('move-down', 'down'),
+                   ('page-up', 'page up'),
+                   ('page-down', 'page down')):
+      self._movement_keys.update(
+          [(k, action[1]) for k in config.keybindings['general'][action[0]]])
+
+    self._action_map = {}
+    self._actions = [('general', 'move-top', lambda: self.set_focus(0)),
+                     ('general', 'move-bottom', lambda: self.body.set_focus_last()),
+                     ('general', 'select-and-move-up', lambda: self.focus_rel(-1)),
+                     ('general', 'select-and-move-down', lambda: self.focus_rel(1))]
+
+    if 'actions' in kwargs:
+      self._actions.extend(kwargs.pop('actions'))
+
+    self._setup_actions()
+
+    self.__super.__init__(*args, **kwargs)
+
+  def _get_actions(self):
+    return self._actions
+
+  def _set_actions(self, actions):
+    self._actions.extend(actions)
+    self._setup_actions()
+
+  actions = property(_get_actions, _set_actions)
+
+  def _setup_actions(self):
+    for section, action, fun in self._actions:
+      for key in config.keybindings[section][action]:
+        self._action_map[key] = fun
+
+  def focus_rel(self, delta):
+    w, pos = self.get_focus()
+
+    if pos is not None:
+      self.set_focus(pos+delta)
+
+  def keypress(self, size, key):
+    key = self.__super.keypress(size, self._movement_keys.get(key, key))
+
+    if key in self._action_map:
+      self._action_map[key]()
+    else:
+      return key
+
+
 class CachedCollectionWalker(urwid.ListWalker):
   def __init__(self, collection, format, app, row_widget, show_pos_index=False):
     self.focus = 0

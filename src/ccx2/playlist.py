@@ -106,9 +106,12 @@ class PlaylistWalker(common.CachedCollectionWalker):
     return w, p
 
 
-class Playlist(widgets.CustomKeysListBox):
+class Playlist(common.ActionsListBox):
   def __init__(self, app):
-    self.__super.__init__([])
+    actions = [('playlist', 'play-selected', self.play_selected),
+               ('general', 'delete', self.delete_songs)]
+
+    self.__super.__init__([], actions=actions)
 
     self.app = app
     self.format = 'simple'
@@ -116,9 +119,6 @@ class Playlist(widgets.CustomKeysListBox):
     self._walkers = {} # pls => walker
     self.active_pls = xs.playlist_current_active()
     self.view_pls = self.active_pls
-
-    self._key_action = {}
-    self._make_key_action_mapping()
 
     signals.connect('xmms-playlist-loaded', self.load)
     signals.connect('xmms-playlist-changed', self.on_xmms_playlist_changed)
@@ -144,12 +144,6 @@ class Playlist(widgets.CustomKeysListBox):
     except KeyError:
       pass
 
-  def _make_key_action_mapping(self):
-    for section, action, fun in (('playlist', 'play-selected', self.play_selected),
-                                 ('general', 'delete', self.delete_songs),):
-      for key in config.keybindings[section][action]:
-        self._key_action[key] = fun
-
   def play_selected(self):
     pos = self.get_focus()[1]
     if pos is not None:
@@ -159,12 +153,6 @@ class Playlist(widgets.CustomKeysListBox):
     pos = self.get_focus()[1]
     if pos is not None:
       xs.playlist_remove_entry(pos, self.view_pls, sync=False)
-
-  def keypress(self, size, key):
-    if key in self._key_action:
-      self._key_action[key]()
-    else:
-      return self.__super.keypress(size, key)
 
 
 class PlaylistSwitcherWalker(urwid.ListWalker):
@@ -250,43 +238,29 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
       signals.emit('need-redraw')
 
 
-class PlaylistSwitcher(widgets.CustomKeysListBox):
+class PlaylistSwitcher(common.ActionsListBox):
   def __init__(self, app):
-    self.__super.__init__(PlaylistSwitcherWalker())
-
     self.app = app
-    self._key_action = self._make_key_action_mapping()
 
-  def _make_key_action_mapping(self):
-    m = {}
-    for section, action, fun in \
-        (('playlist-switcher', 'load', self._load_highlighted),
-         ('general', 'delete', self._delete_highlighted),
-         ('playlist-switcher', 'rename', self._rename_highlighted),
-         ('playlist-switcher', 'add-playlist-to-current', self._add_playlist_to_current),
-         ('playlist-switcher', 'new', self._new_playlist),):
-      for key in config.keybindings[section][action]:
-        m[key] = fun
+    actions = [('playlist-switcher', 'load', self.load_focused),
+               ('general', 'delete', self.delete_selected),
+               ('playlist-switcher', 'rename', self.rename_focused),
+               ('playlist-switcher', 'add-playlist-to-current', self.add_playlist_to_current),
+               ('playlist-switcher', 'new', self.new_playlist)]
 
-    return m
+    self.__super.__init__(PlaylistSwitcherWalker(), actions=actions)
 
-  def keypress(self, size, key):
-    if key in self._key_action:
-      self._key_action[key]()
-    else:
-      return self.__super.keypress(size, key)
-
-  def _load_highlighted(self):
+  def load_focused(self):
     w = self.get_focus()[0]
     if w:
       xs.playlist_load(w.name, sync=False)
 
-  def _delete_highlighted(self):
+  def delete_selected(self):
     w = self.get_focus()[0]
     if w:
       xs.playlist_remove(w.name, sync=False)
 
-  def _rename_highlighted(self):
+  def rename_focused(self):
     w = self.get_focus()[0]
     if w:
       dialog = widgets.InputDialog('new playlist name', 55, 5)
@@ -294,7 +268,7 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
       if new_name:
         xs.coll_rename(w.name, new_name, 'Playlists', sync=False)
 
-  def _add_playlist_to_current(self):
+  def add_playlist_to_current(self):
     w = self.get_focus()[0]
     if w:
       # this awfulness stems from the fact that you have to use playlist_add_collection,
@@ -310,7 +284,7 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
 
       xs.coll_save(idl, cur_active, 'Playlists')
 
-  def _new_playlist(self):
+  def new_playlist(self):
     dialog = widgets.InputDialog('playlist name', 55, 5)
     name = self.app.show_dialog(dialog)
     if name:
