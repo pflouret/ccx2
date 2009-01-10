@@ -60,7 +60,7 @@ class CustomKeysListBox(urwid.ListBox):
 class SelectableText(urwid.WidgetWrap):
   def __init__(self,
                text,
-               attr='body',
+               attr='default',
                focus_attr='focus',
                sel_attr='selected',
                sel_focus_attr='selected-focus'):

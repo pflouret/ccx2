@@ -47,7 +47,7 @@ default_keybindings = {
         'previous-track': ['<', 'z'],
     },
     'playlist': {
-        'play-highlighted': ['enter'],
+        'play-selected': ['enter'],
     },
     'playlist-switcher': {
         'load': ['enter'],

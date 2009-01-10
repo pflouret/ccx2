@@ -32,8 +32,6 @@ import signals
 
 # TODO: better doc (rst)
 
-signals.register('xmms-have-ioin')
-
 # args -- id:int
 signals.register('xmms-playback-current-id')
 
@@ -118,7 +116,6 @@ class XmmsService(object):
 
   def _callback_wrapper(self, cb):
     def _w(r):
-      self.have_ioin = True # shit ugly, ugh
       if r.iserror():
         return # handle error
       cb(r.value())
@@ -140,7 +137,6 @@ class XmmsService(object):
       self.xmms.ioout()
 
   def ioin(self):
-    self.have_ioin = False
     self.xmms.ioin()
 
   def ioout(self):
@@ -150,7 +146,6 @@ class XmmsService(object):
   def _simple_emit_fun(self, signal_name):
     def _fun(r):
       signals.emit(signal_name, r.value())
-      signals.emit('xmms-have-ioin')
     return _fun
 
   def connect_signals(self):
@@ -180,13 +175,11 @@ class XmmsService(object):
                    v['type'],
                    v.get('namespace'),
                    v.get('newname'))
-      signals.emit('xmms-have-ioin')
 
   def _on_playlist_current_pos(self, r):
     if not r.iserror():
       v = r.value()
       signals.emit('xmms-playlist-current-pos', v['name'], v['position'])
-      signals.emit('xmms-have-ioin')
 
   def _on_playlist_changed(self, r):
     if not r.iserror():
@@ -197,20 +190,17 @@ class XmmsService(object):
                    v.get('id'),
                    v.get('position'),
                    v.get('newposition'))
-      signals.emit('xmms-have-ioin')
 
   def _on_playback_current_id(self, r):
     id = r.value()
     signals.emit('xmms-playback-current-id', id)
     self.xmms.medialib_get_info(
         id, lambda r: signals.emit('xmms-playback-current-info', r.value()))
-    signals.emit('xmms-have-ioin')
 
   def _on_playback_playtime(self, r=None):
     if r:
       # came from the xmms2 signal
       signals.emit('xmms-playback-playtime', r.value())
-      signals.emit('xmms-have-ioin')
     else:
       # came from the timer
       self.xmms.signal_playback_playtime(self._on_playback_playtime)

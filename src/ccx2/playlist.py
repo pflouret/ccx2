@@ -38,48 +38,13 @@ import xmms
 xs = xmms.get()
 
 
-class SongListBox(widgets.CustomKeysListBox):
-  def __init__(self, app, body=[]):
-    self.app = app
-
-    self.__super.__init__(body)
-
-    self._key_action = {}
-    self._make_key_action_mapping()
-
-    self.view_pls = '_active'
-
-  def _make_key_action_mapping(self):
-    for section, action, fun in (('playlist', 'play-highlighted', self._play_highlighted),):
-      for key in config.keybindings[section][action]:
-        self._key_action[key] = fun
-
-  def keypress(self, size, key):
-    if key in self._key_action:
-      self._key_action[key]()
-    else:
-      return self.__super.keypress(size, key)
-
-  def _play_highlighted(self):
-    pos = self.get_focus()[1]
-    if pos is not None:
-      xs.playlist_play(playlist=self.view_pls, pos=pos)
-
-  def _set_body(self, body):
-    self.body = body
-    self._invalidate()
-
-  def get_widget(self):
-    return self
-
-
 class PlaylistWalker(util.CachedCollectionWalker):
   def __init__(self, pls, active_pls, app, format):
     self.pls = pls
     self.active_pls = active_pls
 
-    signals.connect('xmms-playlist-current-pos', self._on_xmms_playlist_current_pos)
-    signals.connect('xmms-playlist-changed', self._on_xmms_playlist_changed)
+    signals.connect('xmms-playlist-current-pos', self.on_xmms_playlist_current_pos)
+    signals.connect('xmms-playlist-changed', self.on_xmms_playlist_changed)
 
     if self.pls == self.active_pls:
       try:
@@ -93,7 +58,7 @@ class PlaylistWalker(util.CachedCollectionWalker):
 
     util.CachedCollectionWalker.__init__(self, c, format, app, widgets.SongWidget, True)
 
-  def _on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
+  def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     if pos is None:
       return
 
@@ -122,7 +87,7 @@ class PlaylistWalker(util.CachedCollectionWalker):
       else:
         self._clear_cache()
 
-  def _on_xmms_playlist_current_pos(self, pls, pos):
+  def on_xmms_playlist_current_pos(self, pls, pos):
     if pls == self.pls:
       if self._in_bounds(self.current_pos):
         self.cache[self.current_pos-self.cache_bounds[0]].unset_active()
@@ -132,8 +97,8 @@ class PlaylistWalker(util.CachedCollectionWalker):
       self.current_pos = pos
       signals.emit('need-redraw')
 
-  def _get_at_pos(self, pos):
-    w, p = util.CachedCollectionWalker._get_at_pos(self, pos)
+  def get_pos(self, pos):
+    w, p = util.CachedCollectionWalker.get_pos(self, pos)
 
     if w and p and p == self.current_pos:
       w.set_active()
@@ -141,18 +106,22 @@ class PlaylistWalker(util.CachedCollectionWalker):
     return w, p
 
 
-class Playlist(SongListBox):
+class Playlist(widgets.CustomKeysListBox):
   def __init__(self, app):
-    self.__super.__init__(app)
+    self.__super.__init__([])
 
+    self.app = app
     self.format = 'simple'
 
     self._walkers = {} # pls => walker
     self.active_pls = xs.playlist_current_active()
     self.view_pls = self.active_pls
 
+    self._key_action = {}
+    self._make_key_action_mapping()
+
     signals.connect('xmms-playlist-loaded', self.load)
-    signals.connect('xmms-playlist-changed', self._on_xmms_playlist_changed)
+    signals.connect('xmms-playlist-changed', self.on_xmms_playlist_changed)
 
     self.load(self.active_pls)
 
@@ -160,14 +129,15 @@ class Playlist(SongListBox):
     if pls not in self._walkers:
       self._walkers[pls] = PlaylistWalker(pls, self.active_pls, self.app, self.format)
 
-    self._set_body(self._walkers[pls])
+    self.body = self._walkers[pls]
+    self._invalidate()
 
     if from_xmms:
       self.active_pls = pls
 
     self.view_pls = pls
 
-  def _on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
+  def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     try:
       if type == xmmsclient.PLAYLIST_CHANGED_REMOVE and not pos:
         del self._walkers[pls]
@@ -175,16 +145,26 @@ class Playlist(SongListBox):
       pass
 
   def _make_key_action_mapping(self):
-    self.__super._make_key_action_mapping()
-
-    for section, action, fun in (('general', 'delete', self._delete_songs),):
+    for section, action, fun in (('playlist', 'play-selected', self.play_selected),
+                                 ('general', 'delete', self.delete_songs),):
       for key in config.keybindings[section][action]:
         self._key_action[key] = fun
 
-  def _delete_songs(self):
+  def play_selected(self):
+    pos = self.get_focus()[1]
+    if pos is not None:
+      xs.playlist_play(playlist=self.view_pls, pos=pos)
+
+  def delete_songs(self):
     pos = self.get_focus()[1]
     if pos is not None:
       xs.playlist_remove_entry(pos, self.view_pls, sync=False)
+
+  def keypress(self, size, key):
+    if key in self._key_action:
+      self._key_action[key]()
+    else:
+      return self.__super.keypress(size, key)
 
 
 class PlaylistSwitcherWalker(urwid.ListWalker):
@@ -194,9 +174,9 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     self.playlists = []
     self.nplaylists = 0
 
-    signals.connect('xmms-collection-changed', self._on_xmms_collection_changed)
-    signals.connect('xmms-playlist-loaded', self._on_xmms_playlist_loaded)
-    signals.connect('xmms-playlist-changed', self._on_xmms_playlist_changed)
+    signals.connect('xmms-collection-changed', self.on_xmms_collection_changed)
+    signals.connect('xmms-playlist-loaded', self.on_xmms_playlist_loaded)
+    signals.connect('xmms-playlist-changed', self.on_xmms_playlist_changed)
 
     self._load()
 
@@ -212,7 +192,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
       self.focus = self.nplaylists-1
     self._modified()
 
-  def _get_at_pos(self, pos):
+  def get_pos(self, pos):
     if pos < 0 or pos >= self.nplaylists:
       return None, None
 
@@ -229,7 +209,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
       return self.rows[pos], pos
 
   def get_focus(self):
-    return self._get_at_pos(self.focus)
+    return self.get_pos(self.focus)
 
   def set_focus(self, focus):
     if focus <= 0:
@@ -240,17 +220,17 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     self._modified()
 
   def get_prev(self, pos):
-    return self._get_at_pos(pos-1)
+    return self.get_pos(pos-1)
 
   def get_next(self, pos):
-    return self._get_at_pos(pos+1)
+    return self.get_pos(pos+1)
 
-  def _on_xmms_collection_changed(self, pls, type, namespace, newname):
+  def on_xmms_collection_changed(self, pls, type, namespace, newname):
     if namespace == 'Playlists' and type != xmmsclient.COLLECTION_CHANGED_UPDATE:
       self._reload()
       signals.emit('need-redraw')
 
-  def _on_xmms_playlist_loaded(self, pls):
+  def on_xmms_playlist_loaded(self, pls):
     i = self.playlists.index(pls)
     if i in self.rows:
       self.rows[i].set_active()
@@ -262,7 +242,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     self.cur_active = pls
     signals.emit('need-redraw')
 
-  def _on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
+  def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     if type in (xmmsclient.PLAYLIST_CHANGED_ADD,
                 xmmsclient.PLAYLIST_CHANGED_MOVE,
                 xmmsclient.PLAYLIST_CHANGED_REMOVE):
@@ -335,7 +315,4 @@ class PlaylistSwitcher(widgets.CustomKeysListBox):
     name = self.app.show_dialog(dialog)
     if name:
       xs.playlist_create(name, sync=False)
-
-  def get_widget(self):
-    return self
 

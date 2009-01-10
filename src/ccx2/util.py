@@ -106,7 +106,7 @@ class CachedCollectionWalker(urwid.ListWalker):
       del self.cache
       self.cache_bounds = (0xDEADBEEF, -1) # -1 will always fail the boundary check
 
-  def _get_at_pos(self, pos):
+  def get_pos(self, pos):
     if pos < 0 or pos >= self.ids_len:
       return None, None
 
@@ -118,7 +118,7 @@ class CachedCollectionWalker(urwid.ListWalker):
     return w, pos
 
   def get_focus(self):
-    return self._get_at_pos(self.focus)
+    return self.get_pos(self.focus)
 
   def set_focus(self, focus):
     if focus <= 0:
@@ -133,8 +133,8 @@ class CachedCollectionWalker(urwid.ListWalker):
     self.set_focus(self.ids_len-1)
 
   def get_prev(self, pos):
-    return self._get_at_pos(pos-1)
+    return self.get_pos(pos-1)
 
   def get_next(self, pos):
-    return self._get_at_pos(pos+1)
+    return self.get_pos(pos+1)
 

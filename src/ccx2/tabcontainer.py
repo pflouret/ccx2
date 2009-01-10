@@ -24,34 +24,20 @@
 
 import urwid
 
-import collbrowser
-import playlist
+import config
 import signals
 
-from config import keybindings
-
 class TabContainer(urwid.Pile):
-  def __init__(self, app):
+  def __init__(self, app, tabs):
     self.app = app
 
-    help = urwid.ListBox([urwid.Text('yeah right')])
-    help.get_widget = lambda : help
-
-    # TODO: make configurable
-    self.tabs = [('help', help),
-                 ('playlist', playlist.Playlist(self.app)),
-                 ('switcher', playlist.PlaylistSwitcher(self.app)),
-                 ('collbrowser', collbrowser.CollectionBrowserManager(self.app))]
-
-    # XXX: does it make sense to have more than one playlist tab? what to do then?
-    # XXX: the damn coll browser needs to know the current playlist in view, any other solutions?
-    self.playlist = self.tabs[1][1]
+    self.tabs = tabs
 
     self.cur_tab = 1
     self.tabbar = urwid.Text('', align='center', wrap=urwid.CLIP)
     self._update_tabbar_string()
 
-    w = self.tabs[self.cur_tab][1].get_widget()
+    w = self.tabs[self.cur_tab][1]
     self.tab_w = urwid.WidgetWrap(w)
 
     self.__super.__init__([('flow', self.tabbar), self.tab_w], 1)
@@ -79,7 +65,7 @@ class TabContainer(urwid.Pile):
     self.cur_tab = n
 
     self._update_tabbar_string()
-    self.tab_w._w = self.tabs[n][1].get_widget()
+    self.tab_w._w = self.tabs[n][1]
 
     signals.emit('need-redraw')
 
@@ -108,11 +94,11 @@ class TabContainer(urwid.Pile):
       pass
 
   def keypress(self, size, key):
-    if key in keybindings['general']['goto-tab-n']:
-      self.load_tab(keybindings['general']['goto-tab-n'].index(key))
-    elif key in keybindings['general']['goto-prev-tab']:
+    if key in config.keybindings['general']['goto-tab-n']:
+      self.load_tab(config.keybindings['general']['goto-tab-n'].index(key))
+    elif key in config.keybindings['general']['goto-prev-tab']:
       self.load_tab(self.cur_tab-1, wrap=True)
-    elif key in keybindings['general']['goto-next-tab']:
+    elif key in config.keybindings['general']['goto-next-tab']:
       self.load_tab(self.cur_tab+1, wrap=True)
     else:
       return self.__super.keypress(size, key)
