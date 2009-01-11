@@ -25,6 +25,8 @@
 # quick and dirty signals
 # FIXME: the quick and dirty part
 
+import signal
+
 _signals = {}
 
 def register(name):
@@ -55,3 +57,17 @@ def emit(name, *args):
       argsc.append(user_data)
     callback(*argsc)
 
+def _alarm_available(t, f):
+  def _f(sig, frame):
+    signal.signal(signal.SIGALRM, signal.SIG_DFL)
+    f(sig, frame)
+  signal.signal(signal.SIGALRM, _f)
+  signal.setitimer(signal.ITIMER_REAL, t)
+
+def _alarm_not_available(t, f):
+  f(signal.SIGALRM, None)
+
+if hasattr(signal, 'setitimer'):
+  alarm = _alarm_available
+else:
+  alarm = _alarm_not_available

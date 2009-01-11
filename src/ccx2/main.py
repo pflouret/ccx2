@@ -167,19 +167,10 @@ class Ccx2(object):
     self.view = urwid.Frame(self.tabcontainer, header=self.headerbar)
 
     signals.connect('need-redraw', self.redraw)
-    if not hasattr(signal, 'setitimer') or \
-       sys.platform in ('win32', 'mac', 'os2', 'os2emx', 'riscos', 'atheos'):
-      signals.connect('need-redraw-non-urgent', self.redraw)
-    else:
-      signals.connect('need-redraw-non-urgent', self.on_need_redraw_non_urgent)
+    signals.connect('need-redraw-non-urgent', self.on_need_redraw_non_urgent)
 
   def on_need_redraw_non_urgent(self):
-    def _f(sig, frame):
-      self.redraw()
-      signal.signal(signal.SIGALRM, signal.SIG_DFL)
-
-    signal.signal(signal.SIGALRM, _f)
-    signal.setitimer(signal.ITIMER_REAL, 0.5)
+    signals.alarm(0.5, lambda *a: self.redraw())
 
   def main(self):
     self.ui = urwid.curses_display.Screen()
