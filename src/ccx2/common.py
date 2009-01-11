@@ -36,7 +36,7 @@ class ActionsListBox(urwid.ListBox):
   def __init__(self, *args, **kwargs):
     self._action_map = {}
     self._actions = [('general', 'move-top', lambda: self.set_focus(0)),
-                     ('general', 'move-bottom', lambda: self.body.set_focus_last()),
+                     ('general', 'move-bottom', lambda: self.set_focus_last()),
                      ('general', 'select-and-move-up', lambda: self.focus_rel(-1)),
                      ('general', 'select-and-move-down', lambda: self.focus_rel(1))]
 
@@ -60,6 +60,11 @@ class ActionsListBox(urwid.ListBox):
     for section, action, fun in self._actions:
       for key in config.keybindings[section][action]:
         self._action_map[key] = fun
+
+  def set_focus_last(self):
+    # FIXME: don't do anything here, let subclasses override
+    if hasattr(self.body, 'set_focus_last'):
+      self.body.set_focus_last()
 
   def focus_rel(self, delta):
     w, pos = self.get_focus()
