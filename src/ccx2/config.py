@@ -104,21 +104,22 @@ default_keybindings = {
 }
 
 default_formatting = {
-    'collbrowser': {
-        'by_albumartist':
-            """(or :performer :artist)
-               > :album
-               > (if :partofset (cat "CD" :partofset))
-               > (pad :tracknr "2" "0"). 
-                 (if (not (= :artist :performer)) (cat :artist " - ")):title'}
-            """
-    },
-    'playlist': {
-        'simple':
-            """(or :performer :artist) - 
-               (if :partofset (cat :partofset "."))(pad :tracknr "2" "0") - 
-               :title (if :compilation (cat "| " :artist))"""
-    },
+    'by_albumartist':
+        """(or :performer :artist)
+            > :album
+            > (if :partofset (cat "CD" :partofset))
+            > (pad :tracknr "2" "0"). 
+              (if (not (= :artist :performer)) (cat :artist " - ")):title'}
+        """,
+    'simple':
+        """(or :performer :artist) - 
+            (if :partofset (cat :partofset "."))(pad :tracknr "2" "0") - 
+            :title (if :compilation (cat " | " :artist))""",
+    'search':
+        """(or :performer :artist) - 
+            (if :album (cat :album " - "))
+            (if :compilation (cat " - " :artist " - "))
+            (if :partofset (cat :partofset "-"))(pad :tracknr "2" "0"). :title"""
 }
 
 keybindings = default_keybindings

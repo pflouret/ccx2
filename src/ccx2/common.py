@@ -93,7 +93,7 @@ class CachedCollectionWalker(urwid.ListWalker):
     self.row_widget = row_widget
     self.show_pos_index = show_pos_index
 
-    self.parser = mifl.MiflParser(config.formatting['playlist'][format])
+    self.parser = mifl.MiflParser(config.formatting[format])
 
   def _get_ids(self):
     return self._ids
