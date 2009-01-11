@@ -135,6 +135,7 @@ class Playlist(common.ActionsListBox):
       self.active_pls = pls
 
     self.view_pls = pls
+    signals.emit('need-redraw')
 
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     try:

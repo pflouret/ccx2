@@ -42,7 +42,7 @@ class TabContainer(urwid.Pile):
     self.tab_w = urwid.WidgetWrap(w)
 
     self.__super.__init__([('flow', self.tabbar),
-                           ('flow', urwid.Divider('-')), 
+                           ('flow', urwid.Divider(u'\u2500')),
                            self.tab_w],
                           2)
 

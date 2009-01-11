@@ -154,9 +154,12 @@ class Ccx2(object):
     ('headerbar','default', 'default')]
 
   def __init__(self):
+    pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
+                           ('fixed', 1, urwid.SolidFill(u'\u2502')),
+                           ('weight', 5, playlist.Playlist(self))],
+                          dividechars=1, focus_column=2)
     tabs = [('help', urwid.ListBox([urwid.Text('yeah right')])),
-            ('playlist', playlist.Playlist(self)),
-            ('switcher', playlist.PlaylistSwitcher(self))]
+            ('playlist', pview)]
 
     self.gch = GlobalCommandsHandler()
     self.tabcontainer = tabcontainer.TabContainer(self, tabs)
