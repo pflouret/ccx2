@@ -32,6 +32,7 @@ import urwid.curses_display
 import xmmsclient
 
 import playlist
+import search
 import signals
 import tabcontainer
 import widgets
@@ -207,6 +208,12 @@ class Ccx2(object):
           self.size = self.ui.get_cols_rows()
         elif self.view.keypress(self.size, k) is None:
           continue
+        elif k == '/':
+          lb = search.SearchListBox('simple', self)
+          w = lb.body.get_input_widget()
+          tabindex = self.tabcontainer.add_tab('search', lb, True)
+          urwid.connect_signal(w, 'abort', lambda: self.tabcontainer.remove_tab(tabindex))
+          self.show_input(w)
         elif self.gch.keypress(self.size, k) is None:
           continue
         elif k in keybindings['general']['quit']:

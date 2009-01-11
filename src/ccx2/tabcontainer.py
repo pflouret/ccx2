@@ -25,6 +25,7 @@
 import urwid
 
 import config
+import search
 import signals
 
 class TabContainer(urwid.Pile):
@@ -93,6 +94,11 @@ class TabContainer(urwid.Pile):
     except IndexError:
       pass
 
+  def current_tab_is_closable(self):
+    # XXX: move to classes?
+    t = type(self.tabs[self.cur_tab][1])
+    return t == search.SearchListBox
+
   def keypress(self, size, key):
     if key in config.keybindings['general']['goto-tab-n']:
       self.load_tab(config.keybindings['general']['goto-tab-n'].index(key))
@@ -100,6 +106,8 @@ class TabContainer(urwid.Pile):
       self.load_tab(self.cur_tab-1, wrap=True)
     elif key in config.keybindings['general']['goto-next-tab']:
       self.load_tab(self.cur_tab+1, wrap=True)
+    elif key == 'esc' and self.current_tab_is_closable():
+      self.remove_tab(self.cur_tab)
     else:
       return self.__super.keypress(size, key)
 
