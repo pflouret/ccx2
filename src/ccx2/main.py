@@ -35,7 +35,7 @@ import config
 import playlist
 import search
 import signals
-import tabcontainer
+import containers
 import widgets
 import xmms
 
@@ -162,7 +162,7 @@ class Ccx2(object):
             ('playlist', pview)]
 
     self.gch = GlobalCommandsHandler()
-    self.tabcontainer = tabcontainer.TabContainer(self, tabs)
+    self.tabcontainer = containers.TabContainer(self, tabs)
     self.headerbar = HeaderBar()
     self.view = urwid.Frame(self.tabcontainer, header=self.headerbar)
 
