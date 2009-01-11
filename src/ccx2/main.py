@@ -24,6 +24,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import signal
 import sys
 
 import urwid
@@ -125,6 +126,7 @@ class HeaderBar(urwid.WidgetWrap):
       signals.emit('need-redraw')
 
 signals.register('need-redraw')
+signals.register('need-redraw-non-urgent')
 
 class Ccx2(object):
   # default black white brown yellow
@@ -149,11 +151,20 @@ class Ccx2(object):
     self.headerbar = HeaderBar()
     self.view = urwid.Frame(self.tabcontainer, header=self.headerbar)
 
-    signals.connect('need-redraw', self.on_need_redraw)
+    signals.connect('need-redraw', self.redraw)
+    if not hasattr(signal, 'setitimer') or \
+       sys.platform in ('win32', 'mac', 'os2', 'os2emx', 'riscos', 'atheos'):
+      signals.connect('need-redraw-non-urgent', self.redraw)
+    else:
+      signals.connect('need-redraw-non-urgent', self.on_need_redraw_non_urgent)
 
-  def on_need_redraw(self):
-    # TODO: do something smart to queue multiple redraw requests, or decide based on who's asking
-    self.redraw()
+  def on_need_redraw_non_urgent(self):
+    def _f(sig, frame):
+      self.redraw()
+      signal.signal(signal.SIGALRM, signal.SIG_DFL)
+
+    signal.signal(signal.SIGALRM, _f)
+    signal.setitimer(signal.ITIMER_REAL, 0.5)
 
   def main(self):
     self.ui = urwid.curses_display.Screen()

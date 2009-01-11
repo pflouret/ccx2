@@ -49,7 +49,7 @@ class PlaylistWalker(common.CachedCollectionWalker):
     if self.pls == self.active_pls:
       try:
         self.current_pos = xs.playlist_current_pos()['position']
-      except XMMSError:
+      except (XMMSError, TypeError):
         self.current_pos = -1
     else:
       self.current_pos = -1
@@ -59,8 +59,6 @@ class PlaylistWalker(common.CachedCollectionWalker):
     common.CachedCollectionWalker.__init__(self, c, format, app, widgets.SongWidget, True)
 
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
-    if pos is None:
-      return
 
     if type == xmmsclient.PLAYLIST_CHANGED_ADD:
       self.ids.append(id)
@@ -78,17 +76,18 @@ class PlaylistWalker(common.CachedCollectionWalker):
     else:
       # hard reload everything just in case
       self.collection = xs.coll_get(self.pls, 'Playlists')
-      self._clear_cache()
+      signals.emit('need-redraw-non-urgent')
+      return
 
-    if pos >= self.cache_bounds[0] and pos < self.cache_bounds[1]:
+    if pos >= self.cache_bounds[0] and pos <= self.cache_bounds[1]:
       if pls == self.pls:
         self._load_cache(self.focus)
-        signals.emit('need-redraw')
+        signals.emit('need-redraw-non-urgent')
       else:
         self._clear_cache()
 
   def on_xmms_playlist_current_pos(self, pls, pos):
-    if pls == self.pls:
+    if pls == self.pls and pos != self.current_pos:
       if self._in_bounds(self.current_pos):
         self.cache[self.current_pos-self.cache_bounds[0]].unset_active()
       else:
@@ -231,7 +230,8 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     signals.emit('need-redraw')
 
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
-    if type in (xmmsclient.PLAYLIST_CHANGED_ADD,
+    if pos is None and \
+       type in (xmmsclient.PLAYLIST_CHANGED_ADD,
                 xmmsclient.PLAYLIST_CHANGED_MOVE,
                 xmmsclient.PLAYLIST_CHANGED_REMOVE):
       self._reload()
