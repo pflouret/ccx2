@@ -31,6 +31,7 @@ import urwid
 import urwid.curses_display
 import xmmsclient
 
+import config
 import playlist
 import search
 import signals
@@ -38,7 +39,6 @@ import tabcontainer
 import widgets
 import xmms
 
-from config import keybindings
 
 xs = xmms.get()
 
@@ -52,7 +52,7 @@ class GlobalCommandsHandler(object):
                         ('next-track', lambda: xs.playback_next(sync=False)),
                         ('previous-track', lambda: xs.playback_prev(sync=False)),
                        ):
-      for key in keybindings['playback'][action]:
+      for key in config.keybindings['playback'][action]:
         self._key_action[key] = fun
 
   def keypress(self, size, key):
@@ -80,6 +80,17 @@ class HeaderBar(urwid.WidgetWrap):
     curid = xs.playback_current_id()
     xs.medialib_get_info(
         curid, cb=lambda r: self.on_xmms_playback_current_info(r.value()), sync=False)
+
+    for action in (('move-up', 'cursor up'),
+                   ('move-down', 'cursor down'),
+                   ('move-right', 'cursor right'),
+                   ('move-left', 'cursor left'),
+                   ('page-up', 'cursor page up'),
+                   ('page-down', 'cursor page down'),
+                   ('move-top', 'cursor max left'),
+                   ('move-bottom', 'cursor max right')):
+      for k in config.keybindings['general'][action[0]]:
+        urwid.command_map[k] = action[1]
 
   def _humanize_time(self, milli, str_output=True):
     sec, milli = divmod(milli, 1000)
@@ -216,7 +227,7 @@ class Ccx2(object):
           self.show_input(w)
         elif self.gch.keypress(self.size, k) is None:
           continue
-        elif k in keybindings['general']['quit']:
+        elif k in config.keybindings['general']['quit']:
           return
 
 if __name__ == '__main__':

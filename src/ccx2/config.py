@@ -24,12 +24,14 @@
 
 default_keybindings = {
     'general': {
+        'move-left': ['h', 'left'],
         'move-up': ['k', 'up'],
         'move-down': ['j', 'down'],
+        'move-right': ['l', 'right'],
         'page-up': ['ctrl u', 'page up'],
         'page-down': ['ctrl d', 'page down'],
-        'move-top': ['home', 'meta <'],
-        'move-bottom': ['end', 'meta >'],
+        'move-top': ['home', 'ctrl a'],
+        'move-bottom': ['end', 'ctrl e'],
         'goto-tab-n': ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
         'goto-prev-tab': ['['],
         'goto-next-tab': [']'],
