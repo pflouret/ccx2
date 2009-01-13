@@ -33,19 +33,24 @@ import xmms
 xs = xmms.get()
 
 class ActionsListBox(urwid.ListBox):
-  def __init__(self, *args, **kwargs):
+  def __init__(self, body, actions=[], mark_preserve_order=False):
     self._action_map = {}
     self._actions = [('general', 'move-top', lambda: self.set_focus(0)),
                      ('general', 'move-bottom', lambda: self.set_focus_last()),
-                     ('general', 'select-and-move-up', lambda: self.focus_rel(-1)),
-                     ('general', 'select-and-move-down', lambda: self.focus_rel(1))]
+                     ('general', 'mark-and-move-up', lambda: self._mark_and_move_rel(-1)),
+                     ('general', 'mark-and-move-down', lambda: self._mark_and_move_rel(1))]
 
-    if 'actions' in kwargs:
-      self._actions.extend(kwargs.pop('actions'))
+    self._actions.extend(actions)
 
     self._setup_actions()
 
-    self.__super.__init__(*args, **kwargs)
+    self.mark_preserve_order = mark_preserve_order
+    if mark_preserve_order:
+      self._marked = []
+    else:
+      self._marked = {}
+
+    self.__super.__init__(body)
 
   def _get_actions(self):
     return self._actions
@@ -56,21 +61,25 @@ class ActionsListBox(urwid.ListBox):
 
   actions = property(_get_actions, _set_actions)
 
-  def _setup_actions(self):
-    for section, action, fun in self._actions:
-      for key in config.keybindings[section][action]:
-        self._action_map[key] = fun
+  def _get_marked(self):
+    return self._marked
+
+  marked = property(_get_marked)
 
   def set_focus_last(self):
     # FIXME: don't do anything here, let subclasses override
     if hasattr(self.body, 'set_focus_last'):
       self.body.set_focus_last()
 
-  def focus_rel(self, delta):
+  def toggle_focus_mark(self):
     w, pos = self.get_focus()
-
-    if pos is not None:
-      self.set_focus(pos+delta)
+    if w is not None:
+      key = self._get_mark_key(w, pos)
+      if w.marked:
+        self._unmark(key)
+      else:
+        self._mark(key)
+      w.toggle_marked()
 
   def keypress(self, size, key):
     key = self.__super.keypress(size, key)
@@ -80,6 +89,39 @@ class ActionsListBox(urwid.ListBox):
     else:
       return key
 
+  def _setup_actions(self):
+    for section, action, fun in self._actions:
+      for key in config.keybindings[section][action]:
+        self._action_map[key] = fun
+
+  def _get_mark_key(self, w, pos):
+    return pos
+
+  def _mark(self, key):
+    if self.mark_preserve_order:
+      self._marked.append(key)
+    else:
+      self._marked[key] = None
+
+  def _unmark(self, key):
+    if self.mark_preserve_order:
+      self._marked.remove(key)
+    else:
+      del self._marked[key]
+
+  def _mark_and_move_rel(self, delta):
+    w, pos = self.get_focus()
+    if pos is not None:
+      self.toggle_focus_mark()
+      self.set_focus(pos+delta)
+
+#def dec(fn):
+#  def _fn(self, pos):
+#    w, p = fn(self, pos)
+#    if p in self.selected:
+#      w.set_attr('selected')
+#    return w, p
+#  return _fn
 
 class CachedCollectionWalker(urwid.ListWalker):
   def __init__(self, collection, format, app, row_widget, show_pos_index=False):

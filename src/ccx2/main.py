@@ -146,8 +146,8 @@ class Ccx2(object):
   palette = [
     ('default','default','default', 'standout'),
     ('dialog', 'black', 'light gray'),
-    ('selected','yellow','default', 'standout'),
-    ('selected-focus','brown','light gray', 'standout'),
+    ('marked','yellow','default', 'standout'),
+    ('marked-focus','brown','light gray', 'standout'),
     ('focus','black','light gray', 'standout'),
     ('active','light magenta', 'default'),
     ('active-focus','light magenta', 'light gray'),
@@ -223,6 +223,7 @@ class Ccx2(object):
           continue
         elif k in config.keybindings['general']['quit']:
           return
+        # TODO: else show unbound key msg
 
 if __name__ == '__main__':
   Ccx2().main()

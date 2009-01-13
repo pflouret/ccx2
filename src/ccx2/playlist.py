@@ -107,7 +107,7 @@ class PlaylistWalker(common.CachedCollectionWalker):
 
 class Playlist(common.ActionsListBox):
   def __init__(self, app):
-    actions = [('playlist', 'play-selected', self.play_selected),
+    actions = [('playlist', 'play-focus', self.play_focus),
                ('general', 'delete', self.delete_songs)]
 
     self.__super.__init__([], actions=actions)
@@ -144,7 +144,7 @@ class Playlist(common.ActionsListBox):
     except KeyError:
       pass
 
-  def play_selected(self):
+  def play_focus(self):
     pos = self.get_focus()[1]
     if pos is not None:
       xs.playlist_play(playlist=self.view_pls, pos=pos)
@@ -244,7 +244,7 @@ class PlaylistSwitcher(common.ActionsListBox):
     self.app = app
 
     actions = [('playlist-switcher', 'load', self.load_focused),
-               ('general', 'delete', self.delete_selected),
+               ('general', 'delete', self.delete_marked),
                ('playlist-switcher', 'rename', self.rename_focused),
                ('playlist-switcher', 'add-playlist-to-current', self.add_playlist_to_current),
                ('playlist-switcher', 'new', self.new_playlist)]
@@ -256,7 +256,7 @@ class PlaylistSwitcher(common.ActionsListBox):
     if w:
       xs.playlist_load(w.name, sync=False)
 
-  def delete_selected(self):
+  def delete_marked(self):
     w = self.get_focus()[0]
     if w:
       xs.playlist_remove(w.name, sync=False)

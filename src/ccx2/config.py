@@ -76,8 +76,8 @@ default_keybindings = {
         'goto-tab-n': ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
         'goto-prev-tab': ['['],
         'goto-next-tab': [']'],
-        'select-and-move-down': [' '], # space
-        'select-and-move-up': ['<0>'], # ctrl space
+        'mark-and-move-down': [' '], # space
+        'mark-and-move-up': ['<0>'], # ctrl space
         'return': ['enter', 'ctrl m'],
         'delete': ['d', 'delete'],
         'cancel': ['esc', 'ctrl g'],
@@ -95,7 +95,7 @@ default_keybindings = {
         'previous-track': ['<', 'z'],
     },
     'playlist': {
-        'play-selected': ['enter'],
+        'play-focus': ['enter'],
     },
     'playlist-switcher': {
         'load': ['enter'],

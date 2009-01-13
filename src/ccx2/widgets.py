@@ -28,48 +28,63 @@ from xmmsclient import collections as coll
 
 import config
 
-class SelectableText(urwid.WidgetWrap):
+class MarkableText(urwid.WidgetWrap):
   def __init__(self,
                text,
                attr='default',
                focus_attr='focus',
-               sel_attr='selected',
-               sel_focus_attr='selected-focus'):
-    self.attr = attr
-    self.focus_attr = focus_attr
-    self.sel_attr = sel_attr
-    self.sel_focus_attr = sel_focus_attr
+               mark_attr='marked',
+               mark_focus_attr='marked-focus',
+               marked=False):
 
-    self.selected = False
+    self._attr = attr
+    self._focus_attr = focus_attr
+    self._mark_attr = mark_attr
+    self._mark_focus_attr = mark_focus_attr
+    self.marked = marked
+
     w = urwid.AttrWrap(urwid.Text(text), None)
     self.__super.__init__(w)
-    self.update_w()
+
+    self._update_w()
+
+  def _set_attr(self, attr_name, value):
+    setattr(self, attr_name, value)
+    self._update_w()
+
+  attr = property(lambda self: self._attr,
+                  lambda self, v: self._set_attr('_attr', v))
+  focus_attr = property(lambda self: self._focus_attr,
+                        lambda self, v: self._set_attr('_focus_attr', v))
+  mark_attr = property(lambda self: self._mark_attr,
+                       lambda self, v: self._set_attr('_mark_attr', v))
+  mark_focus_attr = property(lambda self: self._mark_focus_attr,
+                             lambda self, v: self._set_attr('_mark_focus_attr', v))
 
   def selectable(self):
     return True
 
-  def update_w(self):
-    if self.selected:
-      self._w.attr = self.sel_attr
-      self._w.focus_attr = self.sel_focus_attr
+  def toggle_marked(self):
+    self.marked = not self.marked
+    self._update_w()
+
+  def keypress(self, size, key):
+    return key
+
+  def _update_w(self):
+    if self.marked:
+      self._w.attr = self.mark_attr
+      self._w.focus_attr = self.mark_focus_attr
     else:
       self._w.attr = self.attr
       self._w.focus_attr = self.focus_attr
 
-  def keypress(self, size, key):
-    # FIXME: this whole selected handling thing stinks badly, clean up
-    keys_up = config.keybindings['general']['select-and-move-up']
-    keys_down = config.keybindings['general']['select-and-move-down']
-    if key in keys_up + keys_down:
-      self.selected = not self.selected
-      self.update_w()
 
-    return key
-
-class SongWidget(SelectableText):
+class SongWidget(MarkableText):
   def __init__(self, id, *args, **kwargs):
-    self.id = id
     self.__super.__init__(*args, **kwargs)
+
+    self.id = id
     self._old_attr = self.attr
     self._old_focus_attr = self.focus_attr
 
@@ -79,15 +94,14 @@ class SongWidget(SelectableText):
       self._old_focus_attr = self.focus_attr
       self.attr = 'active'
       self.focus_attr = 'active-focus'
-      self.update_w()
 
   def unset_active(self):
     self.attr = self._old_attr
     self.focus_attr = self._old_focus_attr
-    self.update_w()
+
 
 # TODO: refactor
-class PlaylistWidget(SelectableText):
+class PlaylistWidget(MarkableText):
   def __init__(self, name, *args, **kwargs):
     self.name = name
     self.__super.__init__(name, *args, **kwargs)
@@ -99,12 +113,11 @@ class PlaylistWidget(SelectableText):
     self._old_focus_attr = self.focus_attr
     self.attr = 'active'
     self.focus_attr = 'active-focus'
-    self.update_w()
 
   def unset_active(self):
     self.attr = self._old_attr
     self.focus_attr = self._old_focus_attr
-    self.update_w()
+
 
 class InputDialog(urwid.WidgetWrap):
   def __init__(self, title, width, height, attr=('dialog', 'default')):
@@ -215,7 +228,7 @@ class InputEdit(urwid.Edit):
     else:
       return self.__super.keypress(size, key)
 
-class CollectionListEntryWidget(SelectableText):
+class CollectionListEntryWidget(MarkableText):
   def __init__(self, child_ids, *args, **kwargs):
     self.child_ids = child_ids
     self.__super.__init__(*args, **kwargs)
