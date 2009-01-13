@@ -43,6 +43,8 @@ ADOUBLE_BORDER_H = u'='
 ADOUBLE_BORDER_V = u'|'
 ADOUBLE_BORDER_H_D = u'='
 
+DEFAULT_WORD_SEPARATORS = '.,~:+][}{\\/-_;"'
+
 default_unicode_borders = {
     'h': UBORDER_H,
     'v': UBORDER_V,
@@ -76,9 +78,14 @@ default_keybindings = {
         'goto-next-tab': [']'],
         'select-and-move-down': [' '], # space
         'select-and-move-up': ['<0>'], # ctrl space
+        'return': ['enter', 'ctrl m'],
         'delete': ['d', 'delete'],
         'cancel': ['esc', 'ctrl g'],
         'quit': ['q', 'ctrl q'],
+    },
+    'text_edit': {
+        'delete-word-backward': ['ctrl w', 'ctrl backspace'],
+        'delete-word-forward': ['meta d', 'meta delete'],
     },
     'playback': {
         'play': ['x'],
@@ -118,11 +125,12 @@ default_formatting = {
     'search':
         """(or :performer :artist) - 
             (if :album (cat :album " - "))
-            (if :compilation (cat " - " :artist " - "))
+            (if :compilation (cat :artist " - "))
             (if :partofset (cat :partofset "-"))(pad :tracknr "2" "0"). :title"""
 }
 
 keybindings = default_keybindings
 formatting = default_formatting
 borders = default_unicode_borders
+word_separators = DEFAULT_WORD_SEPARATORS
 

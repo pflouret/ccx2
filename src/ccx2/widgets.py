@@ -156,13 +156,62 @@ class InputDialog(urwid.WidgetWrap):
 
 class InputEdit(urwid.Edit):
   signals = ['done', 'abort']
+  BACK = 1
+  FORWARD = 2
+
+  def _delete_word(self, dir):
+    assert dir in (self.BACK, self.FORWARD)
+    white = ' \t'
+
+    tlen = len(self.edit_text)
+
+    if dir == self.BACK:
+      look_delta = move_delta = -1
+      in_bounds = lambda p: p > 0
+    else:
+      look_delta = 0
+      move_delta = 1
+      in_bounds = lambda p: p <= tlen-1
+
+    start = p = self.edit_pos
+
+    if not in_bounds(p):
+      return p
+
+    # eat all whitespace from cursor
+    if self.edit_text[p+look_delta] in white:
+      while in_bounds(p) and self.edit_text[p+look_delta] in white:
+        p += move_delta
+
+    if in_bounds(p):
+      if self.edit_text[p+look_delta] in config.word_separators:
+        # if separator from cursor eat all seps until not sep found
+        while in_bounds(p) and self.edit_text[p+look_delta] in config.word_separators:
+          p += move_delta
+      else:
+        # letters, eat all until sep or white
+        while in_bounds(p) and self.edit_text[p+look_delta] not in white+config.word_separators:
+          p += move_delta
+
+    self.highlight = dir == self.BACK and (p, start) or (start, p)
+    self._delete_highlighted()
+
+  def delete_word_forward(self):
+    self._delete_word(self.FORWARD)
+
+  def delete_word_backward(self):
+    self._delete_word(self.BACK)
 
   def keypress(self, size, key):
     text = self.edit_text
-    if key == 'enter':
+    if key in config.keybindings['general']['return']:
       self._emit('done', self.edit_text)
     elif key in config.keybindings['general']['cancel']:
       self._emit('abort')
+    elif key in config.keybindings['text_edit']['delete-word-backward']:
+      self.delete_word_backward()
+    elif key in config.keybindings['text_edit']['delete-word-forward']:
+      self.delete_word_forward()
     else:
       return self.__super.keypress(size, key)
 
