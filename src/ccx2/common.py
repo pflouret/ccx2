@@ -127,7 +127,7 @@ class CachedCollectionWalker(urwid.ListWalker):
   def __init__(self, collection, format, app, row_widget, show_pos_index=False):
     self.focus = 0
     self.cache = []
-    self.cache_bounds = (0,0)
+    self.cache_bounds = [0,0]
 
     self._set_collection(collection)
     self.format = format
@@ -158,6 +158,7 @@ class CachedCollectionWalker(urwid.ListWalker):
     else:
       # XXX: get order arg also?
       self._set_ids(xs.coll_query_ids(c))
+    self._clear_cache()
 
   collection = property(_get_collection, _set_collection)
 
@@ -170,7 +171,7 @@ class CachedCollectionWalker(urwid.ListWalker):
     n = int(1.5*screen_rows)
     min_pos = max(pos - n, 0)
     max_pos = min(pos + n, self.ids_len)
-    self.cache_bounds = (min_pos, max_pos)
+    self.cache_bounds = [min_pos, max_pos]
 
     ids = self.ids[min_pos:max_pos]
 
@@ -193,9 +194,9 @@ class CachedCollectionWalker(urwid.ListWalker):
   def _clear_cache(self):
     # delete the cache object and b0rk the cache_bounds so the cache will
     # be loaded the next time the playlist comes in view
-    if hasattr(self, 'cache'):
-      del self.cache
-      self.cache_bounds = (0xDEADBEEF, -1) # -1 will always fail the boundary check
+    del self.cache
+    self.cache = []
+    self.cache_bounds = [0xDEADBEEF, -1] # -1 will always fail the boundary check
 
   def get_pos(self, pos):
     if pos < 0 or pos >= self.ids_len:

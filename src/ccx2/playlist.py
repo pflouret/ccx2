@@ -56,40 +56,61 @@ class PlaylistWalker(common.CachedCollectionWalker):
 
     c = xs.coll_get(self.pls, 'Playlists')
 
-    common.CachedCollectionWalker.__init__(self, c, format, app, widgets.SongWidget, True)
+    common.CachedCollectionWalker.__init__(self, c, format, app, widgets.SongWidget)
 
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
 
+    if id is not None and type in (xmmsclient.PLAYLIST_CHANGED_ADD,
+                                   xmmsclient.PLAYLIST_CHANGED_MOVE,
+                                   xmmsclient.PLAYLIST_CHANGED_INSERT):
+      info = xs.medialib_get_info(id)
+      widget = self.row_widget(id, self.parser[0].eval(info)[0])
+
+    # oh god...
     if type == xmmsclient.PLAYLIST_CHANGED_ADD:
+      if self._in_bounds(pos):
+        self.cache.append(widget)
+        self.cache_bounds[1] += 1
       self.ids.append(id)
       self.ids_len += 1
     elif type == xmmsclient.PLAYLIST_CHANGED_INSERT:
+      if self._in_bounds(pos):
+        self.cache.insert(pos, widget)
+        self.cache_bounds[1] += 1
       self.ids.insert(pos, id)
       self.ids_len += 1
     elif type == xmmsclient.PLAYLIST_CHANGED_REMOVE:
-      del self.ids[pos]
+      if self._in_bounds(pos):
+        del self.cache[pos - self.cache_bounds[0]]
+        self.cache_bounds[1] -= 1
+      del self._ids[pos]
       self.ids_len -= 1
-      if pos == self.focus:
-        self.set_focus(self.focus)
+      self.set_focus(self.focus)
     elif type == xmmsclient.PLAYLIST_CHANGED_MOVE:
-      self.ids.insert(newpos, self.ids.pop(pos))
+      if self._in_bounds(pos):
+        row = self.cache.pop(pos - self.cache_bounds[0])
+      else:
+        row = self.row_widget(id, text)
+
+      if self._in_bounds(newpos):
+        self.cache.insert(newpos-self.cache_bounds[0], row)
+      else:
+        self.cache_bounds[1] -= 1
+      self.ids.insert(newpos, self._ids.pop(pos))
     else:
       # hard reload everything just in case
       self.collection = xs.coll_get(self.pls, 'Playlists')
       signals.emit('need-redraw-non-urgent')
       return
 
-    if pos >= self.cache_bounds[0] and pos <= self.cache_bounds[1]:
-      if pls == self.pls:
-        self._load_cache(self.focus)
-        signals.emit('need-redraw-non-urgent')
-      else:
-        self._clear_cache()
+    if pls == self.pls and (pos <= self.cache_bounds[1] or not self.ids_len or not self.cache):
+      signals.emit('need-redraw-non-urgent')
 
   def on_xmms_playlist_current_pos(self, pls, pos):
-    if pls == self.pls and pos != self.current_pos:
+    if pls == self.pls and pos != self.current_pos and pos < self.ids_len:
       if self._in_bounds(self.current_pos):
-        self.cache[self.current_pos-self.cache_bounds[0]].unset_active()
+        w = self.cache[self.current_pos - self.cache_bounds[0]]
+        w.unset_active()
       else:
         pass # TODO: scroll
 
@@ -99,7 +120,7 @@ class PlaylistWalker(common.CachedCollectionWalker):
   def get_pos(self, pos):
     w, p = common.CachedCollectionWalker.get_pos(self, pos)
 
-    if w and p and p == self.current_pos:
+    if w is not None and p is not None and p == self.current_pos:
       w.set_active()
 
     return w, p
