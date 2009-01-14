@@ -412,7 +412,10 @@ class XmmsService(object):
   def playlist_set_next(self, pos, relative=False, cb=None, sync=True):
     if sync:
       if relative:
-        return self.xmms_s.playlist_set_next_rel(pos)
+        try:
+          return self.xmms_s.playlist_set_next_rel(pos)
+        except xmmsclient.XMMSError:
+          pass
       else:
         return self.xmms_s.playlist_set_next(pos)
     else:

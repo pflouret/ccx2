@@ -170,7 +170,7 @@ class Ccx2(object):
     signals.connect('need-redraw-non-urgent', self.on_need_redraw_non_urgent)
 
   def on_need_redraw_non_urgent(self):
-    signals.alarm(0.5, lambda *a: self.redraw())
+    signals.alarm(0.3, lambda *a: self.redraw())
 
   def main(self):
     self.ui = urwid.curses_display.Screen()
