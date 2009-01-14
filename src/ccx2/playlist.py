@@ -129,7 +129,7 @@ class PlaylistWalker(common.CachedCollectionWalker):
 class Playlist(common.ActionsListBox):
   def __init__(self, app):
     actions = [('playlist', 'play-focus', self.play_focus),
-               ('general', 'delete', self.delete_songs)]
+               ('general', 'delete', self.delete_marked)]
 
     self.__super.__init__([], actions=actions)
 
@@ -170,10 +170,21 @@ class Playlist(common.ActionsListBox):
     if pos is not None:
       xs.playlist_play(playlist=self.view_pls, pos=pos)
 
-  def delete_songs(self):
-    pos = self.get_focus()[1]
-    if pos is not None:
+  def delete_marked(self):
+    m = self.marked
+    if not m:
+      w, pos = self.get_focus()
+      if pos is None:
+        return
+      m = [self._get_mark_key(w, pos)]
+
+    for w, pos in sorted(m, key=lambda e: e[1], reverse=True):
       xs.playlist_remove_entry(pos, self.view_pls, sync=False)
+
+    self.unmark_all()
+
+  def _get_mark_key(self, w, pos):
+    return (w, pos)
 
 
 class PlaylistSwitcherWalker(urwid.ListWalker):

@@ -81,6 +81,12 @@ class ActionsListBox(urwid.ListBox):
         self._mark(key)
       w.toggle_marked()
 
+  def unmark_all(self):
+    if self.mark_preserve_order:
+      self._marked = []
+    else:
+      self._marked.clear()
+
   def keypress(self, size, key):
     key = self.__super.keypress(size, key)
 
@@ -153,7 +159,7 @@ class CachedCollectionWalker(urwid.ListWalker):
   def _set_collection(self, c):
     self._collection = c
 
-    if type(c) == coll.IDList:
+    if hasattr(c, 'ids') and c.ids:
       self._set_ids(list(c.ids))
     else:
       # XXX: get order arg also?
