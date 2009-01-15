@@ -76,10 +76,9 @@ class ActionsListBox(urwid.ListBox):
     if w is not None:
       key = self._get_mark_key(w, pos)
       if w.marked:
-        self._unmark(key)
+        self._unmark(key, w)
       else:
-        self._mark(key)
-      w.toggle_marked()
+        self._mark(key, w)
 
   def unmark_all(self):
     if self.mark_preserve_order:
@@ -91,7 +90,7 @@ class ActionsListBox(urwid.ListBox):
     key = self.__super.keypress(size, key)
 
     if key in self._action_map:
-      self._action_map[key]()
+      self._action_map[key]() # FIXME: should return the key if the function didn't handle it
     else:
       return key
 
@@ -103,17 +102,25 @@ class ActionsListBox(urwid.ListBox):
   def _get_mark_key(self, w, pos):
     return pos
 
-  def _mark(self, key):
+  def _mark(self, key, w=None):
     if self.mark_preserve_order:
       self._marked.append(key)
     else:
       self._marked[key] = None
 
-  def _unmark(self, key):
+    if w:
+      w.marked = True
+      w._update_w()
+
+  def _unmark(self, key, w=None):
     if self.mark_preserve_order:
       self._marked.remove(key)
     else:
       del self._marked[key]
+
+    if w:
+      w.marked = False
+      w._update_w()
 
   def _mark_and_move_rel(self, delta):
     w, pos = self.get_focus()

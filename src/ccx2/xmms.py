@@ -377,6 +377,12 @@ class XmmsService(object):
     else:
       self.xmms.playlist_load(playlist, cb=cb)
 
+  def playlist_move(self, cur_pos, new_pos, playlist=None, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.playlist_move(cur_pos, new_pos, playlist)
+    else:
+      self.xmms.playlist_move(cur_pos, new_pos, playlist, cb)
+
   def playlist_play_pos(self, pos, relative=False):
     def __status_cb(res):
       self.playlist_set_next(pos, relative=relative, sync=False)

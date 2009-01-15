@@ -96,6 +96,8 @@ default_keybindings = {
     },
     'playlist': {
         'play-focus': ['enter'],
+        'move-marked-up': ['K'],
+        'move-marked-down': ['J'],
     },
     'playlist-switcher': {
         'load': ['enter'],

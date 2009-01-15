@@ -97,6 +97,8 @@ class PlaylistWalker(common.CachedCollectionWalker):
       else:
         self.cache_bounds[1] -= 1
       self.ids.insert(newpos, self._ids.pop(pos))
+      if self.focus == pos:
+        self.set_focus(newpos)
     else:
       # hard reload everything just in case
       self.collection = xs.coll_get(self.pls, 'Playlists')
@@ -104,7 +106,7 @@ class PlaylistWalker(common.CachedCollectionWalker):
       return
 
     if pls == self.pls and (pos <= self.cache_bounds[1] or not self.ids_len or not self.cache):
-      signals.emit('need-redraw-non-urgent')
+      signals.emit('need-redraw')
 
   def on_xmms_playlist_current_pos(self, pls, pos):
     if pls == self.pls and pos != self.current_pos and pos < self.ids_len:
@@ -129,6 +131,8 @@ class PlaylistWalker(common.CachedCollectionWalker):
 class Playlist(common.ActionsListBox):
   def __init__(self, app):
     actions = [('playlist', 'play-focus', self.play_focus),
+               ('playlist', 'move-marked-up', self.move_marked_up),
+               ('playlist', 'move-marked-down', self.move_marked_down),
                ('general', 'delete', self.delete_marked)]
 
     self.__super.__init__([], actions=actions)
@@ -182,6 +186,48 @@ class Playlist(common.ActionsListBox):
       xs.playlist_remove_entry(pos, self.view_pls, sync=False)
 
     self.unmark_all()
+
+  def move_marked_up(self):
+    # TODO: will have to do this locally and then sync up, or do it synchronous while
+    # TODO: turning off the signal, the performance for just receiving the signals is awful
+    m = list(self.marked)
+    if not m:
+      m = [self._get_mark_key(*self.get_focus())]
+
+    m.sort(key=lambda e: e[1])
+    p = 0
+    while m and m[0][1] == p:
+      m.pop(0)
+      p += 1
+
+    if not m:
+      return
+
+    for w, pos in m:
+      xs.playlist_move(pos, pos - 1, sync=False)
+      if self.marked:
+        self._unmark((w, pos), w)
+        self._mark((w, pos-1), w)
+
+  def move_marked_down(self):
+    m = list(self.marked)
+    if not m:
+      m = [self._get_mark_key(*self.get_focus())]
+
+    m.sort(key=lambda e: e[1], reverse=True)
+    p = self.body.ids_len - 1
+    while m and m[0][1] == p:
+      m.pop(0)
+      p -= 1
+
+    if not m:
+      return
+
+    for w, pos in m:
+      xs.playlist_move(pos, pos + 1, sync=False)
+      if self.marked:
+        self._unmark((w, pos), w)
+        self._mark((w, pos+1), w)
 
   def _get_mark_key(self, w, pos):
     return (w, pos)
