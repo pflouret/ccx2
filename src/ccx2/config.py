@@ -99,6 +99,9 @@ default_keybindings = {
         'move-marked-up': ['K'],
         'move-marked-down': ['J'],
     },
+    'search': {
+        'add-marked-to-playlist': ['a'],
+    },
     'playlist-switcher': {
         'load': ['enter'],
         'new': ['n'],

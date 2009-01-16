@@ -4,6 +4,10 @@ import xmmsclient.collections as coll
 import common
 import signals
 import widgets
+import xmms
+
+xs = xmms.get()
+
 
 class SearchWalker(common.CachedCollectionWalker):
   def __init__(self, format, app, query=''):
@@ -34,11 +38,31 @@ class SearchWalker(common.CachedCollectionWalker):
 
 class SearchListBox(common.ActionsListBox):
   def __init__(self, format, app):
-    self.__super.__init__(SearchWalker(format, app))
+    actions = [('search', 'add-marked-to-playlist', self.add_marked_to_playlist)]
+    self.__super.__init__(SearchWalker(format, app), actions=actions)
     self.app = app
+
+  def _get_mark_key(self, w, pos):
+    return w.id
+
+  def add_marked_to_playlist(self):
+    m = list(self.marked)
+
+    if not m:
+      w, pos = self.get_focus()
+
+      if w is None:
+        return
+
+      m = [self._get_mark_key(w, pos)]
+
+    idl = coll.IDList()
+    idl.ids += m
+    xs.playlist_add_collection(idl, ['id'], sync=False)
 
   def keypress(self, size, key):
     if key == '/':
+      self.unmark_all()
       # FIXME: hack
       self.app.show_input(self.body.get_input_widget())
     else:

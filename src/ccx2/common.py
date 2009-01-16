@@ -218,9 +218,11 @@ class CachedCollectionWalker(urwid.ListWalker):
     if not self._in_bounds(pos):
       self._load_cache(pos)
 
-    w = self.cache[pos-self.cache_bounds[0]]
-
-    return w, pos
+    try:
+      w = self.cache[pos-self.cache_bounds[0]]
+      return w, pos
+    except IndexError:
+      return None, None
 
   def get_focus(self):
     return self.get_pos(self.focus)
