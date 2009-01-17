@@ -26,6 +26,7 @@
 
 import signal
 import sys
+import time
 
 import urwid
 import urwid.curses_display
@@ -166,16 +167,15 @@ class Ccx2(object):
     self.headerbar = HeaderBar()
     self.view = urwid.Frame(self.tabcontainer, header=self.headerbar)
 
-    signals.connect('need-redraw', self.redraw)
-    signals.connect('need-redraw-non-urgent', self.on_need_redraw_non_urgent)
+    self.need_redraw = False
 
-  def on_need_redraw_non_urgent(self):
-    signals.alarm(0.3, lambda *a: self.redraw())
+    def _need_redraw(): self.need_redraw = True
+    signals.connect('need-redraw', _need_redraw)
 
   def main(self):
     self.ui = urwid.curses_display.Screen()
     self.ui.register_palette(self.palette)
-    self.ui.set_input_timeouts(max_wait=0.1)
+    self.ui.set_input_timeouts(max_wait=0)
     self.ui.run_wrapper(self.run)
 
   def show_dialog(self, dialog):
@@ -195,6 +195,7 @@ class Ccx2(object):
   def redraw(self):
     canvas = self.view.render(self.size, focus=1)
     self.ui.draw_screen(self.size, canvas)
+    self.need_redraw = False
 
   def run(self):
     self.size = self.ui.get_cols_rows()
@@ -207,6 +208,9 @@ class Ccx2(object):
         keys = self.ui.get_input()
         xs.ioout()
         xs.ioin()
+        if self.need_redraw:
+          self.redraw()
+        time.sleep(0.01)
 
       for k in keys:
         if k == 'window resize':

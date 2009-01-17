@@ -28,7 +28,7 @@ class SearchWalker(common.CachedCollectionWalker):
         self.collection = self.empty_coll
 
       self._modified()
-      signals.emit('need-redraw-non-urgent')
+      signals.emit('need-redraw')
 
     # TODO: make a CachedLimitedCollectionWalker to see if it helps and we can avoid the alarm 
     signals.alarm(0.1, _f)

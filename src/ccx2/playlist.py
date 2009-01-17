@@ -90,7 +90,7 @@ class PlaylistWalker(common.CachedCollectionWalker):
       if self._in_bounds(pos):
         row = self.cache.pop(pos - self.cache_bounds[0])
       else:
-        row = self.row_widget(id, text)
+        row = widget
 
       if self._in_bounds(newpos):
         self.cache.insert(newpos-self.cache_bounds[0], row)
@@ -102,7 +102,7 @@ class PlaylistWalker(common.CachedCollectionWalker):
     else:
       # hard reload everything just in case
       self.collection = xs.coll_get(self.pls, 'Playlists')
-      signals.emit('need-redraw-non-urgent')
+      signals.emit('need-redraw')
       return
 
     if pls == self.pls and (pos <= self.cache_bounds[1] or not self.ids_len or not self.cache):
@@ -160,7 +160,6 @@ class Playlist(common.ActionsListBox):
       self.active_pls = pls
 
     self.view_pls = pls
-    signals.emit('need-redraw')
 
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     try:
