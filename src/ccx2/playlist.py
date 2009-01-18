@@ -60,6 +60,9 @@ class PlaylistWalker(common.CachedCollectionWalker):
 
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
 
+    if pls != self.pls:
+      return
+
     if id is not None and type in (xmmsclient.PLAYLIST_CHANGED_ADD,
                                    xmmsclient.PLAYLIST_CHANGED_MOVE,
                                    xmmsclient.PLAYLIST_CHANGED_INSERT):
@@ -105,7 +108,8 @@ class PlaylistWalker(common.CachedCollectionWalker):
       signals.emit('need-redraw')
       return
 
-    if pls == self.pls and (pos <= self.cache_bounds[1] or not self.ids_len or not self.cache):
+    if pos is not None and \
+       (pos <= self.cache_bounds[1] or not self.ids_len or not self.cache):
       signals.emit('need-redraw')
 
   def on_xmms_playlist_current_pos(self, pls, pos):
