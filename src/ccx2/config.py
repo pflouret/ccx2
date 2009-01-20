@@ -101,6 +101,7 @@ default_keybindings = {
     },
     'search': {
         'add-marked-to-playlist': ['a'],
+        'add-marked-after-current-pos': ['w'],
     },
     'playlist-switcher': {
         'load': ['enter'],

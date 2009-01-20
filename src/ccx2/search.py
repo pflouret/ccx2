@@ -38,14 +38,15 @@ class SearchWalker(common.CachedCollectionWalker):
 
 class SearchListBox(common.ActionsListBox):
   def __init__(self, format, app):
-    actions = [('search', 'add-marked-to-playlist', self.add_marked_to_playlist)]
+    actions = [('search', 'add-marked-to-playlist', self.add_marked_to_playlist),
+               ('search', 'add-marked-after-current-pos', self.add_marked_after_current_pos)]
     self.__super.__init__(SearchWalker(format, app), actions=actions)
     self.app = app
 
   def _get_mark_key(self, w, pos):
     return w.id
 
-  def add_marked_to_playlist(self):
+  def add_marked_to_playlist(self, insert_in_pos=None):
     m = list(self.marked)
 
     if not m:
@@ -58,7 +59,20 @@ class SearchListBox(common.ActionsListBox):
 
     idl = coll.IDList()
     idl.ids += m
-    xs.playlist_add_collection(idl, ['id'], sync=False)
+    if insert_in_pos is None:
+      xs.playlist_add_collection(idl, ['id'], sync=False)
+    else:
+      xs.playlist_insert_collection(int(insert_in_pos), idl, ['id'], sync=False)
+
+  def add_marked_after_current_pos(self):
+    def _cb(r):
+      if not r.iserror():
+        v = r.value()
+        if v == u'no current entry':
+          self.add_marked_to_playlist()
+        else:
+          self.add_marked_to_playlist(v['position']+1)
+    xs.playlist_current_pos(cb=_cb, sync=False)
 
   def keypress(self, size, key):
     if key == '/':
