@@ -78,6 +78,7 @@ default_keybindings = {
         'goto-next-tab': [']'],
         'mark-and-move-down': [' '], # space
         'mark-and-move-up': ['<0>'], # ctrl space
+        'unmark-all': ['meta  '], # meta space
         'return': ['enter', 'ctrl m'],
         'delete': ['d', 'delete'],
         'cancel': ['esc', 'ctrl g'],

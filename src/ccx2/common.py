@@ -33,22 +33,19 @@ import xmms
 xs = xmms.get()
 
 class ActionsListBox(urwid.ListBox):
-  def __init__(self, body, actions=[], mark_preserve_order=False):
+  def __init__(self, body, actions=[]):
     self._action_map = {}
     self._actions = [('general', 'move-top', lambda: self.set_focus(0)),
                      ('general', 'move-bottom', lambda: self.set_focus_last()),
                      ('general', 'mark-and-move-up', lambda: self._mark_and_move_rel(-1)),
-                     ('general', 'mark-and-move-down', lambda: self._mark_and_move_rel(1))]
+                     ('general', 'mark-and-move-down', lambda: self._mark_and_move_rel(1)),
+                     ('general', 'unmark-all', self.unmark_all)]
 
     self._actions.extend(actions)
 
     self._setup_actions()
 
-    self.mark_preserve_order = mark_preserve_order
-    if mark_preserve_order:
-      self._marked = []
-    else:
-      self._marked = {}
+    self._marked = {}
 
     self.__super.__init__(body)
 
@@ -76,15 +73,16 @@ class ActionsListBox(urwid.ListBox):
     if w is not None:
       key = self._get_mark_key(w, pos)
       if w.marked:
-        self._unmark(key, w)
+        self._unmark(key)
       else:
         self._mark(key, w)
 
   def unmark_all(self):
-    if self.mark_preserve_order:
-      self._marked = []
-    else:
-      self._marked.clear()
+    for w in self._marked.values():
+      w.marked = False
+      w._update_w() # FIXME
+
+    self._marked.clear()
 
   def keypress(self, size, key):
     key = self.__super.keypress(size, key)
@@ -102,25 +100,15 @@ class ActionsListBox(urwid.ListBox):
   def _get_mark_key(self, w, pos):
     return pos
 
-  def _mark(self, key, w=None):
-    if self.mark_preserve_order:
-      self._marked.append(key)
-    else:
-      self._marked[key] = None
+  def _mark(self, key, w):
+    self._marked[key] = w
+    w.marked = True
+    w._update_w() # FIXME
 
-    if w:
-      w.marked = True
-      w._update_w()
-
-  def _unmark(self, key, w=None):
-    if self.mark_preserve_order:
-      self._marked.remove(key)
-    else:
-      del self._marked[key]
-
-    if w:
-      w.marked = False
-      w._update_w()
+  def _unmark(self, key):
+    w.marked = False
+    w._update_w() # FIXME
+    del self._marked[key]
 
   def _mark_and_move_rel(self, delta):
     w, pos = self.get_focus()
