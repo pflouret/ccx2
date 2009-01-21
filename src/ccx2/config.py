@@ -87,6 +87,10 @@ default_keybindings = {
     'text_edit': {
         'delete-word-backward': ['ctrl w', 'ctrl backspace'],
         'delete-word-forward': ['meta d', 'meta delete'],
+        'move-word-backward': ['meta b'],
+        'move-word-forward': ['meta f'],
+        'move-char-backward': ['ctrl b'],
+        'move-char-forward': ['ctrl f'],
     },
     'playback': {
         'play': ['x'],

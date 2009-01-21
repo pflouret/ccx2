@@ -16,6 +16,8 @@ coll_parser_pattern_rx = re.compile(r'\(|\)|#|:|~|<|>|=|\+|OR|AND|NOT')
 class SearchWalker(common.CachedCollectionWalker):
   def __init__(self, format, app, query=''):
     self.empty_coll = coll.IDList()
+    self.prev_q = ''
+
     common.CachedCollectionWalker.__init__(
         self, self.empty_coll, 'search', app, widgets.SongWidget)
 
@@ -44,8 +46,10 @@ class SearchWalker(common.CachedCollectionWalker):
       self._modified()
       signals.emit('need-redraw')
 
-    # TODO: make a CachedLimitedCollectionWalker to see if it helps and we can avoid the alarm 
-    signals.alarm(0.25, _f)
+    if q != self.prev_q:
+      # TODO: make a CachedLimitedCollectionWalker to see if it helps and we can avoid the alarm 
+      signals.alarm(0.25, _f)
+      self.prev_q = q
 
   def get_input_widget(self):
     return self.w

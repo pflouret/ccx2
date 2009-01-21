@@ -172,7 +172,7 @@ class InputEdit(urwid.Edit):
   BACK = 1
   FORWARD = 2
 
-  def _delete_word(self, dir):
+  def _find_word_pos(self, dir):
     assert dir in (self.BACK, self.FORWARD)
     white = ' \t'
 
@@ -186,7 +186,7 @@ class InputEdit(urwid.Edit):
       move_delta = 1
       in_bounds = lambda p: p <= tlen-1
 
-    start = p = self.edit_pos
+    p = self.edit_pos
 
     if not in_bounds(p):
       return p
@@ -206,6 +206,11 @@ class InputEdit(urwid.Edit):
         while in_bounds(p) and self.edit_text[p+look_delta] not in white+config.word_separators:
           p += move_delta
 
+    return p
+
+  def _delete_word(self, dir):
+    start = self.edit_pos
+    p = self._find_word_pos(dir)
     self.highlight = dir == self.BACK and (p, start) or (start, p)
     self._delete_highlighted()
 
@@ -214,6 +219,12 @@ class InputEdit(urwid.Edit):
 
   def delete_word_backward(self):
     self._delete_word(self.BACK)
+
+  def move_word_forward(self):
+    self.edit_pos = self._find_word_pos(self.FORWARD)
+
+  def move_word_backward(self):
+    self.edit_pos = self._find_word_pos(self.BACK)
 
   def keypress(self, size, key):
     text = self.edit_text
@@ -225,6 +236,14 @@ class InputEdit(urwid.Edit):
       self.delete_word_backward()
     elif key in config.keybindings['text_edit']['delete-word-forward']:
       self.delete_word_forward()
+    elif key in config.keybindings['text_edit']['move-char-backward']:
+      self.edit_pos -= 1
+    elif key in config.keybindings['text_edit']['move-char-forward']:
+      self.edit_pos += 1
+    elif key in config.keybindings['text_edit']['move-word-backward']:
+      self.move_word_backward()
+    elif key in config.keybindings['text_edit']['move-word-forward']:
+      self.move_word_forward()
     else:
       return self.__super.keypress(size, key)
 
