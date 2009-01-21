@@ -9,24 +9,38 @@ import xmms
 xs = xmms.get()
 
 
+import re
+
+coll_parser_pattern_rx = re.compile(r'\(|\)|#|:|~|<|>|=|\+|OR|AND|NOT')
+
 class SearchWalker(common.CachedCollectionWalker):
   def __init__(self, format, app, query=''):
     self.empty_coll = coll.IDList()
     common.CachedCollectionWalker.__init__(
         self, self.empty_coll, 'search', app, widgets.SongWidget)
 
-    self.w = widgets.InputEdit(caption='pattern search: ')
+    self.w = widgets.InputEdit(caption='  quick search: ')
+
     urwid.connect_signal(self.w, 'change', self._on_query_change)
 
     self._on_query_change(query)
 
   def _on_query_change(self, q):
     def _f(sig, frame):
+      caption = '  quick search: '
+      qs = q
+      if q:
+        if coll_parser_pattern_rx.search(q):
+          caption = 'pattern search: '
+        else:
+          qs = ' '.join(['~'+s for s in q.split()])
+
       try:
-        self.collection = coll.coll_parse(q)
+        self.collection = coll.coll_parse(qs)
       except ValueError:
         pass
 
+      self.w.set_caption(caption)
       self._modified()
       signals.emit('need-redraw')
 

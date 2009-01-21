@@ -220,7 +220,10 @@ class XmmsService(object):
   def coll_query_ids(self, collection, cb=None, sync=True):
     if sync:
       try:
-        return self.xmms_s.coll_query_ids(collection)
+        r = self.xmms_s.coll_query_ids(collection)
+        if type(r) != list:
+          r = []
+        return r
       except xmmsclient.XMMSError:
         return []
     else:
@@ -232,7 +235,10 @@ class XmmsService(object):
 
     if sync:
       try:
-        return self.xmms_s.coll_query_infos(collection, fields)
+        r = self.xmms_s.coll_query_infos(collection, fields)
+        if type(r) != list:
+          r = []
+        return r
       except xmmsclient.XMMSError:
         return []
     else:
