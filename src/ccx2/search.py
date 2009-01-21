@@ -25,13 +25,13 @@ class SearchWalker(common.CachedCollectionWalker):
       try:
         self.collection = coll.coll_parse(q)
       except ValueError:
-        self.collection = self.empty_coll
+        pass
 
       self._modified()
       signals.emit('need-redraw')
 
     # TODO: make a CachedLimitedCollectionWalker to see if it helps and we can avoid the alarm 
-    signals.alarm(0.1, _f)
+    signals.alarm(0.25, _f)
 
   def get_input_widget(self):
     return self.w
