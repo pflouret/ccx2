@@ -377,6 +377,12 @@ class XmmsService(object):
     else:
       self.xmms.playlist_insert_collection(pos, coll, order, playlist, cb=cb)
 
+  def playlist_insert_id(self, pos, id, playlist=None, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.playlist_insert_id(pos, id, playlist)
+    else:
+      self.xmms.playlist_insert_id(pos, id, playlist, cb=cb)
+
   def playlist_list(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playlist_list()
