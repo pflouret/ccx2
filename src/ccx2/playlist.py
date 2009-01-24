@@ -29,7 +29,7 @@ from xmmsclient import collections as coll
 from xmmsclient.sync import XMMSError
 
 import common
-import config
+import keys
 import mifl
 import signals
 import widgets
@@ -132,14 +132,9 @@ class PlaylistWalker(common.CachedCollectionWalker):
     return w, p
 
 
-class Playlist(common.ActionsListBox):
+class Playlist(common.MarkableListBox):
   def __init__(self, app):
-    actions = [('playlist', 'play-focus', self.play_focus),
-               ('playlist', 'move-marked-up', self.move_marked_up),
-               ('playlist', 'move-marked-down', self.move_marked_down),
-               ('general', 'delete', self.delete_marked)]
-
-    self.__super.__init__([], actions=actions)
+    self.__super.__init__([], app.ch)
 
     self.app = app
     self.format = 'simple'
@@ -151,7 +146,20 @@ class Playlist(common.ActionsListBox):
     signals.connect('xmms-playlist-loaded', self.load)
     signals.connect('xmms-playlist-changed', self.on_xmms_playlist_changed)
 
+    self.register_commands()
+
     self.load(self.active_pls)
+
+  def register_commands(self):
+    self.app.ch.register_command(self, 'play-focused', self.play_focus)
+    self.app.ch.register_command(self, 'move-marked-up', self.move_marked_up)
+    self.app.ch.register_command(self, 'move-marked-down', self.move_marked_down)
+    self.app.ch.register_command(self, 'remove-marked', self.remove_marked)
+
+    for command, k in keys.bindings['playlist'].iteritems():
+      self.app.ch.register_keys(self, command, k)
+
+    self.app.ch.register_keys(self, 'remove-marked', keys.bindings['general']['remove'])
 
   def load(self, pls, from_xmms=True):
     if pls not in self._walkers:
@@ -172,12 +180,12 @@ class Playlist(common.ActionsListBox):
     except KeyError:
       pass
 
-  def play_focus(self):
+  def play_focus(self, context, args):
     pos = self.get_focus()[1]
     if pos is not None:
       xs.playlist_play(playlist=self.view_pls, pos=pos)
 
-  def delete_marked(self):
+  def remove_marked(self, context, args):
     m = self.marked
     if not m:
       w, pos = self.get_focus()
@@ -190,7 +198,10 @@ class Playlist(common.ActionsListBox):
 
     self.unmark_all()
 
-  def move_marked_up(self):
+  def get_contexts(self):
+    return [self]
+
+  def move_marked_up(self, context, args):
     # TODO: will have to do this locally and then sync up, or do it synchronous while
     # TODO: turning off the signal, the performance for just receiving the signals is awful
     m = list(self.marked)
@@ -212,7 +223,7 @@ class Playlist(common.ActionsListBox):
         self._unmark((w, pos))
         self._mark((w, pos-1), w)
 
-  def move_marked_down(self):
+  def move_marked_down(self, context, args):
     m = list(self.marked)
     if not m:
       m = [self._get_mark_key(*self.get_focus())]
@@ -320,29 +331,36 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
       signals.emit('need-redraw')
 
 
-class PlaylistSwitcher(common.ActionsListBox):
+class PlaylistSwitcher(common.MarkableListBox):
   def __init__(self, app):
+    self.__super.__init__(PlaylistSwitcherWalker(), app.ch)
+
     self.app = app
+    self.register_commands()
 
-    actions = [('playlist-switcher', 'load', self.load_focused),
-               ('general', 'delete', self.delete_marked),
-               ('playlist-switcher', 'rename', self.rename_focused),
-               ('playlist-switcher', 'add-playlist-to-current', self.add_playlist_to_current),
-               ('playlist-switcher', 'new', self.new_playlist)]
+  def register_commands(self):
+    self.app.ch.register_command(self, 'load-focused', self.load_focused)
+    self.app.ch.register_command(self, 'remove-focused', self.remove_marked)
+    self.app.ch.register_command(self, 'rename-focused', self.rename_focused)
+    self.app.ch.register_command(self, 'add-focused-to-playlist', self.add_to_current)
+    self.app.ch.register_command(self, 'new', self.new_playlist)
 
-    self.__super.__init__(PlaylistSwitcherWalker(), actions=actions)
+    for command, k in keys.bindings['playlist-switcher'].iteritems():
+      self.app.ch.register_keys(self, command, k)
 
-  def load_focused(self):
+    self.app.ch.register_keys(self, 'remove-focused', keys.bindings['general']['remove'])
+
+  def load_focused(self, context=None, args=None):
     w = self.get_focus()[0]
     if w:
       xs.playlist_load(w.name, sync=False)
 
-  def delete_marked(self):
+  def remove_marked(self, context=None, args=None):
     w = self.get_focus()[0]
     if w:
       xs.playlist_remove(w.name, sync=False)
 
-  def rename_focused(self):
+  def rename_focused(self, context=None, args=None):
     w = self.get_focus()[0]
     if w:
       dialog = widgets.InputDialog('new playlist name', 55, 5)
@@ -350,7 +368,7 @@ class PlaylistSwitcher(common.ActionsListBox):
       if new_name:
         xs.coll_rename(w.name, new_name, 'Playlists', sync=False)
 
-  def add_playlist_to_current(self):
+  def add_to_current(self, context=None, args=None):
     w = self.get_focus()[0]
     if w:
       # this awfulness stems from the fact that you have to use playlist_add_collection,
@@ -366,9 +384,11 @@ class PlaylistSwitcher(common.ActionsListBox):
 
       xs.coll_save(idl, cur_active, 'Playlists')
 
-  def new_playlist(self):
+  def new_playlist(self, context=None, args=None):
     dialog = widgets.InputDialog('playlist name', 55, 5)
     name = self.app.show_dialog(dialog)
     if name:
       xs.playlist_create(name, sync=False)
 
+  def get_contexts(self):
+    return [self]

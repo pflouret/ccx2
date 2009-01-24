@@ -22,67 +22,40 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+command_mode_key = ':'
 
-# H: horizontal | V: vertical | D: down | U: up
-
-# unicode
-UBORDER_H = u'\u2500'
-UBORDER_V = u'\u2502'
-UBORDER_H_D = u'\u252c'
-
-UDOUBLE_BORDER_H = u'\u2550'
-UDOUBLE_BORDER_V = u'\u2551'
-UDOUBLE_BORDER_H_D = u'\u2566'
-
-# ascii
-ABORDER_H = u'-'
-ABORDER_V = u'|'
-ABORDER_H_D = u'-'
-
-ADOUBLE_BORDER_H = u'='
-ADOUBLE_BORDER_V = u'|'
-ADOUBLE_BORDER_H_D = u'='
-
-DEFAULT_WORD_SEPARATORS = '.,~:+][}{\\/-_;"'
-
-default_unicode_borders = {
-    'h': UBORDER_H,
-    'v': UBORDER_V,
-    'hd': UBORDER_H_D,
-    'dh': UDOUBLE_BORDER_H,
-    'dv': UDOUBLE_BORDER_V,
-    'dhd': UDOUBLE_BORDER_H_D,
-}
-
-default_ascii_borders = {
-    'h': ABORDER_H,
-    'v': ABORDER_V,
-    'hd': ABORDER_H_D,
-    'dh': ADOUBLE_BORDER_H,
-    'dv': ADOUBLE_BORDER_V,
-    'dhd': ADOUBLE_BORDER_H_D,
-}
-
-default_keybindings = {
-    'general': {
-        'move-left': ['h', 'left'],
-        'move-up': ['k', 'up'],
-        'move-down': ['j', 'down'],
-        'move-right': ['l', 'right'],
+default_bindings = {
+    'movement': {
+        'move-focus-left': ['h', 'left'],
+        'move-focus-up': ['k', 'up'],
+        'move-focus-down': ['j', 'down'],
+        'move-focus-right': ['l', 'right'],
         'page-up': ['ctrl u', 'page up'],
         'page-down': ['ctrl d', 'page down'],
-        'move-top': ['home', 'ctrl a'],
-        'move-bottom': ['end', 'ctrl e'],
-        'goto-tab-n': ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
-        'goto-prev-tab': ['['],
-        'goto-next-tab': [']'],
+        'move-focus-top': ['home', 'ctrl a'],
+        'move-focus-bottom': ['end', 'ctrl e'],
+    },
+    'general': {
         'mark-and-move-down': [' '], # space
         'mark-and-move-up': ['<0>'], # ctrl space
         'unmark-all': ['meta  '], # meta space
         'return': ['enter', 'ctrl m'],
-        'delete': ['d', 'delete'],
+        'remove': ['d', 'delete'],
         'cancel': ['esc', 'ctrl g'],
         'quit': ['q', 'ctrl q'],
+    },
+    'tabs': {
+        'goto-tab 1': ['1'],
+        'goto-tab 2': ['2'],
+        'goto-tab 3': ['3'],
+        'goto-tab 4': ['4'],
+        'goto-tab 5': ['5'],
+        'goto-tab 6': ['6'],
+        'goto-tab 7': ['7'],
+        'goto-tab 8': ['8'],
+        'goto-tab 9': ['9'],
+        'goto-prev-tab': ['['],
+        'goto-next-tab': [']'],
     },
     'text_edit': {
         'delete-word-backward': ['ctrl w', 'ctrl backspace'],
@@ -100,7 +73,7 @@ default_keybindings = {
         'previous-track': ['<', 'z'],
     },
     'playlist': {
-        'play-focus': ['enter'],
+        'play-focused': ['enter', 'ctrl m'],
         'move-marked-up': ['K'],
         'move-marked-down': ['J'],
     },
@@ -109,10 +82,10 @@ default_keybindings = {
         'add-marked-after-current-pos': ['w'],
     },
     'playlist-switcher': {
-        'load': ['enter'],
+        'load-focused': ['enter', 'ctrl m'],
         'new': ['n'],
-        'rename': ['r'],
-        'add-playlist-to-current': ['a'],
+        'rename-focused': ['F2'],
+        'add-focused-to-playlist': ['a'],
     },
     'collection-browser': {
         'navigate-in': ['l', 'right'],
@@ -121,25 +94,4 @@ default_keybindings = {
     },
 }
 
-default_formatting = {
-    'by_albumartist':
-        """(or :performer :artist)
-            > :album
-            > (if :partofset (cat "CD" :partofset))
-            > (pad :tracknr "2" "0"). 
-              (if (not (= :artist :performer)) (cat :artist " - ")):title'}
-        """,
-    'simple':
-        """(or :performer :artist) - 
-            (if :partofset (cat :partofset "."))(pad :tracknr "2" "0") - 
-            :title (if :compilation (cat " | " :artist))""",
-    'search':
-        """(or :performer :artist) - 
-            (if :album (cat :album " - "))
-            (if :compilation (cat :artist " - "))
-            (if :partofset (cat :partofset "-"))(pad :tracknr "2" "0"). :title"""
-}
-
-formatting = default_formatting
-borders = default_unicode_borders
-word_separators = DEFAULT_WORD_SEPARATORS
+bindings = default_bindings

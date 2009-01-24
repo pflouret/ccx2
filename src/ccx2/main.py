@@ -32,7 +32,8 @@ import urwid
 import urwid.curses_display
 import xmmsclient
 
-import config
+import commands
+import keys
 import playlist
 import search
 import signals
@@ -42,25 +43,6 @@ import xmms
 
 
 xs = xmms.get()
-
-class GlobalCommandsHandler(object):
-  def __init__(self):
-    self._key_action = {}
-
-    for action, fun in (('play', lambda: xs.playback_start(sync=False)),
-                        ('play-pause-toggle', lambda: xs.playback_play_pause_toggle(sync=False)),
-                        ('stop', lambda: xs.playback_stop(sync=False)),
-                        ('next-track', lambda: xs.playback_next(sync=False)),
-                        ('previous-track', lambda: xs.playback_prev(sync=False)),
-                       ):
-      for key in config.keybindings['playback'][action]:
-        self._key_action[key] = fun
-
-  def keypress(self, size, key):
-    if key in self._key_action:
-      self._key_action[key]()
-    else:
-      return key
 
 class HeaderBar(urwid.WidgetWrap):
   status_desc = {xmmsclient.PLAYBACK_STATUS_PLAY: 'PLAYING',
@@ -81,17 +63,6 @@ class HeaderBar(urwid.WidgetWrap):
     curid = xs.playback_current_id()
     xs.medialib_get_info(
         curid, cb=lambda r: self.on_xmms_playback_current_info(r.value()), sync=False)
-
-    for action in (('move-up', 'cursor up'),
-                   ('move-down', 'cursor down'),
-                   ('move-right', 'cursor right'),
-                   ('move-left', 'cursor left'),
-                   ('page-up', 'cursor page up'),
-                   ('page-down', 'cursor page down'),
-                   ('move-top', 'cursor max left'),
-                   ('move-bottom', 'cursor max right')):
-      for k in config.keybindings['general'][action[0]]:
-        urwid.command_map[k] = action[1]
 
   def _humanize_time(self, milli, str_output=True):
     sec, milli = divmod(milli, 1000)
@@ -155,6 +126,8 @@ class Ccx2(object):
     ('headerbar','default', 'default')]
 
   def __init__(self):
+    self.ch = commands.CommandHandler()
+
     pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
                            ('fixed', 1, urwid.SolidFill(u'\u2502')),
                            ('weight', 5, playlist.Playlist(self))],
@@ -162,7 +135,6 @@ class Ccx2(object):
     tabs = [('help', urwid.ListBox([urwid.Text('yeah right')])),
             ('playlist', pview)]
 
-    self.gch = GlobalCommandsHandler()
     self.tabcontainer = containers.TabContainer(self, tabs)
     self.headerbar = HeaderBar()
     self.view = urwid.Frame(self.tabcontainer, header=self.headerbar)
@@ -171,6 +143,40 @@ class Ccx2(object):
 
     def _need_redraw(): self.need_redraw = True
     signals.connect('need-redraw', _need_redraw)
+
+    self.register_commands()
+
+  def register_commands(self):
+    self.ch.register_command(self, 'play', lambda c, a: xs.playback_start(sync=False))
+    self.ch.register_command(self, 'play-pause-toggle',
+                             lambda c, a: xs.playback_play_pause_toggle(sync=False)),
+    self.ch.register_command(self, 'stop', lambda c, a: xs.playback_stop(sync=False)),
+    self.ch.register_command(self, 'next-track', lambda c, a: xs.playback_next(sync=False)),
+    self.ch.register_command(self, 'previous-track', lambda c, a: xs.playback_prev(sync=False)),
+
+    self.ch.register_command(self, 'quit', lambda c, a: sys.exit(0))
+    self.ch.register_command(self, 'q', 'quit')
+
+    self.ch.register_command(self, 'search', self.show_search)
+
+    for command, k in keys.bindings['playback'].iteritems():
+      self.ch.register_keys(self, command, k)
+
+    self.ch.register_keys(self, 'quit', keys.bindings['general']['quit'])
+    self.ch.register_keys(self, 'search', ['/'])
+
+    # change default urwid command map
+    for action in (('move-focus-up', 'cursor up'),
+                   ('move-focus-down', 'cursor down'),
+                   ('move-focus-right', 'cursor right'),
+                   ('move-focus-left', 'cursor left'),
+                   ('page-up', 'cursor page up'),
+                   ('page-down', 'cursor page down'),
+                   ('move-focus-top', 'cursor max left'),
+                   ('move-focus-bottom', 'cursor max right')):
+      for k in keys.bindings['movement'][action[0]]:
+        urwid.command_map[k] = action[1]
+
 
   def main(self):
     self.ui = urwid.curses_display.Screen()
@@ -181,7 +187,7 @@ class Ccx2(object):
   def show_dialog(self, dialog):
     return dialog.show(self.ui, self.size, self.view)
 
-  def show_input(self, widget):
+  def show_prompt(self, widget):
     def _restore(*args):
       self.view.footer = None
       self.view.set_focus('body')
@@ -191,6 +197,14 @@ class Ccx2(object):
 
     self.view.footer = widget
     self.view.set_focus('footer')
+
+  def show_search(self, context, args):
+    lb = search.SearchListBox('simple', self)
+    w = lb.body.get_input_widget()
+    tabindex = self.tabcontainer.add_tab('search', lb, True)
+    urwid.connect_signal(w, 'abort', lambda: self.tabcontainer.remove_tab(tabindex))
+    self.show_prompt(w)
+    w.set_edit_text(args)
 
   def redraw(self):
     canvas = self.view.render(self.size, focus=1)
@@ -203,30 +217,25 @@ class Ccx2(object):
     while 1:
       self.redraw()
 
-      keys = None
-      while not keys:
-        keys = self.ui.get_input()
+      input_keys = None
+      while not input_keys:
+        input_keys = self.ui.get_input()
         xs.ioout()
         xs.ioin()
         if self.need_redraw:
           self.redraw()
         time.sleep(0.01)
 
-      for k in keys:
+      for k in input_keys:
         if k == 'window resize':
           self.size = self.ui.get_cols_rows()
+        elif k == keys.command_mode_key:
+          contexts = self.view.body.get_contexts() + [self]
+          self.show_prompt(self.ch.get_command_prompt(contexts))
         elif self.view.keypress(self.size, k) is None:
           continue
-        elif k == '/':
-          lb = search.SearchListBox('simple', self)
-          w = lb.body.get_input_widget()
-          tabindex = self.tabcontainer.add_tab('search', lb, True)
-          urwid.connect_signal(w, 'abort', lambda: self.tabcontainer.remove_tab(tabindex))
-          self.show_input(w)
-        elif self.gch.keypress(self.size, k) is None:
+        elif self.ch.run_key(self.view.body.get_contexts() + [self], k):
           continue
-        elif k in config.keybindings['general']['quit']:
-          return
         # TODO: else show unbound key msg
 
 if __name__ == '__main__':

@@ -27,6 +27,7 @@ import urwid
 from xmmsclient import collections as coll
 
 import config
+import keys
 
 class MarkableText(urwid.WidgetWrap):
   def __init__(self,
@@ -150,17 +151,17 @@ class InputDialog(urwid.WidgetWrap):
     if not self._initialized:
       self._init_w(body)
 
-    keys = True
+    input_keys = True
 
     while True:
-      if keys:
+      if input_keys:
         ui.draw_screen(size, self.render(size, True))
-      keys = ui.get_input()
+      input_keys = ui.get_input()
 
-      for k in keys:
+      for k in input_keys:
         if k == 'window resize':
           size = ui.get_cols_rows()
-        elif k in config.keybindings['general']['cancel']:
+        elif k in keys.bindings['general']['cancel']:
           return ''
         elif k == 'enter':
           return self.get_text()
@@ -228,21 +229,21 @@ class InputEdit(urwid.Edit):
 
   def keypress(self, size, key):
     text = self.edit_text
-    if key in config.keybindings['general']['return']:
+    if key in keys.bindings['general']['return']:
       self._emit('done', self.edit_text)
-    elif key in config.keybindings['general']['cancel']:
+    elif key in keys.bindings['general']['cancel']:
       self._emit('abort')
-    elif key in config.keybindings['text_edit']['delete-word-backward']:
+    elif key in keys.bindings['text_edit']['delete-word-backward']:
       self.delete_word_backward()
-    elif key in config.keybindings['text_edit']['delete-word-forward']:
+    elif key in keys.bindings['text_edit']['delete-word-forward']:
       self.delete_word_forward()
-    elif key in config.keybindings['text_edit']['move-char-backward']:
+    elif key in keys.bindings['text_edit']['move-char-backward']:
       self.edit_pos -= 1
-    elif key in config.keybindings['text_edit']['move-char-forward']:
+    elif key in keys.bindings['text_edit']['move-char-forward']:
       self.edit_pos += 1
-    elif key in config.keybindings['text_edit']['move-word-backward']:
+    elif key in keys.bindings['text_edit']['move-word-backward']:
       self.move_word_backward()
-    elif key in config.keybindings['text_edit']['move-word-forward']:
+    elif key in keys.bindings['text_edit']['move-word-forward']:
       self.move_word_forward()
     else:
       return self.__super.keypress(size, key)

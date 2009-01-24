@@ -24,7 +24,7 @@
 
 import urwid
 
-import config
+import keys
 import search
 import signals
 
@@ -45,6 +45,8 @@ class TabContainer(urwid.Pile):
                            ('flow', urwid.Divider(u'\u2500')),
                            self.tab_w],
                           2)
+
+    self.register_commands()
 
   def _update_tabbar_string(self):
     texts = []
@@ -94,21 +96,48 @@ class TabContainer(urwid.Pile):
     except IndexError:
       pass
 
-  def current_tab_is_closable(self):
+  def get_contexts(self):
+    w = self.tab_w._w
+    while not hasattr(w, 'get_contexts') and hasattr(w, 'get_focus'):
+      w = w.get_focus()
+
+    c = []
+    if hasattr(w, 'get_contexts'):
+      c = w.get_contexts()
+
+    return c + [self]
+
+  def tab_is_closable(self, n):
     # XXX: move to classes?
-    t = type(self.tabs[self.cur_tab][1])
-    return t == search.SearchListBox
+    try:
+      t = type(self.tabs[n][1])
+      return t == search.SearchListBox
+    except IndexError:
+      return False
 
-  def keypress(self, size, key):
-    if key in config.keybindings['general']['goto-tab-n']:
-      self.load_tab(config.keybindings['general']['goto-tab-n'].index(key))
-    elif key in config.keybindings['general']['goto-prev-tab']:
-      self.load_tab(self.cur_tab-1, wrap=True)
-    elif key in config.keybindings['general']['goto-next-tab']:
-      self.load_tab(self.cur_tab+1, wrap=True)
-    elif key in config.keybindings['general']['cancel'] and self.current_tab_is_closable():
-      self.remove_tab(self.cur_tab)
-    else:
-      return self.__super.keypress(size, key)
+  def register_commands(self):
+    def goto_tab(context, args):
+      try: self.load_tab(int(args)-1)
+      except ValueError: pass
 
+    def close_tab(context, args):
+      if args:
+        try: n = int(args)
+        except ValueError: return
+      else:
+        n = self.cur_tab
+      if self.tab_is_closable(n):
+        self.remove_tab(n)
+
+    self.app.ch.register_command(self, 'goto-tab', goto_tab)
+    self.app.ch.register_command(
+        self, 'goto-prev-tab', lambda c, a: self.load_tab(self.cur_tab-1, wrap=True))
+    self.app.ch.register_command(
+        self, 'goto-next-tab', lambda c, a: self.load_tab(self.cur_tab+1, wrap=True))
+    self.app.ch.register_command(self, 'close-tab', close_tab)
+
+    for command, k in keys.bindings['tabs'].iteritems():
+      self.app.ch.register_keys(self, command, k)
+
+    self.app.ch.register_keys(self, 'close-tab', keys.bindings['general']['cancel'])
 

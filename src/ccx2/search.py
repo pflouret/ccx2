@@ -2,6 +2,7 @@ import urwid
 import xmmsclient.collections as coll
 
 import common
+import keys
 import signals
 import widgets
 import xmms
@@ -54,17 +55,25 @@ class SearchWalker(common.CachedCollectionWalker):
   def get_input_widget(self):
     return self.w
 
-class SearchListBox(common.ActionsListBox):
+class SearchListBox(common.MarkableListBox):
   def __init__(self, format, app):
-    actions = [('search', 'add-marked-to-playlist', self.add_marked_to_playlist),
-               ('search', 'add-marked-after-current-pos', self.add_marked_after_current_pos)]
-    self.__super.__init__(SearchWalker(format, app), actions=actions)
+    self.__super.__init__(SearchWalker(format, app), app.ch)
+
     self.app = app
+    self.register_commands()
+
+  def register_commands(self):
+    self.app.ch.register_command(self, 'add-marked-to-playlist', self.add_marked_to_playlist),
+    self.app.ch.register_command(
+        self, 'add-marked-after-current-pos', self.add_marked_after_current_pos)
+
+    for command, k in keys.bindings['search'].iteritems():
+      self.app.ch.register_keys(self, command, k)
 
   def _get_mark_key(self, w, pos):
     return w.id
 
-  def add_marked_to_playlist(self, insert_in_pos=None):
+  def add_marked_to_playlist(self, context=None, args=None, insert_in_pos=None):
     m = list(self.marked)
 
     if not m:
@@ -82,20 +91,23 @@ class SearchListBox(common.ActionsListBox):
     else:
       xs.playlist_insert_collection(int(insert_in_pos), idl, ['-id'], sync=False)
 
-  def add_marked_after_current_pos(self):
+  def add_marked_after_current_pos(self, context=None, args=None, ):
     def _cb(r):
       if not r.iserror():
         v = r.value()
         if v == u'no current entry':
           self.add_marked_to_playlist()
         else:
-          self.add_marked_to_playlist(v['position']+1)
+          self.add_marked_to_playlist(insert_in_pos=v['position']+1)
     xs.playlist_current_pos(cb=_cb, sync=False)
+
+  def get_contexts(self):
+    return [self]
 
   def keypress(self, size, key):
     if key == '/':
       self.unmark_all()
       # FIXME: hack
-      self.app.show_input(self.body.get_input_widget())
+      self.app.show_prompt(self.body.get_input_widget())
     else:
       return self.__super.keypress(size, key)

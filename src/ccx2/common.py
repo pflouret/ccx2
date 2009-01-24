@@ -27,36 +27,30 @@ from xmmsclient import collections as coll
 from xmmsclient.sync import XMMSError
 
 import config
+import keys
 import mifl
 import xmms
 
 xs = xmms.get()
 
-class ActionsListBox(urwid.ListBox):
-  def __init__(self, body, actions=[]):
-    self._action_map = {}
-    self._actions = [('general', 'move-top', lambda: self.set_focus(0)),
-                     ('general', 'move-bottom', lambda: self.set_focus_last()),
-                     ('general', 'mark-and-move-up', lambda: self._mark_and_move_rel(-1)),
-                     ('general', 'mark-and-move-down', lambda: self._mark_and_move_rel(1)),
-                     ('general', 'unmark-all', self.unmark_all)]
-
-    self._actions.extend(actions)
-
-    self._setup_actions()
-
-    self._marked = {}
-
+# FIXME: works like crap and it's ugly
+class MarkableListBox(urwid.ListBox):
+  def __init__(self, body, ch=None):
     self.__super.__init__(body)
 
-  def _get_actions(self):
-    return self._actions
+    self._marked = {}
+    if ch:
+      ch.register_command(self, 'move-focus-top', lambda c, a: self.set_focus(0)),
+      ch.register_command(self, 'move-focus-bottom', lambda c, a: self.set_focus_last()),
+      ch.register_command(self, 'mark-and-move-up', lambda c, a: self._mark_and_move_rel(-1)),
+      ch.register_command(self, 'mark-and-move-down', lambda c, a: self._mark_and_move_rel(1)),
+      ch.register_command(self, 'unmark-all', lambda c, a: self.unmark_all())
 
-  def _set_actions(self, actions):
-    self._actions.extend(actions)
-    self._setup_actions()
-
-  actions = property(_get_actions, _set_actions)
+      ch.register_keys(self, 'move-focus-top', keys.bindings['movement']['move-focus-top'])
+      ch.register_keys(self, 'move-focus-bottom', keys.bindings['movement']['move-focus-bottom'])
+      ch.register_keys(self, 'mark-and-move-up', keys.bindings['general']['mark-and-move-up'])
+      ch.register_keys(self, 'mark-and-move-down', keys.bindings['general']['mark-and-move-down'])
+      ch.register_keys(self, 'unmark-all', keys.bindings['general']['unmark-all'])
 
   def _get_marked(self):
     return self._marked
@@ -84,19 +78,6 @@ class ActionsListBox(urwid.ListBox):
 
     self._marked.clear()
 
-  def keypress(self, size, key):
-    key = self.__super.keypress(size, key)
-
-    if key in self._action_map:
-      self._action_map[key]() # FIXME: should return the key if the function didn't handle it
-    else:
-      return key
-
-  def _setup_actions(self):
-    for section, action, fun in self._actions:
-      for key in config.keybindings[section][action]:
-        self._action_map[key] = fun
-
   def _get_mark_key(self, w, pos):
     return pos
 
@@ -120,13 +101,6 @@ class ActionsListBox(urwid.ListBox):
       self.toggle_focus_mark()
       self.set_focus(pos+delta)
 
-#def dec(fn):
-#  def _fn(self, pos):
-#    w, p = fn(self, pos)
-#    if p in self.selected:
-#      w.set_attr('selected')
-#    return w, p
-#  return _fn
 
 class CachedCollectionWalker(urwid.ListWalker):
   def __init__(self, collection, format, app, row_widget, show_pos_index=False):
