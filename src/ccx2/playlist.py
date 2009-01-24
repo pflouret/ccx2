@@ -209,7 +209,7 @@ class Playlist(common.ActionsListBox):
     for w, pos in m:
       xs.playlist_move(pos, pos - 1, sync=False)
       if self.marked:
-        self._unmark((w, pos), w)
+        self._unmark((w, pos))
         self._mark((w, pos-1), w)
 
   def move_marked_down(self):
@@ -229,7 +229,7 @@ class Playlist(common.ActionsListBox):
     for w, pos in m:
       xs.playlist_move(pos, pos + 1, sync=False)
       if self.marked:
-        self._unmark((w, pos), w)
+        self._unmark((w, pos))
         self._mark((w, pos+1), w)
 
   def _get_mark_key(self, w, pos):

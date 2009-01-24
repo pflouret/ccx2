@@ -106,9 +106,13 @@ class ActionsListBox(urwid.ListBox):
     w._update_w() # FIXME
 
   def _unmark(self, key):
-    w.marked = False
-    w._update_w() # FIXME
-    del self._marked[key]
+    try:
+      w = self._marked[key]
+      w.marked = False
+      w._update_w() # FIXME
+      del self._marked[key]
+    except KeyError:
+      pass
 
   def _mark_and_move_rel(self, delta):
     w, pos = self.get_focus()
