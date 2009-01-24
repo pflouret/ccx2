@@ -106,7 +106,7 @@ class TabContainer(urwid.Pile):
       self.load_tab(self.cur_tab-1, wrap=True)
     elif key in config.keybindings['general']['goto-next-tab']:
       self.load_tab(self.cur_tab+1, wrap=True)
-    elif key == 'esc' and self.current_tab_is_closable():
+    elif key in config.keybindings['general']['cancel'] and self.current_tab_is_closable():
       self.remove_tab(self.cur_tab)
     else:
       return self.__super.keypress(size, key)
