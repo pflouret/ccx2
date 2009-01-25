@@ -41,7 +41,7 @@ class CommandHandler(object):
   """
 
   def __init__(self):
-    super(object, self).__init__(CommandHandler)
+    super(CommandHandler, self).__init__()
 
     self.by_context = {}
     self.by_command = {}
