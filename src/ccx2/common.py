@@ -138,6 +138,7 @@ class CachedCollectionWalker(urwid.ListWalker):
       # XXX: get order arg also?
       self._set_ids(xs.coll_query_ids(c))
     self._clear_cache()
+    self._modified()
 
   collection = property(_get_collection, _set_collection)
 

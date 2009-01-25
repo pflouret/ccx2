@@ -133,7 +133,8 @@ class Ccx2(object):
                            ('weight', 5, playlist.Playlist(self))],
                           dividechars=1, focus_column=2)
     tabs = [('help', urwid.ListBox([urwid.Text('yeah right')])),
-            ('playlist', pview)]
+            ('playlist', pview),
+            ('search', search.Search(self))]
 
     self.tabcontainer = containers.TabContainer(self, tabs)
     self.headerbar = HeaderBar()
@@ -156,8 +157,6 @@ class Ccx2(object):
 
     self.ch.register_command(self, 'quit', lambda c, a: sys.exit(0))
     self.ch.register_command(self, 'q', 'quit')
-
-    self.ch.register_command(self, 'search', self.show_search)
 
     for command, k in keys.bindings['playback'].iteritems():
       self.ch.register_keys(self, command, k)
@@ -197,14 +196,6 @@ class Ccx2(object):
 
     self.view.footer = widget
     self.view.set_focus('footer')
-
-  def show_search(self, context, args):
-    lb = search.SearchListBox('simple', self)
-    w = lb.body.get_input_widget()
-    tabindex = self.tabcontainer.add_tab('search', lb, True)
-    urwid.connect_signal(w, 'abort', lambda: self.tabcontainer.remove_tab(tabindex))
-    self.show_prompt(w)
-    w.set_edit_text(args)
 
   def redraw(self):
     canvas = self.view.render(self.size, focus=1)
