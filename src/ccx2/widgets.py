@@ -49,6 +49,8 @@ class MarkableText(urwid.WidgetWrap):
 
     self._update_w()
 
+  text = property(lambda self: self._w.text)
+
   def _set_attr(self, attr_name, value):
     setattr(self, attr_name, value)
     self._update_w()
