@@ -35,15 +35,15 @@ def register(name):
     raise ValueError("Signal with name %r already registered" % name)
   _signals[name] = []
 
-def connect(name, callback, user_data=None):
+def connect(name, callback):
   try:
-    _signals[name].append((callback, user_data))
+    _signals[name].append(callback)
   except KeyError:
     raise NameError("No signal named %r" % name)
 
-def disconnect(name, callback, user_data=None):
+def disconnect(name, callback):
   try:
-    _signals[name].remove((callback, user_data))
+    _signals[name].remove(callback)
   except KeyError:
     pass
 
@@ -51,11 +51,8 @@ def emit(name, *args):
   if name not in _signals:
     raise NameError("No signal named %r" % name)
 
-  for callback, user_data in _signals[name]:
-    argsc = [a for a in args]
-    if user_data:
-      argsc.append(user_data)
-    callback(*argsc)
+  for callback in _signals[name]:
+    callback(*args)
 
 def _alarm_available(t, f):
   def _f(sig, frame):
