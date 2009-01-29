@@ -116,13 +116,13 @@ class Ccx2(object):
   # default black white brown yellow
   # light/dark: red green blue magenta cyan gray
   palette = [
-    ('default','default','default', 'standout'),
+    ('default','default','default'),
+    ('focus','black','light gray'),
     ('dialog', 'black', 'light gray'),
-    ('marked','yellow','default', 'standout'),
-    ('marked-focus','brown','light gray', 'standout'),
-    ('focus','black','light gray', 'standout'),
-    ('active','light magenta', 'default'),
-    ('active-focus','light magenta', 'light gray'),
+    ('marked','yellow','default'),
+    ('marked-focus','black','brown'),
+    ('active','light blue', 'default'),
+    ('active-focus','black', 'dark blue'),
     ('headerbar','default', 'default')]
 
   def __init__(self):
