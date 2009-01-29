@@ -30,8 +30,8 @@ from xmmsclient.sync import XMMSError
 
 import collutil
 import config
-import common
 import keys
+import listbox
 import mifl
 import signals
 import widgets
@@ -55,21 +55,22 @@ class PlaylistWalker(urwid.ListWalker):
     except ValueError:
       self.current_pos = -1
 
-    self.active_w = None
-
     signals.connect('xmms-playlist-current-pos', self.on_xmms_playlist_current_pos)
     signals.connect('xmms-playlist-changed', self.on_xmms_playlist_changed)
+
+  def __len__(self):
+    return len(self.feeder)
 
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     if pls != self.pls:
       return
 
+    self.set_focus(self.focus)
     signals.emit('need-redraw')
 
   def on_xmms_playlist_current_pos(self, pls, pos):
     if pls == self.pls and pos != self.current_pos:
       self.current_pos = pos
-      self.active_w = None
       signals.emit('need-redraw')
 
   def get_pos(self, pos):
@@ -83,12 +84,6 @@ class PlaylistWalker(urwid.ListWalker):
       self.widgets[mid] = widgets.SongWidget(mid, text)
 
     w = self.widgets[mid]
-
-    if pos == self.current_pos:
-      if self.active_w is None:
-        self.active_w = widgets.SongWidget(mid, w.text)
-        self.active_w.set_active()
-      w = self.active_w
 
     return w, pos
 
@@ -107,9 +102,10 @@ class PlaylistWalker(urwid.ListWalker):
   def get_next(self, pos): return self.get_pos(pos+1)
 
 
-class Playlist(common.MarkableListBox):
+class Playlist(listbox.MarkableListBox):
   def __init__(self, app):
     self.__super.__init__([], app.ch)
+    self.body.current_pos = -1 # filthy filthy
 
     self.app = app
     self.format = 'simple'
@@ -120,6 +116,7 @@ class Playlist(common.MarkableListBox):
 
     signals.connect('xmms-playlist-loaded', self.load)
     signals.connect('xmms-playlist-changed', self.on_xmms_playlist_changed)
+    signals.connect('xmms-playlist-current-pos', self.on_xmms_playlist_current_pos)
 
     self.register_commands()
 
@@ -140,6 +137,7 @@ class Playlist(common.MarkableListBox):
     if pls not in self._walkers:
       self._walkers[pls] = PlaylistWalker(pls, self.app, self.format)
 
+    self._set_active_attr(self.body.current_pos, self._walkers[pls].current_pos)
     self.body = self._walkers[pls]
     self._invalidate()
 
@@ -155,20 +153,23 @@ class Playlist(common.MarkableListBox):
     except KeyError:
       pass
 
+  def on_xmms_playlist_current_pos(self, pls, pos):
+    self._set_active_attr(self.body.current_pos, pos)
+
   def play_focus(self, context, args):
     pos = self.get_focus()[1]
     if pos is not None:
       xs.playlist_play(playlist=self.view_pls, pos=pos)
 
   def remove_marked(self, context, args):
-    m = self.marked
+    m = self.marked_data
     if not m:
       w, pos = self.get_focus()
       if pos is None:
         return
-      m = [self._get_mark_key(w, pos)]
+      m = {pos: self.get_mark_data(pos, w)}
 
-    for w, pos in sorted(m, key=lambda e: e[1], reverse=True):
+    for pos, w in sorted(m.items(), key=lambda e: e[0], reverse=True):
       xs.playlist_remove_entry(pos, self.view_pls, sync=False)
 
     self.unmark_all()
@@ -177,49 +178,70 @@ class Playlist(common.MarkableListBox):
     return [self]
 
   def move_marked_up(self, context, args):
-    # TODO: will have to do this locally and then sync up, or do it synchronous while
-    # TODO: turning off the signal, the performance for just receiving the signals is awful
-    m = list(self.marked)
+    m = self.marked_data.items()
     if not m:
-      m = [self._get_mark_key(*self.get_focus())]
+      w, pos = self.get_focus()
+      if pos is None:
+        return
+      m = [(pos, self.get_mark_data(pos, w))]
 
-    m.sort(key=lambda e: e[1])
+    m.sort(key=lambda e: e[0])
     p = 0
-    while m and m[0][1] == p:
+    while m and m[0][0] == p:
       m.pop(0)
       p += 1
 
     if not m:
       return
 
-    for w, pos in m:
+    for pos, mid in m:
       xs.playlist_move(pos, pos - 1, sync=False)
-      if self.marked:
-        self._unmark((w, pos))
-        self._mark((w, pos-1), w)
+      if not self.marked_data: # moving only the focused song
+        self.set_focus(pos-1)
+      else:
+        self.toggle_mark(pos, mid)
+        self.toggle_mark(pos-1, mid)
+        # TODO: scroll if moving past last row in view
 
   def move_marked_down(self, context, args):
-    m = list(self.marked)
+    m = self.marked_data.items()
     if not m:
-      m = [self._get_mark_key(*self.get_focus())]
+      w, pos = self.get_focus()
+      if pos is None:
+        return
+      m = [(pos, self.get_mark_data(pos, w))]
 
-    m.sort(key=lambda e: e[1], reverse=True)
-    p = self.body.ids_len - 1
-    while m and m[0][1] == p:
+    m.sort(key=lambda e: e[0], reverse=True)
+    p = len(self.body) - 1
+    while m and m[0][0] == p:
       m.pop(0)
       p -= 1
 
     if not m:
       return
 
-    for w, pos in m:
+    for pos, mid in m:
       xs.playlist_move(pos, pos + 1, sync=False)
-      if self.marked:
-        self._unmark((w, pos))
-        self._mark((w, pos+1), w)
+      if not self.marked_data: # moving only the focused song
+        self.set_focus(pos+1)
+      else:
+        self.toggle_mark(pos, mid)
+        self.toggle_mark(pos+1, mid)
+        # TODO: scroll if moving past last row in view
 
-  def _get_mark_key(self, w, pos):
-    return (w, pos)
+  def get_mark_data(self, pos, w):
+    return w.id
+
+  def _set_active_attr(self, prevpos, newpos):
+    if prevpos != -1:
+      try:
+        if self.row_attrs[prevpos] == 'active':
+          del self.row_attrs[prevpos]
+      except KeyError:
+        pass
+
+    if newpos != -1:
+      self.row_attrs[newpos] = 'active'
 
 
 class PlaylistSwitcherWalker(urwid.ListWalker):
@@ -234,6 +256,9 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     signals.connect('xmms-playlist-changed', self.on_xmms_playlist_changed)
 
     self._load()
+
+  def __len__(self):
+    return self.nplaylists
 
   def _load(self):
     self.playlists = [p for p in sorted(xs.playlist_list()) if not p.startswith('_')]
@@ -253,15 +278,10 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
 
     pls = self.playlists[pos]
 
-    try:
-      return self.rows[pos], pos
-    except KeyError:
+    if pos not in self.rows:
       self.rows[pos] = widgets.PlaylistWidget(pls)
 
-      if pls == self.cur_active:
-        self.rows[pos].set_active()
-
-      return self.rows[pos], pos
+    return self.rows[pos], pos
 
   def get_focus(self):
     return self.get_pos(self.focus)
@@ -306,12 +326,16 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
       signals.emit('need-redraw')
 
 
-class PlaylistSwitcher(common.MarkableListBox):
+class PlaylistSwitcher(listbox.MarkableListBox):
   def __init__(self, app):
     self.__super.__init__(PlaylistSwitcherWalker(), app.ch)
 
     self.app = app
     self.register_commands()
+    self.cur_active = xs.playlist_current_active()
+    self._set_active_attr(None, self.cur_active)
+
+    signals.connect('xmms-playlist-loaded', self.on_xmms_playlist_loaded)
 
   def register_commands(self):
     self.app.ch.register_command(self, 'load-focused', self.load_focused)
@@ -324,6 +348,30 @@ class PlaylistSwitcher(common.MarkableListBox):
       self.app.ch.register_keys(self, command, k)
 
     self.app.ch.register_keys(self, 'remove-focused', keys.bindings['general']['remove'])
+
+  def on_xmms_playlist_loaded(self, pls):
+    self._set_active_attr(self.cur_active, pls)
+    self.cur_active = pls
+    self._invalidate()
+    signals.emit('need-redraw')
+
+  def _set_active_attr(self, prevpls, newpls):
+    try:
+      if prevpls:
+        prevpos = self.body.playlists.index(prevpls)
+      newpos = self.body.playlists.index(newpls)
+    except ValueError:
+      return # shouldn't happen
+
+    if prevpls:
+      try:
+        if self.row_attrs[prevpos] == 'active':
+          del self.row_attrs[prevpos]
+      except KeyError:
+        pass
+
+    if newpls:
+      self.row_attrs[newpos] = 'active'
 
   def load_focused(self, context=None, args=None):
     w = self.get_focus()[0]
@@ -367,3 +415,8 @@ class PlaylistSwitcher(common.MarkableListBox):
 
   def get_contexts(self):
     return [self]
+
+  #def keypress(self, size, key):
+  #  print self.row_attrs
+  #  return self.__super.keypress(size, key)
+

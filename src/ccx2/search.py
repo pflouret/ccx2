@@ -4,9 +4,9 @@ import urwid
 import xmmsclient.collections as coll
 
 import collutil
-import common
 import config
 import keys
+import listbox
 import mifl
 import signals
 import widgets
@@ -14,6 +14,7 @@ import xmms
 
 
 xs = xmms.get()
+
 
 class SearchWalker(urwid.ListWalker):
   def __init__(self, collection, format):
@@ -23,6 +24,9 @@ class SearchWalker(urwid.ListWalker):
     self.focus = 0
 
     self.feeder = collutil.CollectionFeeder(collection, self.parser[0].symbol_names())
+
+  def __len__(self):
+    return len(self.feeder)
 
   def get_pos(self, pos):
     mid = self.feeder.position_id(pos)
@@ -54,7 +58,7 @@ class SearchWalker(urwid.ListWalker):
   def get_next(self, pos): return self.get_pos(pos+1)
 
 
-class SearchListBox(common.MarkableListBox):
+class SearchListBox(listbox.MarkableListBox):
   def __init__(self, format, app):
     self.app = app
     self.format = format
@@ -81,7 +85,7 @@ class SearchListBox(common.MarkableListBox):
       self.app.ch.register_keys(self, command, k)
 
   def add_marked_to_playlist(self, context=None, args=None, insert_in_pos=None):
-    m = list(self.marked)
+    m = self.marked_data.values()
 
     if not m:
       w, pos = self.get_focus()
@@ -89,7 +93,7 @@ class SearchListBox(common.MarkableListBox):
       if w is None:
         return
 
-      m = [self._get_mark_key(w, pos)]
+      m = [w.id]
 
     idl = coll.IDList()
     idl.ids += m
@@ -98,7 +102,7 @@ class SearchListBox(common.MarkableListBox):
     else:
       xs.playlist_insert_collection(int(insert_in_pos), idl, ['-id'], sync=False)
 
-  def add_marked_after_current_pos(self, context=None, args=None, ):
+  def add_marked_after_current_pos(self, context=None, args=None):
     def _cb(r):
       if not r.iserror():
         v = r.value()
@@ -108,7 +112,7 @@ class SearchListBox(common.MarkableListBox):
           self.add_marked_to_playlist(insert_in_pos=v['position']+1)
     xs.playlist_current_pos(cb=_cb, sync=False)
 
-  def _get_mark_key(self, w, pos):
+  def get_mark_data(self, pos, w):
     return w.id
 
   def keypress(self, size, key):

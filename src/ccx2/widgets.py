@@ -29,97 +29,20 @@ from xmmsclient import collections as coll
 import config
 import keys
 
-class MarkableText(urwid.WidgetWrap):
-  def __init__(self,
-               text,
-               attr='default',
-               focus_attr='focus',
-               mark_attr='marked',
-               mark_focus_attr='marked-focus',
-               marked=False):
-
-    self._attr = attr
-    self._focus_attr = focus_attr
-    self._mark_attr = mark_attr
-    self._mark_focus_attr = mark_focus_attr
-    self.marked = marked
-
-    w = urwid.AttrWrap(urwid.Text(text), None)
-    self.__super.__init__(w)
-
-    self._update_w()
-
-  text = property(lambda self: self._w.text)
-
-  def _set_attr(self, attr_name, value):
-    setattr(self, attr_name, value)
-    self._update_w()
-
-  attr = property(lambda self: self._attr,
-                  lambda self, v: self._set_attr('_attr', v))
-  focus_attr = property(lambda self: self._focus_attr,
-                        lambda self, v: self._set_attr('_focus_attr', v))
-  mark_attr = property(lambda self: self._mark_attr,
-                       lambda self, v: self._set_attr('_mark_attr', v))
-  mark_focus_attr = property(lambda self: self._mark_focus_attr,
-                             lambda self, v: self._set_attr('_mark_focus_attr', v))
-
-  def selectable(self):
-    return True
-
-  def toggle_marked(self):
-    self.marked = not self.marked
-    self._update_w()
-
-  def keypress(self, size, key):
-    return key
-
-  def _update_w(self):
-    if self.marked:
-      self._w.attr = self.mark_attr
-      self._w.focus_attr = self.mark_focus_attr
-    else:
-      self._w.attr = self.attr
-      self._w.focus_attr = self.focus_attr
+class SelectableText(urwid.Text):
+  def selectable(self): return True
+  def keypress(self, size, key): return key
 
 
-class SongWidget(MarkableText):
+class SongWidget(SelectableText):
   def __init__(self, id, *args, **kwargs):
     self.__super.__init__(*args, **kwargs)
-
     self.id = id
-    self._old_attr = self.attr
-    self._old_focus_attr = self.focus_attr
 
-  def set_active(self):
-    if self.attr != 'active':
-      self._old_attr = self.attr
-      self._old_focus_attr = self.focus_attr
-      self.attr = 'active'
-      self.focus_attr = 'active-focus'
-
-  def unset_active(self):
-    self.attr = self._old_attr
-    self.focus_attr = self._old_focus_attr
-
-
-# TODO: refactor
-class PlaylistWidget(MarkableText):
+class PlaylistWidget(SelectableText):
   def __init__(self, name, *args, **kwargs):
-    self.name = name
     self.__super.__init__(name, *args, **kwargs)
-    self._old_attr = self.attr
-    self._old_focus_attr = self.focus_attr
-
-  def set_active(self):
-    self._old_attr = self.attr
-    self._old_focus_attr = self.focus_attr
-    self.attr = 'active'
-    self.focus_attr = 'active-focus'
-
-  def unset_active(self):
-    self.attr = self._old_attr
-    self.focus_attr = self._old_focus_attr
+    self.name = name
 
 
 class InputDialog(urwid.WidgetWrap):
@@ -249,17 +172,4 @@ class InputEdit(urwid.Edit):
       self.move_word_forward()
     else:
       return self.__super.keypress(size, key)
-
-class CollectionListEntryWidget(MarkableText):
-  def __init__(self, child_ids, *args, **kwargs):
-    self.child_ids = child_ids
-    self.__super.__init__(*args, **kwargs)
-
-  def _get_child_idlist(self):
-    idl = coll.IDList()
-    for id in self.child_ids:
-      idl.ids.append(id)
-    return idl
-
-  child_idlist = property(_get_child_idlist)
 
