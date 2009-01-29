@@ -234,14 +234,10 @@ class Playlist(listbox.MarkableListBox):
 
   def _set_active_attr(self, prevpos, newpos):
     if prevpos != -1:
-      try:
-        if self.row_attrs[prevpos] == 'active':
-          del self.row_attrs[prevpos]
-      except KeyError:
-        pass
+      self.remove_row_attr(prevpos, 'active')
 
     if newpos != -1:
-      self.row_attrs[newpos] = 'active'
+      self.add_row_attr(newpos, 'active')
 
 
 class PlaylistSwitcherWalker(urwid.ListWalker):
@@ -306,16 +302,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
       signals.emit('need-redraw')
 
   def on_xmms_playlist_loaded(self, pls):
-    i = self.playlists.index(pls)
-    if i in self.rows:
-      self.rows[i].set_active()
-
-    i = self.playlists.index(self.cur_active)
-    if i in self.rows:
-      self.rows[i].unset_active()
-
     self.cur_active = pls
-    signals.emit('need-redraw')
 
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     if pos is None and \
@@ -364,14 +351,10 @@ class PlaylistSwitcher(listbox.MarkableListBox):
       return # shouldn't happen
 
     if prevpls:
-      try:
-        if self.row_attrs[prevpos] == 'active':
-          del self.row_attrs[prevpos]
-      except KeyError:
-        pass
+      self.remove_row_attr(prevpos, 'active')
 
     if newpls:
-      self.row_attrs[newpos] = 'active'
+      self.add_row_attr(newpos, 'active')
 
   def load_focused(self, context=None, args=None):
     w = self.get_focus()[0]
@@ -415,8 +398,4 @@ class PlaylistSwitcher(listbox.MarkableListBox):
 
   def get_contexts(self):
     return [self]
-
-  #def keypress(self, size, key):
-  #  print self.row_attrs
-  #  return self.__super.keypress(size, key)
 

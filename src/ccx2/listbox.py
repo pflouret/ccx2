@@ -32,7 +32,6 @@ BADFOCUSROWSMSG = "Focus widget %s at position %s within listbox " \
 BADCURSORMSG = "Focus Widget %s at position %s within listbox calculated cursor " \
                "coords %s but rendered cursor coords %s!"
 
-# FIXME: stack and/or merge attributes
 class AttrListBox(urwid.ListBox):
   """A listbox with rows that can have attributes."""
 
@@ -43,6 +42,24 @@ class AttrListBox(urwid.ListBox):
     self.focus_attr = focus_attr
     self.focus_str = focus_str
     self.row_attrs = row_attrs is not None and row_attrs or {}
+
+  def get_row_attr(self, pos):
+    # TODO: make better choice on which attr to apply (priority? merge func?)
+    return self.row_attrs.get(pos, [self.attr])[-1]
+
+  def set_row_attr(self, pos, attr, priority=0):
+    self.row_attrs[pos] = [attr]
+
+  def add_row_attr(self, pos, attr, priority=0):
+    self.row_attrs.setdefault(pos, []).append(attr)
+
+  def remove_row_attr(self, pos, attr):
+    try:
+      self.row_attrs[pos].remove(attr)
+      if not self.row_attrs[pos]:
+        del self.row_attrs[pos]
+    except (KeyError, ValueError):
+      pass
 
   def render(self, size, focus=False ):
     """Render listbox and return canvas. """
@@ -63,7 +80,7 @@ class AttrListBox(urwid.ListBox):
 
     for widget,w_pos,w_rows in fill_above:
       canvas = widget.render((maxcol,))
-      attr = self.row_attrs.get(w_pos, self.attr)
+      attr = self.get_row_attr(w_pos)
       if attr:
         canvas = urwid.CompositeCanvas(canvas)
         canvas.fill_attr(attr)
@@ -76,7 +93,7 @@ class AttrListBox(urwid.ListBox):
 
     focus_attr = None
     if focus_pos in self.row_attrs:
-      focus_attr = self.row_attrs[focus_pos]
+      focus_attr = self.get_row_attr(focus_pos)
       if focus and self.focus_str:
         focus_attr += self.focus_str
     elif focus:
@@ -98,7 +115,7 @@ class AttrListBox(urwid.ListBox):
     
     for widget,w_pos,w_rows in fill_below:
       canvas = widget.render((maxcol,))
-      attr = self.row_attrs.get(w_pos, self.attr)
+      attr = self.get_row_attr(w_pos)
       if attr:
         canvas = urwid.CompositeCanvas(canvas)
         canvas.fill_attr(attr)
@@ -167,18 +184,17 @@ class MarkableListBox(AttrListBox):
 
   def toggle_mark(self, pos, data):
     if pos >= 0 and pos < len(self.body):
-      try:
-        del self.row_attrs[pos]
+      if pos in self._marked_data:
         del self._marked_data[pos]
-      except KeyError:
+        self.remove_row_attr(pos, 'marked')
+      else:
         self._marked_data[pos] = data
-        self.row_attrs[pos] = 'marked'
+        self.add_row_attr(pos, 'marked')
 
   def unmark_all(self):
     self._marked_data.clear()
-    for k, v in self.row_attrs.items():
-      if v == 'marked':
-        del self.row_attrs[k]
+    for pos in self.row_attrs.keys():
+      self.remove_row_attr(pos, 'marked')
 
   def _mark_and_move_rel(self, delta):
     w, pos = self.get_focus()
