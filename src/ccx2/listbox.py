@@ -44,21 +44,24 @@ class AttrListBox(urwid.ListBox):
     self.row_attrs = row_attrs is not None and row_attrs or {}
 
   def get_row_attr(self, pos):
-    # TODO: make better choice on which attr to apply (priority? merge func?)
-    return self.row_attrs.get(pos, [self.attr])[-1]
+    return self.row_attrs.get(pos, [(self.attr, 0)])[-1][0]
 
   def set_row_attr(self, pos, attr, priority=0):
-    self.row_attrs[pos] = [attr]
+    self.row_attrs[pos] = [(attr, priority)]
 
   def add_row_attr(self, pos, attr, priority=0):
-    self.row_attrs.setdefault(pos, []).append(attr)
+    self.row_attrs.setdefault(pos, []).append((attr, priority))
+    self.row_attrs[pos].sort(key=lambda e: e[1])
 
   def remove_row_attr(self, pos, attr):
     try:
-      self.row_attrs[pos].remove(attr)
+      for a in self.row_attrs[pos]:
+        if a[0] == attr:
+          self.row_attrs[pos].remove(a)
+          break
       if not self.row_attrs[pos]:
         del self.row_attrs[pos]
-    except (KeyError, ValueError):
+    except KeyError:
       pass
 
   def render(self, size, focus=False ):
@@ -189,7 +192,7 @@ class MarkableListBox(AttrListBox):
         self.remove_row_attr(pos, 'marked')
       else:
         self._marked_data[pos] = data
-        self.add_row_attr(pos, 'marked')
+        self.add_row_attr(pos, 'marked', 100)
 
   def unmark_all(self):
     self._marked_data.clear()
