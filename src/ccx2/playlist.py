@@ -174,9 +174,6 @@ class Playlist(listbox.MarkableListBox):
 
     self.unmark_all()
 
-  def get_contexts(self):
-    return [self]
-
   def move_marked_up(self, context, args):
     m = self.marked_data.items()
     if not m:
@@ -231,6 +228,9 @@ class Playlist(listbox.MarkableListBox):
 
   def get_mark_data(self, pos, w):
     return w.id
+
+  def get_contexts(self):
+    return [self]
 
   def _set_active_attr(self, prevpos, newpos):
     if prevpos != -1:
