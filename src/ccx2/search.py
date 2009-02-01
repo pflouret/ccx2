@@ -133,10 +133,9 @@ class Search(urwid.Pile):
     self.lb = SearchListBox('simple', self.app)
     self.input = widgets.InputEdit(caption='quick search: ')
 
-    focus_lb = lambda t=None: self.set_focus(self.lb)
     urwid.connect_signal(self.input, 'change', self._on_query_change)
-    urwid.connect_signal(self.input, 'done', focus_lb)
-    urwid.connect_signal(self.input, 'abort', focus_lb)
+    urwid.connect_signal(self.input, 'done', lambda t=None: self.cycle_focus())
+    urwid.connect_signal(self.input, 'abort', lambda t=None: self.set_focus(self.lb))
     urwid.connect_signal(self.input, 'abort', lambda: self.input.set_edit_text(''))
 
     self.prev_q = ''
@@ -147,14 +146,13 @@ class Search(urwid.Pile):
     self.app.ch.register_keys(self, 'switch-focus', ['tab'])
 
   def cycle_focus(self):
-    # TODO: focus prompt if list is empty
     cur = self.widget_list.index(self.focus_item)
     n = len(self.widget_list)
     i = (cur + 1) % n
     while i != cur and not self.widget_list[i].selectable():
       i = (i + 1) % n
 
-    if i != cur:
+    if i != cur and (i != 0 or len(self.lb.body) != 0):
       self.set_focus(i)
 
   def _on_query_change(self, q):
