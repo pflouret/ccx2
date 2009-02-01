@@ -127,6 +127,9 @@ class Playlist(listbox.MarkableListBox):
     self.app.ch.register_command(self, 'move-marked-up', self.move_marked_up)
     self.app.ch.register_command(self, 'move-marked-down', self.move_marked_down)
     self.app.ch.register_command(self, 'remove-marked', self.remove_marked)
+    self.app.ch.register_command(self, 'search-same', self.search_same)
+    self.app.ch.register_command(self, 'sa', 'search-same album') # XXX: alias
+    self.app.ch.register_command(self, 'sar', 'search-same artist') # XXX: alias
 
     for command, k in keys.bindings['playlist'].iteritems():
       self.app.ch.register_keys(self, command, k)
@@ -225,6 +228,17 @@ class Playlist(listbox.MarkableListBox):
         self.toggle_mark(pos, mid)
         self.toggle_mark(pos+1, mid)
         # TODO: scroll if moving past last row in view
+
+  def search_same(self, context, args):
+    fields = args.split()
+    w, p = self.get_focus()
+    if w is not None:
+      info = xs.medialib_get_info(w.id)
+      q = ' AND '.join('%s:"%s"' % (f, info[f]) for f in fields if info.get(f))
+      if q:
+        self.app.search(q)
+      else:
+        pass # TODO: error message
 
   def get_mark_data(self, pos, w):
     return w.id

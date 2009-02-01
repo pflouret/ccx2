@@ -156,9 +156,9 @@ class Ccx2(object):
     self.ch.register_command(self, 'previous-track', lambda c, a: xs.playback_prev(sync=False)),
 
     self.ch.register_command(self, 'quit', lambda c, a: sys.exit(0))
-    self.ch.register_command(self, 'q', 'quit')
+    self.ch.register_command(self, 'q', 'quit') # XXX: alias
 
-    self.ch.register_command(self, 'search', self.search)
+    self.ch.register_command(self, 'search', lambda c, a: self.search(a))
 
     for command, k in keys.bindings['playback'].iteritems():
       self.ch.register_keys(self, command, k)
@@ -199,7 +199,7 @@ class Ccx2(object):
     self.view.footer = widget
     self.view.set_focus('footer')
 
-  def search(self, context=None, query=None):
+  def search(self, query=None):
     self.tabcontainer.load_tab_by_name('search')
     if query:
       search = self.tabcontainer.get_current()
@@ -228,11 +228,11 @@ class Ccx2(object):
       for k in input_keys:
         if k == 'window resize':
           self.size = self.ui.get_cols_rows()
+        elif self.view.keypress(self.size, k) is None:
+          continue
         elif k == keys.command_mode_key:
           contexts = self.view.body.get_contexts() + [self]
           self.show_prompt(self.ch.get_command_prompt(contexts))
-        elif self.view.keypress(self.size, k) is None:
-          continue
         elif self.ch.run_key(self.view.body.get_contexts() + [self], k):
           continue
         # TODO: else show unbound key msg
