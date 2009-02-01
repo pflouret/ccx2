@@ -155,6 +155,10 @@ class Search(urwid.Pile):
     if i != cur and (i != 0 or len(self.lb.body) != 0):
       self.set_focus(i)
 
+  def set_query(self, q):
+    self.input.set_edit_text(q)
+    self.input.edit_pos = len(q)
+
   def _on_query_change(self, q):
     def _f(sig, frame):
       caption = 'quick search: '

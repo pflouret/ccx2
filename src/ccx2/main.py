@@ -158,6 +158,8 @@ class Ccx2(object):
     self.ch.register_command(self, 'quit', lambda c, a: sys.exit(0))
     self.ch.register_command(self, 'q', 'quit')
 
+    self.ch.register_command(self, 'search', self.search)
+
     for command, k in keys.bindings['playback'].iteritems():
       self.ch.register_keys(self, command, k)
 
@@ -196,6 +198,12 @@ class Ccx2(object):
 
     self.view.footer = widget
     self.view.set_focus('footer')
+
+  def search(self, context=None, query=None):
+    self.tabcontainer.load_tab_by_name('search')
+    if query:
+      search = self.tabcontainer.get_current()
+      search.set_query(query)
 
   def redraw(self):
     canvas = self.view.render(self.size, focus=1)

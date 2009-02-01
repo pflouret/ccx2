@@ -198,6 +198,7 @@ class MarkableListBox(AttrListBox):
     self._marked_data.clear()
     for pos in self.row_attrs.keys():
       self.remove_row_attr(pos, 'marked')
+    self._invalidate()
 
   def _mark_and_move_rel(self, delta):
     w, pos = self.get_focus()

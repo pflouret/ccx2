@@ -56,6 +56,9 @@ class TabContainer(urwid.Pile):
 
     self.tabbar.set_text(' '.join(texts))
 
+  def get_current(self):
+    return self.tabs[self.cur_tab][1]
+
   def load_tab(self, n, wrap=False):
     tlen = len(self.tabs)
 
@@ -71,6 +74,12 @@ class TabContainer(urwid.Pile):
     self.tab_w._w = self.tabs[n][1]
 
     signals.emit('need-redraw')
+
+  def load_tab_by_name(self, name):
+    for i, t in enumerate(self.tabs):
+      if t[0] == name:
+        self.load_tab(i)
+        return
 
   def add_tab(self, name, body, switch=False):
     self.tabs.append((name, body))
