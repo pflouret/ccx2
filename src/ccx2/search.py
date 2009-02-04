@@ -100,7 +100,7 @@ class SearchListBox(listbox.MarkableListBox):
     if insert_in_pos is None:
       xs.playlist_add_collection(idl, ['id'], sync=False)
     else:
-      xs.playlist_insert_collection(int(insert_in_pos), idl, ['-id'], sync=False)
+      xs.playlist_insert_collection(int(insert_in_pos), idl, ['id'], sync=False)
 
   def add_marked_after_current_pos(self, context=None, args=None):
     def _cb(r):
