@@ -32,124 +32,179 @@ import widgets
 
 __docformat__ = "restructuredtext en"
 
-class CommandHandler(object):
-  """Command handler.
+STOP_RUNNING_COMMANDS = None
+CONTINUE_RUNNING_COMMANDS = 1
 
-  ``context`` refers to a hashable object of any kind in which the given command makes sense,
-  for instance, a `Playlist` object. The ``context`` will be passed as first argument to
-  the action function associated with a command.
-  """
+class CommandError(Exception): pass
 
-  def __init__(self):
-    super(CommandHandler, self).__init__()
+_commands = set([
+    'activate',
+    'cycle',
+    'insert',
+    'mvbot',
+    'mvdn',
+    'mvtop',
+    'mvup',
+    'new',
+    'pb-next',
+    'pb-play',
+    'pb-prev',
+    'pb-stop',
+    'pb-toggle',
+    'quit',
+    'rename',
+    'rm',
+    'same',
+    'search',
+    'tab',
+    'toggle',
+    'unmark-all',
+])
 
-    self.by_context = {}
-    self.by_command = {}
-    self.by_key = {}
+_aliases = {}
 
-  def register_command(self, context, command, action):
-    """Register a command in a context.
+_keys = {
+    'enter': 'activate',
+    'ctrl m': 'activate',
+    'ctrl j': 'activate',
+    'tab': 'cycle',
+    'a': 'insert',
+    'K': 'mvup',
+    'J': 'mvdn',
+    'home': 'mvtop',
+    'end': 'mvbot',
+    'n': 'new',
+    'z': 'pb-prev',
+    'x': 'pb-toggle',
+    'c': 'pb-play',
+    'v': 'pb-stop',
+    'b': 'pb-next',
+    'q': 'quit',
+    'F2': 'rename',
+    'd': 'rm',
+    'del': 'rm',
+    '1': 'tab 1',
+    '2': 'tab 2',
+    '3': 'tab 3',
+    '4': 'tab 4',
+    '[': 'tab prev',
+    ']': 'tab next',
+    'space': 'toggle-mark',
+    'meta  ': 'unmark-all', # meta-space
+}
 
-    :param command: The command name
-    :param action: The action to perform when the command is run.
-      The action can be a function, or a string with a command to be
-      recursively fed to `run_command`, effectively creating command aliases.
-      The function should receive a `context` as first parameter and a ``string``
-      with the arguments for the command.
-    :type context: `object`
-    :type command: `str`
-    :type action: ``function`` | `str`
-    """
-    self.by_command.setdefault(command, {})[context] = action
-    self.by_context.setdefault(context, {})[command] = action
+_help = {
+}
 
-  def register_keys(self, context, command, keys):
-    """Register keys associated with a command in a given context.
+def get_command_prompt(contexts):
+  w = widgets.InputEdit(caption=':')
+  def f(text):
+    try:
+      run_command(text, contexts)
+    except CommandError:
+      pass # FIXME
 
-    :param keys: Keys to associate with the command.
-    :type context: `object`
-    :type command: `str`
-    :type keys: `list`
-    """
-    if keys:
-      for k in keys:
-        self.by_key.setdefault(k, {})[context] = command
+  urwid.connect_signal(w, 'done', f)
+  return w
 
-  def run_command(self, contexts, command, args=''):
-    """Run a command.
+def add_command(command):
+  _commands.add(command)
 
-    :param args: The arguments to the command.
-    :type contexts: `list` | `object`
-    :type command: `str`
-    :type args: `str`
-    """
-    if command not in self.by_command:
-      return False
+def add_keybinding(command, key):
+  # XXX: check if command exists?
+  _keys[key] = command
 
-    if not hasattr(contexts, '__iter__'):
-      contexts = [contexts]
+def add_command_help_doc(command, doc, context='general'):
+  _help.setdefault(context, {})[command] = doc
 
-    for context in contexts:
-      try:
-        action = self.by_command[command][context]
-        break
-      except KeyError:
-        pass
+def run_command(command, contexts):
+  if not command:
+    return False
+
+  cmd, args = _split_cmd_args(command)
+
+  if cmd not in _commands:
+    return False
+
+  fun_name = 'cmd_'+cmd.replace('-', '_')
+
+  handled = False
+  for obj in contexts:
+    if hasattr(obj, fun_name):
+      r = getattr(obj, fun_name)(args)
+      handled = True
     else:
-      return False # TODO: error message
+      r = CONTINUE_RUNNING_COMMANDS
 
-    if callable(action):
-      action(context, args) # TODO: catch a CommandError exception or something
-      return True
-    else:
-      l = action.split()
-      command = l[0]
-      args = len(l) > 1 and l[1].strip() or ''
+    if r == STOP_RUNNING_COMMANDS:
+      break
 
-      # XXX: use the context the command was found in or send all contexts?
-      return self.run_command(context, command, args)
+  return handled
 
-  def run_key(self, contexts, key):
-    """Run the command bound to a key.
+def run_key(key, contexts):
+  if key not in _keys:
+    return False
 
-    :type contexts: `list` | `object`
-    :type key: `str`
-    """
-    if key not in self.by_key:
-      return False
+  return run_command(_keys[key], contexts)
 
-    if not hasattr(contexts, '__iter__'):
-      contexts = [contexts]
+def _split_cmd_args(s):
+  l = s.split(None, 1)
+  if len(l) == 1:
+    l.append('')
+  return tuple(l)
 
-    for context in contexts:
-      try:
-        action = self.by_key[key][context]
-        break
-      except KeyError:
-        pass # TODO: error message
-    else:
-      return False
+#def add_alias(command, alias):
+#  # XXX: check if alias exists?
+#  aliases[alias] = command
 
-    l = action.split()
-    command = l[0]
-    args = len(l) > 1 and l[1].strip() or ''
+#cmds: a b
+#alias c -> a 3
+#alias d -> a ; b
+#alias e -> c 1 2; d
 
-    # XXX: use the context the command was found in or send all contexts?
-    return self.run_command(context, command, args)
+#e 4
+#c 1 2 ; d 4
+#a 3 1 2 ; a ; b 4
+#def _unalias_command(command):
+#  cmd, args = _split_cmd_args(command)
+#  if cmd not in aliases:
+#    return [(cmd, args)]
 
-  def get_command_prompt(self, contexts):
-    """Return an `InputEdit` prompt that will run the specified command.
+#  commands = _unchain_commands(aliases[command])
 
-    :type contexts: `list` | `object`
-    """
-    def _process_command_input(text):
-      l = text.strip().split(' ', 1)
-      command = l[0]
-      args = len(l) > 1 and l[1].strip() or ''
+#  if len(commands) == 1:
+#    return [_split_cmd_args(commands)]
 
-      self.run_command(contexts, command, args)
+#  unaliased = []
 
-    w = widgets.InputEdit(caption=':')
-    urwid.connect_signal(w, 'done', _process_command_input)
-    return w
+#  for command in commands:
+#    unaliased.append(_unalias_command(
+#    splitted = _unchain_commands(command[0])
+#    
 
+#def _unchain_commands(s):
+#  if ';' not in s:
+#    return [s]
+
+#  parts = []
+#  acc = ''
+#  i, n = 0, len(s)
+#  while i < n:
+#    c = s[i]
+#    if c == ';':
+#      if i+1 >= n:
+#        break
+#      if s[i+1] == ';':
+#        i += 1
+#      else:
+#        parts.append(acc)
+#        acc = ''
+#        i += 1
+#        continue
+#    acc += c
+#    i += 1
+
+#  if acc:
+#    parts.append(acc)
+
+#  return parts

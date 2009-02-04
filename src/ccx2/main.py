@@ -126,8 +126,6 @@ class Ccx2(object):
     ('headerbar','default', 'default')]
 
   def __init__(self):
-    self.ch = commands.CommandHandler()
-
     pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
                            ('fixed', 1, urwid.SolidFill(u'\u2502')),
                            ('weight', 5, playlist.Playlist(self))],
@@ -145,27 +143,6 @@ class Ccx2(object):
     def _need_redraw(): self.need_redraw = True
     signals.connect('need-redraw', _need_redraw)
 
-    self.register_commands()
-
-  def register_commands(self):
-    self.ch.register_command(self, 'play', lambda c, a: xs.playback_start(sync=False))
-    self.ch.register_command(self, 'play-pause-toggle',
-                             lambda c, a: xs.playback_play_pause_toggle(sync=False)),
-    self.ch.register_command(self, 'stop', lambda c, a: xs.playback_stop(sync=False)),
-    self.ch.register_command(self, 'next-track', lambda c, a: xs.playback_next(sync=False)),
-    self.ch.register_command(self, 'previous-track', lambda c, a: xs.playback_prev(sync=False)),
-
-    self.ch.register_command(self, 'quit', lambda c, a: sys.exit(0))
-    self.ch.register_command(self, 'q', 'quit') # XXX: alias
-
-    self.ch.register_command(self, 'search', lambda c, a: self.search(a))
-
-    for command, k in keys.bindings['playback'].iteritems():
-      self.ch.register_keys(self, command, k)
-
-    self.ch.register_keys(self, 'quit', keys.bindings['general']['quit'])
-    self.ch.register_keys(self, 'search', ['/'])
-
     # change default urwid command map
     for action in (('move-focus-up', 'cursor up'),
                    ('move-focus-down', 'cursor down'),
@@ -178,6 +155,12 @@ class Ccx2(object):
       for k in keys.bindings['movement'][action[0]]:
         urwid.command_map[k] = action[1]
 
+  def cmd_pb_play(self, args): xs.playback_start(sync=False)
+  def cmd_pb_toggle(self, args): xs.playback_play_pause_toggle(sync=False)
+  def cmd_pb_stop(self, args): xs.playback_stop(sync=False)
+  def cmd_pb_next(self, args): xs.playback_next(sync=False)
+  def cmd_pb_prev(self, args): xs.playback_prev(sync=False)
+  def cmd_quit(self, args): sys.exit(0)
 
   def main(self):
     self.ui = urwid.curses_display.Screen()
@@ -226,16 +209,19 @@ class Ccx2(object):
         time.sleep(0.01)
 
       for k in input_keys:
-        if k == 'window resize':
-          self.size = self.ui.get_cols_rows()
-        elif self.view.keypress(self.size, k) is None:
-          continue
-        elif k == keys.command_mode_key:
-          contexts = self.view.body.get_contexts() + [self]
-          self.show_prompt(self.ch.get_command_prompt(contexts))
-        elif self.ch.run_key(self.view.body.get_contexts() + [self], k):
-          continue
-        # TODO: else show unbound key msg
+        try:
+          if k == 'window resize':
+            self.size = self.ui.get_cols_rows()
+          elif self.view.keypress(self.size, k) is None:
+            continue
+          elif commands.run_key(k, self.view.body.get_contexts() + [self]):
+            continue
+          elif k == keys.command_mode_key:
+            contexts = self.view.body.get_contexts() + [self]
+            self.show_prompt(commands.get_command_prompt(contexts))
+          # TODO: else show unbound key msg
+        except commands.CommandError:
+          pass # TODO: show error
 
 if __name__ == '__main__':
   Ccx2().main()

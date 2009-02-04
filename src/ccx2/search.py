@@ -4,6 +4,7 @@ import urwid
 import xmmsclient.collections as coll
 
 import collutil
+import commands
 import config
 import keys
 import listbox
@@ -65,26 +66,27 @@ class SearchListBox(listbox.MarkableListBox):
     self.parser = mifl.MiflParser(config.formatting[format])
     self.walker = SearchWalker(coll.IDList(), 'search')
 
-    self.__super.__init__(self.walker, self.app.ch)
-
-    self.register_commands()
+    self.__super.__init__(self.walker)
 
   def _set_collection(self, c):
     self.walker.feeder.collection = c
-    self.unmark_all()
+    self.cmd_unmark_all()
     self._invalidate()
 
   collection = property(lambda self: self.walker.feeder.collection, _set_collection)
 
-  def register_commands(self):
-    self.app.ch.register_command(self, 'add-marked-to-playlist', self.add_marked_to_playlist),
-    self.app.ch.register_command(
-        self, 'add-marked-after-current-pos', self.add_marked_after_current_pos)
+  def cmd_insert(self, args):
+    if args:
+      try:
+        pos = int(args)-1
+      except ValueError:
+        raise commands.CommandError("valid playlist position needed")
+    else:
+      pos = None
 
-    for command, k in keys.bindings['search'].iteritems():
-      self.app.ch.register_keys(self, command, k)
+    self.insert_marked(pos)
 
-  def add_marked_to_playlist(self, context=None, args=None, insert_in_pos=None):
+  def insert_marked(self, pos=None):
     m = self.marked_data.values()
 
     if not m:
@@ -97,19 +99,19 @@ class SearchListBox(listbox.MarkableListBox):
 
     idl = coll.IDList()
     idl.ids += m
-    if insert_in_pos is None:
+    if pos is None:
       xs.playlist_add_collection(idl, ['id'], sync=False)
     else:
-      xs.playlist_insert_collection(int(insert_in_pos), idl, ['id'], sync=False)
+      xs.playlist_insert_collection(int(pos), idl, ['id'], sync=False)
 
-  def add_marked_after_current_pos(self, context=None, args=None):
+  def insert_marked_after_current(self):
     def _cb(r):
       if not r.iserror():
         v = r.value()
         if v == u'no current entry':
-          self.add_marked_to_playlist()
+          self.insert_marked()
         else:
-          self.add_marked_to_playlist(insert_in_pos=v['position']+1)
+          self.insert_marked(pos=v['position']+1)
     xs.playlist_current_pos(cb=_cb, sync=False)
 
   def get_mark_data(self, pos, w):
@@ -134,7 +136,7 @@ class Search(urwid.Pile):
     self.input = widgets.InputEdit(caption='quick search: ')
 
     urwid.connect_signal(self.input, 'change', self._on_query_change)
-    urwid.connect_signal(self.input, 'done', lambda t=None: self.cycle_focus())
+    urwid.connect_signal(self.input, 'done', lambda t=None: self.cmd_cycle())
     urwid.connect_signal(self.input, 'abort', lambda t=None: self.set_focus(self.lb))
     urwid.connect_signal(self.input, 'abort', lambda: self.input.set_edit_text(''))
 
@@ -142,10 +144,7 @@ class Search(urwid.Pile):
 
     self.__super.__init__([self.lb, ('flow', self.input)], 1)
 
-    self.app.ch.register_command(self, 'switch-focus', lambda c, a: self.cycle_focus())
-    self.app.ch.register_keys(self, 'switch-focus', ['tab'])
-
-  def cycle_focus(self):
+  def cmd_cycle(self, args=None):
     cur = self.widget_list.index(self.focus_item)
     n = len(self.widget_list)
     i = (cur + 1) % n

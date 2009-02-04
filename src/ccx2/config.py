@@ -63,64 +63,6 @@ default_ascii_borders = {
     'dhd': ADOUBLE_BORDER_H_D,
 }
 
-default_keybindings = {
-    'general': {
-        'move-left': ['h', 'left'],
-        'move-up': ['k', 'up'],
-        'move-down': ['j', 'down'],
-        'move-right': ['l', 'right'],
-        'page-up': ['ctrl u', 'page up'],
-        'page-down': ['ctrl d', 'page down'],
-        'move-top': ['home', 'ctrl a'],
-        'move-bottom': ['end', 'ctrl e'],
-        'goto-tab-n': ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
-        'goto-prev-tab': ['['],
-        'goto-next-tab': [']'],
-        'mark-and-move-down': [' '], # space
-        'mark-and-move-up': ['<0>'], # ctrl space
-        'unmark-all': ['meta  '], # meta space
-        'return': ['enter', 'ctrl m'],
-        'delete': ['d', 'delete'],
-        'cancel': ['esc', 'ctrl g'],
-        'quit': ['q', 'ctrl q'],
-    },
-    'text_edit': {
-        'delete-word-backward': ['ctrl w', 'ctrl backspace'],
-        'delete-word-forward': ['meta d', 'meta delete'],
-        'move-word-backward': ['meta b'],
-        'move-word-forward': ['meta f'],
-        'move-char-backward': ['ctrl b'],
-        'move-char-forward': ['ctrl f'],
-    },
-    'playback': {
-        'play': ['x'],
-        'play-pause-toggle': ['p', 'c'],
-        'stop': ['s', 'backspace', 'v'],
-        'next-track': ['>', 'b'],
-        'previous-track': ['<', 'z'],
-    },
-    'playlist': {
-        'play-focus': ['enter'],
-        'move-marked-up': ['K'],
-        'move-marked-down': ['J'],
-    },
-    'search': {
-        'add-marked-to-playlist': ['a'],
-        'add-marked-after-current-pos': ['w'],
-    },
-    'playlist-switcher': {
-        'load': ['enter'],
-        'new': ['n'],
-        'rename': ['r'],
-        'add-playlist-to-current': ['a'],
-    },
-    'collection-browser': {
-        'navigate-in': ['l', 'right'],
-        'navigate-out': ['h', 'left', 'backspace'],
-        'add-to-playlist': ['a'],
-    },
-}
-
 default_formatting = {
     'by_albumartist':
         """(or :performer :artist)

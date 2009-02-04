@@ -151,21 +151,8 @@ class AttrListBox(urwid.ListBox):
     return self.__super.keypress(size, keys)
 
 class MarkableListBox(AttrListBox):
-  def __init__(self, body, ch=None):
+  def __init__(self, body):
     self._marked_data = {}
-
-    if ch:
-      ch.register_command(self, 'move-focus-top', lambda c, a: self.set_focus(0)),
-      ch.register_command(self, 'move-focus-bottom', lambda c, a: self.set_focus_last()),
-      ch.register_command(self, 'mark-and-move-up', lambda c, a: self._mark_and_move_rel(-1)),
-      ch.register_command(self, 'mark-and-move-down', lambda c, a: self._mark_and_move_rel(1)),
-      ch.register_command(self, 'unmark-all', lambda c, a: self.unmark_all())
-
-      ch.register_keys(self, 'move-focus-top', keys.bindings['movement']['move-focus-top'])
-      ch.register_keys(self, 'move-focus-bottom', keys.bindings['movement']['move-focus-bottom'])
-      ch.register_keys(self, 'mark-and-move-up', keys.bindings['general']['mark-and-move-up'])
-      ch.register_keys(self, 'mark-and-move-down', keys.bindings['general']['mark-and-move-down'])
-      ch.register_keys(self, 'unmark-all', keys.bindings['general']['unmark-all'])
 
     self.__super.__init__(body, attr='default', focus_attr='focus', focus_str='-focus')
 
@@ -179,12 +166,6 @@ class MarkableListBox(AttrListBox):
     if hasattr(self.body, 'set_focus_last'):
       self.body.set_focus_last()
 
-  def toggle_focus_mark(self):
-    w, pos = self.get_focus()
-
-    if pos is not None:
-      self.toggle_mark(pos, self.get_mark_data(pos, w))
-
   def toggle_mark(self, pos, data):
     if pos >= 0 and pos < len(self.body):
       if pos in self._marked_data:
@@ -194,16 +175,29 @@ class MarkableListBox(AttrListBox):
         self._marked_data[pos] = data
         self.add_row_attr(pos, 'marked', 100)
 
-  def unmark_all(self):
+  def cmd_mvtop(self, args):
+    self.set_focus(0)
+
+  def cmd_mvbot(self, args):
+    self.set_focus_last()
+
+  def cmd_toggle(self, args):
+    if args:
+      try:
+        pos = int(args)
+        if pos < 0 or pos >= len(self.body):
+          raise ValueError
+      except ValueError:
+        raise commands.CommandError("valid playlist position required")
+    else:
+      w, pos = self.get_focus()
+
+    if pos is not None:
+      self.toggle_mark(pos, self.get_mark_data(pos, w))
+
+  def cmd_unmark_all(self, args=None):
     self._marked_data.clear()
     for pos in self.row_attrs.keys():
       self.remove_row_attr(pos, 'marked')
     self._invalidate()
-
-  def _mark_and_move_rel(self, delta):
-    w, pos = self.get_focus()
-    if pos is not None:
-      self.toggle_focus_mark()
-      self.set_focus(pos+delta)
-
 

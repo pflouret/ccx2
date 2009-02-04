@@ -24,6 +24,7 @@
 
 import urwid
 
+import commands
 import keys
 import search
 import signals
@@ -45,8 +46,6 @@ class TabContainer(urwid.Pile):
                            ('flow', urwid.Divider(u'\u2500')),
                            self.tab_w],
                           2)
-
-    self.register_commands()
 
   def _update_tabbar_string(self):
     texts = []
@@ -124,29 +123,24 @@ class TabContainer(urwid.Pile):
     except IndexError:
       return False
 
-  def register_commands(self):
-    def goto_tab(context, args):
-      try: self.load_tab(int(args)-1)
-      except ValueError: pass
+  def cmd_tab(self, args):
+    if not args:
+      raise commands.CommandError("need an argument")
 
-    def close_tab(context, args):
-      if args:
-        try: n = int(args)
-        except ValueError: return
-      else:
-        n = self.cur_tab
-      if self.tab_is_closable(n):
-        self.remove_tab(n)
+    arg = args.strip()
+    try:
+      n = int(arg)
+      self.load_tab(n-1)
+      return
+    except ValueError:
+      pass
 
-    self.app.ch.register_command(self, 'goto-tab', goto_tab)
-    self.app.ch.register_command(
-        self, 'goto-prev-tab', lambda c, a: self.load_tab(self.cur_tab-1, wrap=True))
-    self.app.ch.register_command(
-        self, 'goto-next-tab', lambda c, a: self.load_tab(self.cur_tab+1, wrap=True))
-    self.app.ch.register_command(self, 'close-tab', close_tab)
-
-    for command, k in keys.bindings['tabs'].iteritems():
-      self.app.ch.register_keys(self, command, k)
-
-    self.app.ch.register_keys(self, 'close-tab', keys.bindings['general']['cancel'])
+    if arg == 'next':
+      self.load_tab(self.cur_tab+1, wrap=True)
+    elif arg == 'prev':
+      self.load_tab(self.cur_tab-1, wrap=True)
+    elif arg == 'lastfocus':
+      pass # TODO
+    else:
+      raise commands.CommandError("not a valid argument: %s" % arg)
 

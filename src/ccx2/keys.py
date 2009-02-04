@@ -36,26 +36,9 @@ default_bindings = {
         'move-focus-bottom': ['end', 'ctrl e'],
     },
     'general': {
-        'mark-and-move-down': [' '], # space
-        'mark-and-move-up': ['<0>'], # ctrl space
-        'unmark-all': ['meta  '], # meta space
         'return': ['enter', 'ctrl m'],
         'remove': ['d', 'delete'],
         'cancel': ['esc', 'ctrl g'],
-        'quit': ['q', 'ctrl q'],
-    },
-    'tabs': {
-        'goto-tab 1': ['1'],
-        'goto-tab 2': ['2'],
-        'goto-tab 3': ['3'],
-        'goto-tab 4': ['4'],
-        'goto-tab 5': ['5'],
-        'goto-tab 6': ['6'],
-        'goto-tab 7': ['7'],
-        'goto-tab 8': ['8'],
-        'goto-tab 9': ['9'],
-        'goto-prev-tab': ['['],
-        'goto-next-tab': [']'],
     },
     'text_edit': {
         'delete-word-backward': ['ctrl w', 'ctrl backspace'],
@@ -64,33 +47,6 @@ default_bindings = {
         'move-word-forward': ['meta f'],
         'move-char-backward': ['ctrl b'],
         'move-char-forward': ['ctrl f'],
-    },
-    'playback': {
-        'play': ['x'],
-        'play-pause-toggle': ['p', 'c'],
-        'stop': ['s', 'backspace', 'v'],
-        'next-track': ['>', 'b'],
-        'previous-track': ['<', 'z'],
-    },
-    'playlist': {
-        'play-focused': ['enter', 'ctrl m'],
-        'move-marked-up': ['K'],
-        'move-marked-down': ['J'],
-    },
-    'search': {
-        'add-marked-to-playlist': ['a'],
-        'add-marked-after-current-pos': ['w'],
-    },
-    'playlist-switcher': {
-        'load-focused': ['enter', 'ctrl m'],
-        'new': ['n'],
-        'rename-focused': ['F2'],
-        'add-focused-to-playlist': ['a'],
-    },
-    'collection-browser': {
-        'navigate-in': ['l', 'right'],
-        'navigate-out': ['h', 'left', 'backspace'],
-        'add-to-playlist': ['a'],
     },
 }
 

@@ -29,8 +29,8 @@ from xmmsclient import collections as coll
 from xmmsclient.sync import XMMSError
 
 import collutil
+import commands
 import config
-import keys
 import listbox
 import mifl
 import signals
@@ -104,7 +104,7 @@ class PlaylistWalker(urwid.ListWalker):
 
 class Playlist(listbox.MarkableListBox):
   def __init__(self, app):
-    self.__super.__init__([], app.ch)
+    self.__super.__init__([])
     self.body.current_pos = -1 # filthy filthy
 
     self.app = app
@@ -118,23 +118,7 @@ class Playlist(listbox.MarkableListBox):
     signals.connect('xmms-playlist-changed', self.on_xmms_playlist_changed)
     signals.connect('xmms-playlist-current-pos', self.on_xmms_playlist_current_pos)
 
-    self.register_commands()
-
     self.load(self.active_pls)
-
-  def register_commands(self):
-    self.app.ch.register_command(self, 'play-focused', self.play_focus)
-    self.app.ch.register_command(self, 'move-marked-up', self.move_marked_up)
-    self.app.ch.register_command(self, 'move-marked-down', self.move_marked_down)
-    self.app.ch.register_command(self, 'remove-marked', self.remove_marked)
-    self.app.ch.register_command(self, 'search-same', self.search_same)
-    self.app.ch.register_command(self, 'sa', 'search-same album') # XXX: alias
-    self.app.ch.register_command(self, 'sar', 'search-same artist') # XXX: alias
-
-    for command, k in keys.bindings['playlist'].iteritems():
-      self.app.ch.register_keys(self, command, k)
-
-    self.app.ch.register_keys(self, 'remove-marked', keys.bindings['general']['remove'])
 
   def load(self, pls, from_xmms=True):
     if pls not in self._walkers:
@@ -159,12 +143,22 @@ class Playlist(listbox.MarkableListBox):
   def on_xmms_playlist_current_pos(self, pls, pos):
     self._set_active_attr(self.body.current_pos, pos)
 
-  def play_focus(self, context, args):
-    pos = self.get_focus()[1]
+  def cmd_activate(self, args):
+    if args:
+      if len(args.split()) > 1:
+        raise commands.CommandError("Too many arguments, only one needed")
+      try:
+        pos = int(args)-1
+        if pos < 0 or pos > len(self.body):
+          raise ValueError
+      except ValueError:
+        raise commands.CommandError("valid playlist position required")
+    else:
+      pos = self.get_focus()[1]
     if pos is not None:
       xs.playlist_play(playlist=self.view_pls, pos=pos)
 
-  def remove_marked(self, context, args):
+  def cmd_rm(self, args):
     m = self.marked_data
     if not m:
       w, pos = self.get_focus()
@@ -177,7 +171,7 @@ class Playlist(listbox.MarkableListBox):
 
     self.unmark_all()
 
-  def move_marked_up(self, context, args):
+  def cmd_mvup(self, args):
     m = self.marked_data.items()
     if not m:
       w, pos = self.get_focus()
@@ -203,7 +197,7 @@ class Playlist(listbox.MarkableListBox):
         self.toggle_mark(pos-1, mid)
         # TODO: scroll if moving past last row in view
 
-  def move_marked_down(self, context, args):
+  def cmd_mvdn(self, args):
     m = self.marked_data.items()
     if not m:
       w, pos = self.get_focus()
@@ -229,7 +223,7 @@ class Playlist(listbox.MarkableListBox):
         self.toggle_mark(pos+1, mid)
         # TODO: scroll if moving past last row in view
 
-  def search_same(self, context, args):
+  def cmd_same(self, args):
     fields = args.split()
     w, p = self.get_focus()
     if w is not None:
@@ -329,26 +323,13 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
 
 class PlaylistSwitcher(listbox.MarkableListBox):
   def __init__(self, app):
-    self.__super.__init__(PlaylistSwitcherWalker(), app.ch)
+    self.__super.__init__(PlaylistSwitcherWalker())
 
     self.app = app
-    self.register_commands()
     self.cur_active = xs.playlist_current_active()
     self._set_active_attr(None, self.cur_active)
 
     signals.connect('xmms-playlist-loaded', self.on_xmms_playlist_loaded)
-
-  def register_commands(self):
-    self.app.ch.register_command(self, 'load-focused', self.load_focused)
-    self.app.ch.register_command(self, 'remove-focused', self.remove_marked)
-    self.app.ch.register_command(self, 'rename-focused', self.rename_focused)
-    self.app.ch.register_command(self, 'add-focused-to-playlist', self.add_to_current)
-    self.app.ch.register_command(self, 'new', self.new_playlist)
-
-    for command, k in keys.bindings['playlist-switcher'].iteritems():
-      self.app.ch.register_keys(self, command, k)
-
-    self.app.ch.register_keys(self, 'remove-focused', keys.bindings['general']['remove'])
 
   def on_xmms_playlist_loaded(self, pls):
     self._set_active_attr(self.cur_active, pls)
@@ -370,17 +351,17 @@ class PlaylistSwitcher(listbox.MarkableListBox):
     if newpls:
       self.add_row_attr(newpos, 'active')
 
-  def load_focused(self, context=None, args=None):
+  def cmd_activate(self, args):
     w = self.get_focus()[0]
     if w:
       xs.playlist_load(w.name, sync=False)
 
-  def remove_marked(self, context=None, args=None):
+  def cmd_rm(self, args):
     w = self.get_focus()[0]
     if w:
       xs.playlist_remove(w.name, sync=False)
 
-  def rename_focused(self, context=None, args=None):
+  def cmd_rename(self, args):
     w = self.get_focus()[0]
     if w:
       dialog = widgets.InputDialog('new playlist name', 55, 5)
@@ -388,7 +369,8 @@ class PlaylistSwitcher(listbox.MarkableListBox):
       if new_name:
         xs.coll_rename(w.name, new_name, 'Playlists', sync=False)
 
-  def add_to_current(self, context=None, args=None):
+  # FIXME: works like crap
+  def cmd_insert(self, args):
     w = self.get_focus()[0]
     if w:
       # this awfulness stems from the fact that you have to use playlist_add_collection,
@@ -404,7 +386,7 @@ class PlaylistSwitcher(listbox.MarkableListBox):
 
       xs.coll_save(idl, cur_active, 'Playlists')
 
-  def new_playlist(self, context=None, args=None):
+  def cmd_new(self, args):
     dialog = widgets.InputDialog('playlist name', 55, 5)
     name = self.app.show_dialog(dialog)
     if name:
