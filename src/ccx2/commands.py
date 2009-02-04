@@ -61,7 +61,11 @@ _commands = set([
     'unmark-all',
 ])
 
-_aliases = {}
+_aliases = {
+    'q': 'quit',
+    'sa': 'same artist',
+    'sb': 'same album',
+}
 
 _keys = {
     'enter': 'activate',
@@ -89,7 +93,7 @@ _keys = {
     '4': 'tab 4',
     '[': 'tab prev',
     ']': 'tab next',
-    'space': 'toggle-mark',
+    ' ': 'toggle',
     'meta  ': 'unmark-all', # meta-space
 }
 
@@ -110,9 +114,11 @@ def get_command_prompt(contexts):
 def add_command(command):
   _commands.add(command)
 
+def add_alias(command, alias):
+  _aliases[alias] = command # XXX: check if alias exists?
+
 def add_keybinding(command, key):
-  # XXX: check if command exists?
-  _keys[key] = command
+  _keys[key] = command # XXX: check if command exists?
 
 def add_command_help_doc(command, doc, context='general'):
   _help.setdefault(context, {})[command] = doc
@@ -121,23 +127,22 @@ def run_command(command, contexts):
   if not command:
     return False
 
-  cmd, args = _split_cmd_args(command)
-
-  if cmd not in _commands:
-    return False
-
-  fun_name = 'cmd_'+cmd.replace('-', '_')
-
   handled = False
-  for obj in contexts:
-    if hasattr(obj, fun_name):
-      r = getattr(obj, fun_name)(args)
-      handled = True
-    else:
-      r = CONTINUE_RUNNING_COMMANDS
+  for cmd, args in _unalias_command(command):
+    if cmd not in _commands:
+      continue # hmmmm...
 
-    if r == STOP_RUNNING_COMMANDS:
-      break
+    fun_name = 'cmd_'+cmd.replace('-', '_')
+
+    for obj in contexts:
+      if hasattr(obj, fun_name):
+        r = getattr(obj, fun_name)(args)
+        handled = True
+      else:
+        r = CONTINUE_RUNNING_COMMANDS
+
+      if r == STOP_RUNNING_COMMANDS:
+        break
 
   return handled
 
@@ -153,58 +158,46 @@ def _split_cmd_args(s):
     l.append('')
   return tuple(l)
 
-#def add_alias(command, alias):
-#  # XXX: check if alias exists?
-#  aliases[alias] = command
+# TODO: detect recursive aliases
+def _unalias_command(command):
+  cmd, args = _split_cmd_args(command)
 
-#cmds: a b
-#alias c -> a 3
-#alias d -> a ; b
-#alias e -> c 1 2; d
+  if cmd not in _aliases:
+    return [(cmd, args)]
 
-#e 4
-#c 1 2 ; d 4
-#a 3 1 2 ; a ; b 4
-#def _unalias_command(command):
-#  cmd, args = _split_cmd_args(command)
-#  if cmd not in aliases:
-#    return [(cmd, args)]
+  commands = _unchain_command(_aliases[cmd]) # ['c 1 2', 'd']
 
-#  commands = _unchain_commands(aliases[command])
+  r = []
+  for c in commands:
+    r.extend(_unalias_command(c))
 
-#  if len(commands) == 1:
-#    return [_split_cmd_args(commands)]
+  r[-1] = (r[-1][0], (r[-1][1] + ' ' + args).strip())
+  return r
 
-#  unaliased = []
+def _unchain_command(s):
+  if ';' not in s:
+    return [s]
 
-#  for command in commands:
-#    unaliased.append(_unalias_command(
-#    splitted = _unchain_commands(command[0])
-#    
+  parts = []
+  acc = ''
+  i, n = 0, len(s)
+  while i < n:
+    c = s[i]
+    if c == ';':
+      if i+1 >= n:
+        break
+      if s[i+1] == ';':
+        i += 1
+      else:
+        parts.append(acc)
+        acc = ''
+        i += 1
+        continue
+    acc += c
+    i += 1
 
-#def _unchain_commands(s):
-#  if ';' not in s:
-#    return [s]
+  if acc:
+    parts.append(acc)
 
-#  parts = []
-#  acc = ''
-#  i, n = 0, len(s)
-#  while i < n:
-#    c = s[i]
-#    if c == ';':
-#      if i+1 >= n:
-#        break
-#      if s[i+1] == ';':
-#        i += 1
-#      else:
-#        parts.append(acc)
-#        acc = ''
-#        i += 1
-#        continue
-#    acc += c
-#    i += 1
+  return [p.strip() for p in parts]
 
-#  if acc:
-#    parts.append(acc)
-
-#  return parts
