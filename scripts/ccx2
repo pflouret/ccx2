@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+from ccx2.main import Ccx2
+
+Ccx2().main()
+
