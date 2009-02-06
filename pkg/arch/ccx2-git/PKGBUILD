@@ -1,0 +1,28 @@
+# Maintainer palbo <quuxbaz@gmail.com>
+pkgname=ccx2-git
+pkgver=20090206
+pkgrel=1
+pkgdesc="Console client for xmms2"
+arch=(i686 x86_64)
+url=""
+license=("BSD")
+depends=("python" "python-urwid" "pyparsing" "xmms2-git")
+source=()
+md5sums=()
+
+_gitroot="/home/palbo/code/ccx2"
+_gitname="ccx2"
+
+build() {
+  cd $startdir/src
+
+  if [ -d $startdir/src/$_gitname ] ; then
+    cd $_gitname && git pull origin
+  else
+    git clone $_gitroot
+    cd $_gitname
+  fi
+
+  git checkout -f
+  python setup.py install --root=$startdir/pkg || return 1
+}
