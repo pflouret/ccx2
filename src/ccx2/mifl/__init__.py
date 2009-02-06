@@ -2,7 +2,7 @@ from pyparsing import OneOrMore, CharsNotIn, Combine, Forward, Group
 from pyparsing import ParserElement, Optional, Suppress,  White, Word, ZeroOrMore
 from pyparsing import alphanums, dblQuotedString, oneOf, printables, removeQuotes
 
-from mifl.functions import *
+from functions import *
 
 g_functions = {}
 
