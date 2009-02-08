@@ -70,7 +70,7 @@ class SearchListBox(listbox.MarkableListBox):
 
   def _set_collection(self, c):
     self.walker.feeder.collection = c
-    self.cmd_unmark_all()
+    self.unmark_all()
     self._invalidate()
 
   collection = property(lambda self: self.walker.feeder.collection, _set_collection)

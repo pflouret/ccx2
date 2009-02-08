@@ -176,6 +176,12 @@ class MarkableListBox(AttrListBox):
         self._marked_data[pos] = data
         self.add_row_attr(pos, 'marked', 100)
 
+  def unmark_all(self):
+    self._marked_data.clear()
+    for pos in self.row_attrs.keys():
+      self.remove_row_attr(pos, 'marked')
+    self._invalidate()
+
   def cmd_navhome(self, args):
     self.set_focus(0)
 
@@ -196,9 +202,6 @@ class MarkableListBox(AttrListBox):
     if pos is not None:
       self.toggle_mark(pos, self.get_mark_data(pos, w))
 
-  def cmd_unmark_all(self, args=None):
-    self._marked_data.clear()
-    for pos in self.row_attrs.keys():
-      self.remove_row_attr(pos, 'marked')
-    self._invalidate()
+  def cmd_unmark_all(self, args):
+    self.unmark_all()
 
