@@ -156,22 +156,23 @@ def _split_cmd_args(s):
   l = s.split(None, 1)
   if len(l) == 1:
     l.append('')
+  else:
+    l[1] = l[1].strip()
   return tuple(l)
 
 # TODO: detect recursive aliases
 def _unalias_command(command):
-  cmd, args = _split_cmd_args(command)
-
-  if cmd not in _aliases:
-    return [(cmd, args)]
-
-  commands = _unchain_command(_aliases[cmd]) # ['c 1 2', 'd']
+  commands = _unchain_command(command)
 
   r = []
   for c in commands:
-    r.extend(_unalias_command(c))
+    cmd, args = _split_cmd_args(c)
 
-  r[-1] = (r[-1][0], (r[-1][1] + ' ' + args).strip())
+    if cmd in _aliases:
+      r.extend(_unalias_command(_aliases[cmd]))
+      r[-1] = (r[-1][0], (r[-1][1] + ' ' + args).strip())
+    else:
+      r.append((cmd, args))
   return r
 
 def _unchain_command(s):
