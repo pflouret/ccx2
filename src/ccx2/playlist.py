@@ -329,6 +329,7 @@ class PlaylistSwitcher(listbox.MarkableListBox):
     self.cur_active = xs.playlist_current_active()
     self._set_active_attr(None, self.cur_active)
 
+    # TODO: renames screw things up
     signals.connect('xmms-playlist-loaded', self.on_xmms_playlist_loaded)
 
   def on_xmms_playlist_loaded(self, pls):
