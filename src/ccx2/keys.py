@@ -25,16 +25,6 @@
 command_mode_key = ':'
 
 default_bindings = {
-    'movement': {
-        'move-focus-left': ['h', 'left'],
-        'move-focus-up': ['k', 'up'],
-        'move-focus-down': ['j', 'down'],
-        'move-focus-right': ['l', 'right'],
-        'page-up': ['ctrl u', 'page up'],
-        'page-down': ['ctrl d', 'page down'],
-        'move-focus-top': ['home', 'ctrl a'],
-        'move-focus-bottom': ['end', 'ctrl e'],
-    },
     'general': {
         'return': ['enter', 'ctrl m'],
         'remove': ['d', 'delete'],

@@ -41,10 +41,16 @@ _commands = set([
     'activate',
     'cycle',
     'insert',
-    'mvbot',
     'mvdn',
-    'mvtop',
     'mvup',
+    'navl',
+    'navdn',
+    'navup',
+    'navr',
+    'navpgdn',
+    'navpgup',
+    'navhome',
+    'navend',
     'new',
     'pb-next',
     'pb-play',
@@ -75,8 +81,14 @@ _keys = {
     'a': 'insert',
     'K': 'mvup',
     'J': 'mvdn',
-    'home': 'mvtop',
-    'end': 'mvbot',
+    'h': 'navl',
+    'k': 'navup',
+    'j': 'navdn',
+    'l': 'navr',
+    'page up': 'navpgup',
+    'page down': 'navpgdn',
+    'home': 'navhome',
+    'end': 'navend',
     'n': 'new',
     'z': 'pb-prev',
     'x': 'pb-toggle',
@@ -93,23 +105,13 @@ _keys = {
     '4': 'tab 4',
     '[': 'tab prev',
     ']': 'tab next',
-    ' ': 'toggle',
+    ' ': 'toggle ; navdn',
+    '<0>': 'navup ; toggle', # ctrl-space
     'meta  ': 'unmark-all', # meta-space
 }
 
 _help = {
 }
-
-def get_command_prompt(contexts):
-  w = widgets.InputEdit(caption=':')
-  def f(text):
-    try:
-      run_command(text, contexts)
-    except CommandError:
-      pass # FIXME
-
-  urwid.connect_signal(w, 'done', f)
-  return w
 
 def add_command(command):
   _commands.add(command)

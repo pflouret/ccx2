@@ -24,6 +24,7 @@
 
 import urwid
 
+import commands
 import keys
 
 BADROWSMSG = "Widget %s at position %s within listbox calculated %d rows but rendered %d!"
@@ -147,8 +148,8 @@ class AttrListBox(urwid.ListBox):
 
     return final_canvas
 
-  def keypress(self, size, keys):
-    return self.__super.keypress(size, keys)
+  def keypress(self, size, key):
+    return self.__super.keypress(size, key)
 
 class MarkableListBox(AttrListBox):
   def __init__(self, body):
@@ -175,10 +176,10 @@ class MarkableListBox(AttrListBox):
         self._marked_data[pos] = data
         self.add_row_attr(pos, 'marked', 100)
 
-  def cmd_mvtop(self, args):
+  def cmd_navhome(self, args):
     self.set_focus(0)
 
-  def cmd_mvbot(self, args):
+  def cmd_navend(self, args):
     self.set_focus_last()
 
   def cmd_toggle(self, args):

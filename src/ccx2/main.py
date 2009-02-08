@@ -143,24 +143,20 @@ class Ccx2(object):
     def _need_redraw(): self.need_redraw = True
     signals.connect('need-redraw', _need_redraw)
 
-    # change default urwid command map
-    for action in (('move-focus-up', 'cursor up'),
-                   ('move-focus-down', 'cursor down'),
-                   ('move-focus-right', 'cursor right'),
-                   ('move-focus-left', 'cursor left'),
-                   ('page-up', 'cursor page up'),
-                   ('page-down', 'cursor page down'),
-                   ('move-focus-top', 'cursor max left'),
-                   ('move-focus-bottom', 'cursor max right')):
-      for k in keys.bindings['movement'][action[0]]:
-        urwid.command_map[k] = action[1]
-
   def cmd_pb_play(self, args): xs.playback_start(sync=False)
   def cmd_pb_toggle(self, args): xs.playback_play_pause_toggle(sync=False)
   def cmd_pb_stop(self, args): xs.playback_stop(sync=False)
   def cmd_pb_next(self, args): xs.playback_next(sync=False)
   def cmd_pb_prev(self, args): xs.playback_prev(sync=False)
   def cmd_quit(self, args): sys.exit(0)
+  def cmd_navl(self, args): self.view.keypress(self.size, 'left')
+  def cmd_navdn(self, args): self.view.keypress(self.size, 'down')
+  def cmd_navup(self, args): self.view.keypress(self.size, 'up')
+  def cmd_navr(self, args): self.view.keypress(self.size, 'right')
+  def cmd_navpgdn(self, args): self.view.keypress(self.size, 'page down')
+  def cmd_navpgup(self, args): self.view.keypress(self.size, 'page up')
+  def cmd_navhome(self, args): self.view.keypress(self.size, 'home')
+  def cmd_navend(self, args): self.view.keypress(self.size, 'end')
 
   def main(self):
     self.ui = urwid.curses_display.Screen()
@@ -180,6 +176,26 @@ class Ccx2(object):
     urwid.connect_signal(widget, 'abort', _restore)
 
     self.view.footer = widget
+    self.view.set_focus('footer')
+
+  def show_command_prompt(self):
+    contexts = self.view.body.get_contexts() + [self]
+    w = widgets.InputEdit(caption=':')
+    def _restore(*args):
+      self.view.footer = None
+      self.view.set_focus('body')
+
+    def _f(text):
+      _restore()
+      try:
+        commands.run_command(text, contexts)
+      except commands.CommandError:
+        pass # FIXME
+
+    urwid.connect_signal(w, 'done', _f)
+    urwid.connect_signal(w, 'abort', _restore)
+
+    self.view.footer = w
     self.view.set_focus('footer')
 
   def search(self, query=None):
@@ -217,8 +233,7 @@ class Ccx2(object):
           elif commands.run_key(k, self.view.body.get_contexts() + [self]):
             continue
           elif k == keys.command_mode_key:
-            contexts = self.view.body.get_contexts() + [self]
-            self.show_prompt(commands.get_command_prompt(contexts))
+            self.show_command_prompt()
           # TODO: else show unbound key msg
         except commands.CommandError:
           pass # TODO: show error

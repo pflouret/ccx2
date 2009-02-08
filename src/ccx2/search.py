@@ -119,8 +119,7 @@ class SearchListBox(listbox.MarkableListBox):
 
   def keypress(self, size, key):
     k = self.__super.keypress(size, key)
-    if k in keys.bindings['movement']['move-focus-up'] + \
-            keys.bindings['movement']['move-focus-down']:
+    if k in ('up', 'down'):
       # don't let a focus change happen in the pile if up or down are unhandled
       return None
     return k
