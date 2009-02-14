@@ -22,6 +22,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import time
 import threading
 
@@ -109,8 +110,9 @@ class XmmsService(object):
     super(XmmsService, self).__init__()
     self.xmms = xmmsclient.XMMS(name)
     self.xmms_s = xmmsclient.XMMSSync(name+'-sync')
-    self.xmms.connect()
-    self.xmms_s.connect()
+    path = os.environ.get("XMMS_PATH", None)
+    self.xmms.connect(path=path)
+    self.xmms_s.connect(path=path)
 
     self.connect_signals()
 
