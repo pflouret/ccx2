@@ -218,8 +218,12 @@ class Ccx2(object):
       input_keys = None
       while not input_keys:
         input_keys = self.ui.get_input()
-        xs.ioout()
+
+        if not xs.connected:
+          sys.exit(0)
+
         xs.ioin()
+        xs.ioout()
         if self.need_redraw:
           self.redraw()
         time.sleep(0.01)

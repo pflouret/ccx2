@@ -23,6 +23,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
+import sys
 import time
 import threading
 
@@ -94,16 +95,17 @@ def get(name='ccx2', **kwargs):
     return service
 
 class PlaybackPlaytimeTimer(threading.Thread):
-  def __init__(self, seconds, callback):
+  def __init__(self, seconds, xmms, fun):
     self.seconds = seconds
-    self.callback = callback
+    self.xmms = xmms
+    self.fun = fun
+
     threading.Thread.__init__(self)
     self.setDaemon(True)
 
   def run(self):
-    while True:
-      self.callback()
-      time.sleep(self.seconds)
+    time.sleep(self.seconds)
+    self.xmms.signal_playback_playtime(self.fun)
 
 class XmmsService(object):
   def __init__(self, path=None, name='ccx2'):
@@ -111,8 +113,15 @@ class XmmsService(object):
     self.xmms = xmmsclient.XMMS(name)
     self.xmms_s = xmmsclient.XMMSSync(name+'-sync')
     path = os.environ.get("XMMS_PATH", None)
-    self.xmms.connect(path=path)
+    self.connected = True
+
+    def disconnect(r):
+      self.connected = False
+
+    self.xmms.connect(path=path, disconnect_func=disconnect)
     self.xmms_s.connect(path=path)
+
+    self.connected = True
 
     self.connect_signals()
 
@@ -151,15 +160,13 @@ class XmmsService(object):
     return _fun
 
   def connect_signals(self):
-    self.timer = PlaybackPlaytimeTimer(0.5, self._on_playback_playtime)
-    self.timer.start()
-
     self.xmms.broadcast_playback_current_id(self._on_playback_current_id)
     self.xmms.broadcast_playback_status(self._simple_emit_fun('xmms-playback-status'))
     self.xmms.broadcast_playlist_loaded(self._simple_emit_fun('xmms-playlist-loaded'))
     self.xmms.broadcast_playlist_current_pos(self._on_playlist_current_pos)
     self.xmms.broadcast_playlist_changed(self._on_playlist_changed)
     self.xmms.broadcast_collection_changed(self._on_collection_changed)
+    self.xmms.signal_playback_playtime(self._on_playback_playtime)
 
     self.ioout()
 
@@ -199,13 +206,9 @@ class XmmsService(object):
     self.xmms.medialib_get_info(
         id, lambda r: signals.emit('xmms-playback-current-info', r.value()))
 
-  def _on_playback_playtime(self, r=None):
-    if r:
-      # came from the xmms2 signal
-      signals.emit('xmms-playback-playtime', r.value())
-    else:
-      # came from the timer
-      self.xmms.signal_playback_playtime(self._on_playback_playtime)
+  def _on_playback_playtime(self, r):
+    signals.emit('xmms-playback-playtime', r.value())
+    PlaybackPlaytimeTimer(0.8, self.xmms, self._on_playback_playtime).start()
 
   def bindata_retrieve(self, hash, cb=None, sync=True):
     if sync:
