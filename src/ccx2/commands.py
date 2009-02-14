@@ -79,6 +79,7 @@ _keys = {
     'ctrl j': 'activate',
     'tab': 'cycle',
     'a': 'insert',
+    'w': 'insert +1',
     'K': 'mvup',
     'J': 'mvdn',
     'h': 'navl',

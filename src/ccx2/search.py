@@ -77,10 +77,23 @@ class SearchListBox(listbox.MarkableListBox):
 
   def cmd_insert(self, args):
     if args:
+      relative = False
+      if args[0] in ('+', '-'):
+        relative = True
+
       try:
-        pos = int(args)-1
+        pos = int(args)
       except ValueError:
         raise commands.CommandError("valid playlist position needed")
+
+      if relative:
+        try:
+          cur = xs.playlist_current_pos()['position']
+          pos = cur + pos + (args[0] == '-' and 1 or 0)
+        except:
+          pos = None
+      else:
+        pos -= 1
     else:
       pos = None
 
@@ -90,7 +103,7 @@ class SearchListBox(listbox.MarkableListBox):
     m = self.marked_data.values()
 
     if not m:
-      w, pos = self.get_focus()
+      w, p = self.get_focus()
 
       if w is None:
         return
