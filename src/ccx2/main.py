@@ -109,6 +109,40 @@ class HeaderBar(urwid.WidgetWrap):
       self._invalidate()
       signals.emit('need-redraw')
 
+
+class StatusArea(urwid.Pile):
+  def __init__(self):
+    self.status = urwid.AttrWrap(urwid.Text(''), 'status')
+    self._empty = urwid.Text('')
+
+    self.__super.__init__([self.status, self._empty], 1)
+
+  def _restore(self, *args, **kwargs):
+    self.widget_list[1] = self._empty
+    self.set_focus(1)
+    self._invalidate()
+
+  def set_message(self, msg):
+    self.status.set_text(msg)
+
+  def clear_message(self):
+    self.status.set_text('')
+
+  def show_prompt(self, caption=':', done_cb=[], abort_cb=[], change_cb=[]):
+    input = widgets.InputEdit(caption=caption)
+
+    done_cb.insert(0, self._restore)
+    abort_cb.insert(0, self._restore)
+
+    for name, cbs in (('done', done_cb), ('abort', abort_cb), ('change', change_cb)):
+      for cb in cbs:
+        urwid.connect_signal(input, name, cb)
+
+    self.widget_list[1] = input
+    self.set_focus(1)
+    self._invalidate()
+
+
 signals.register('need-redraw')
 signals.register('need-redraw-non-urgent')
 
@@ -123,7 +157,8 @@ class Ccx2(object):
     ('marked-focus','black','brown'),
     ('active','light blue', 'default'),
     ('active-focus','black', 'dark blue'),
-    ('headerbar','default', 'default')]
+    ('headerbar','default', 'default'),
+    ('status','black', 'light gray')]
 
   def __init__(self):
     pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
@@ -136,7 +171,8 @@ class Ccx2(object):
 
     self.tabcontainer = containers.TabContainer(self, tabs)
     self.headerbar = HeaderBar()
-    self.view = urwid.Frame(self.tabcontainer, header=self.headerbar)
+    self.statusarea = StatusArea()
+    self.view = urwid.Frame(self.tabcontainer, header=self.headerbar, footer=self.statusarea)
 
     self.need_redraw = False
 
@@ -167,35 +203,33 @@ class Ccx2(object):
   def show_dialog(self, dialog):
     return dialog.show(self.ui, self.size, self.view)
 
-  def show_prompt(self, widget):
+  def show_prompt(self, caption, done_cb=[], abort_cb=[], change_cb=[]):
     def _restore(*args):
-      self.view.footer = None
       self.view.set_focus('body')
 
-    urwid.connect_signal(widget, 'done', _restore)
-    urwid.connect_signal(widget, 'abort', _restore)
+    if type(done_cb) != list: done_cb = [done_cb]
+    if type(abort_cb) != list: abort_cb = [abort_cb]
+    if type(change_cb) != list: change_cb = [change_cb]
+    done_cb.insert(0, _restore)
+    abort_cb.insert(0, _restore)
 
-    self.view.footer = widget
+    self.statusarea.show_prompt(caption, done_cb=done_cb, abort_cb=abort_cb, change_cb=change_cb)
     self.view.set_focus('footer')
 
   def show_command_prompt(self):
     contexts = self.view.body.get_contexts() + [self]
-    w = widgets.InputEdit(caption=':')
+
     def _restore(*args):
-      self.view.footer = None
       self.view.set_focus('body')
 
-    def _f(text):
-      _restore()
+    def _run(text):
       try:
         commands.run_command(text, contexts)
       except commands.CommandError:
         pass # FIXME
 
-    urwid.connect_signal(w, 'done', _f)
-    urwid.connect_signal(w, 'abort', _restore)
+    self.statusarea.show_prompt(done_cb=[_restore, _run], abort_cb=[_restore])
 
-    self.view.footer = w
     self.view.set_focus('footer')
 
   def search(self, query=None):
