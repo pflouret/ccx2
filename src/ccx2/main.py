@@ -33,11 +33,13 @@ import urwid.curses_display
 import xmmsclient
 
 import commands
+import containers
 import keys
+import mif
 import playlist
 import search
 import signals
-import containers
+import util
 import widgets
 import xmms
 
@@ -54,7 +56,9 @@ class HeaderBar(urwid.WidgetWrap):
     self.info = {}
     self.time = 0
     self.status = xs.playback_status()
-    self._make_text()
+    self.parser = mif.FormatParser(
+        r':status [# :a \> :t -- :l [:c?(:p) ]\[:elapsed[/:total]\]]')
+    self.ctx = {}
 
     signals.connect('xmms-playback-status', self.on_xmms_playback_status)
     signals.connect('xmms-playback-current-info', self.on_xmms_playback_current_info)
@@ -64,30 +68,13 @@ class HeaderBar(urwid.WidgetWrap):
     xs.medialib_get_info(
         curid, cb=lambda r: self.on_xmms_playback_current_info(r.value()), sync=False)
 
-  def _humanize_time(self, milli, str_output=True):
-    sec, milli = divmod(milli, 1000)
-    min, sec = divmod(sec, 60)
-    hours, min = divmod(min, 60)
-    if str_output:
-      return '%s%02d:%02d' % (hours and '%02d:' % hours or '', min, sec)
-    else:
-      hours, min, sec
-
   def _make_text(self):
-    status = HeaderBar.status_desc[self.status]
-    c = self.info.get('compilation')
-    p = self.info.get('performer')
-    a = self.info.get('artist')
-    t = self.info.get('title')
-    text = status
-    if p or a or t or t:
-      text += ' | '
-    if p or a: text += p or a
-    if t: text += ' - ' + t
-    if c: text += ' - ' + a
-    if self.time: text += ' [' + self._humanize_time(self.time) + ']'
+    self.ctx['status'] = HeaderBar.status_desc[self.status]
+    self.ctx['elapsed'] = util.humanize_time(self.time)
+    if 'duration' in self.info:
+      self.ctx['total'] = util.humanize_time(self.info['duration'])
 
-    self._w.set_text(text)
+    self._w.set_text(self.parser.eval(self.ctx))
 
   def on_xmms_playback_playtime(self, milli):
     if self.time/1000 != milli/1000:
@@ -105,9 +92,12 @@ class HeaderBar(urwid.WidgetWrap):
   def on_xmms_playback_current_info(self, info):
     if type(info) == xmmsclient.PropDict:
       self.info = info
+      self.ctx = dict(zip((k[1] for k in self.info), self.info.values()))
       self._make_text()
       self._invalidate()
       signals.emit('need-redraw')
+    else:
+      self.ctx = {}
 
 
 class StatusArea(urwid.Pile):

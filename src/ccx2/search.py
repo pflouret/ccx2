@@ -8,7 +8,7 @@ import commands
 import config
 import keys
 import listbox
-import mifl
+import mif
 import signals
 import widgets
 import xmms
@@ -18,13 +18,13 @@ xs = xmms.get()
 
 
 class SearchWalker(urwid.ListWalker):
-  def __init__(self, collection, format):
-    self.format = format
-    self.parser = mifl.MiflParser(config.formatting[format])
+  def __init__(self, collection, formatname):
+    self.format = formatname
+    self.parser = mif.FormatParser(config.formatting[formatname])
     self.widgets = {}
     self.focus = 0
 
-    self.feeder = collutil.CollectionFeeder(collection, self.parser[0].symbol_names())
+    self.feeder = collutil.CollectionFeeder(collection, self.parser.fields())
 
   def __len__(self):
     return len(self.feeder)
@@ -36,7 +36,7 @@ class SearchWalker(urwid.ListWalker):
       return None, None
 
     if mid not in self.widgets:
-      text = self.parser[0].eval(self.feeder[pos])[0]
+      text = self.parser.eval(self.feeder[pos])
       self.widgets[mid] = widgets.SongWidget(mid, text)
 
     return self.widgets[mid], pos
@@ -60,10 +60,9 @@ class SearchWalker(urwid.ListWalker):
 
 
 class SearchListBox(listbox.MarkableListBox):
-  def __init__(self, format, app):
+  def __init__(self, formatname, app):
     self.app = app
-    self.format = format
-    self.parser = mifl.MiflParser(config.formatting[format])
+    self.format = formatname
     self.walker = SearchWalker(coll.IDList(), 'search')
 
     self.__super.__init__(self.walker)
