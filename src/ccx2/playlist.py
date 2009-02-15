@@ -357,19 +357,6 @@ class PlaylistSwitcher(listbox.MarkableListBox):
     if w:
       xs.playlist_load(w.name, sync=False)
 
-  def cmd_rm(self, args):
-    w = self.get_focus()[0]
-    if w:
-      xs.playlist_remove(w.name, sync=False)
-
-  def cmd_rename(self, args):
-    w = self.get_focus()[0]
-    if w:
-      dialog = widgets.InputDialog('new playlist name', 55, 5)
-      new_name = self.app.show_dialog(dialog)
-      if new_name:
-        xs.coll_rename(w.name, new_name, 'Playlists', sync=False)
-
   # FIXME: works like crap
   def cmd_insert(self, args):
     w = self.get_focus()[0]
@@ -387,11 +374,23 @@ class PlaylistSwitcher(listbox.MarkableListBox):
 
       xs.coll_save(idl, cur_active, 'Playlists')
 
+  def cmd_rm(self, args):
+    w = self.get_focus()[0]
+    if w:
+      xs.playlist_remove(w.name, sync=False)
+
+  def cmd_rename(self, args):
+    w = self.get_focus()[0]
+    if w:
+      def rename(new_name):
+        xs.coll_rename(w.name, new_name, 'Playlists', sync=False)
+      self.app.show_prompt('new name: ', rename)
+
   def cmd_new(self, args):
-    dialog = widgets.InputDialog('playlist name', 55, 5)
-    name = self.app.show_dialog(dialog)
-    if name:
-      xs.playlist_create(name, sync=False)
+    def create(name):
+      if name:
+        xs.playlist_create(name, sync=False)
+    self.app.show_prompt('playlist name: ', create)
 
   def get_contexts(self):
     return [self]
