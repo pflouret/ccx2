@@ -153,7 +153,6 @@ class InputEdit(urwid.Edit):
     self.edit_pos = self._find_word_pos(self.BACK)
 
   def keypress(self, size, key):
-    text = self.edit_text
     if key in keys.bindings['general']['return']:
       self._emit('done', self.edit_text)
     elif key in keys.bindings['general']['cancel']:
