@@ -165,6 +165,24 @@ class Search(urwid.Pile):
     if i != cur and (i != 0 or len(self.lb.body) != 0):
       self.set_focus(i)
 
+  def cmd_save(self, args):
+    # TODO: playlists and playlist types/options
+    args = args.strip()
+    if not args:
+      raise commands.CommandError, 'need some args'
+
+    name = args
+    q = self.input.edit_text
+    if q and not coll_parser_pattern_rx.search(q):
+      q = ' '.join(['~'+s for s in q.split()])
+
+    try:
+      c = coll.coll_parse(q)
+    except ValueError:
+      raise commands.CommandError, 'invalid collection'
+
+    xs.coll_save(c, name, 'Collections', sync=False)
+
   def set_query(self, q):
     self.input.set_edit_text(q)
     self.input.edit_pos = len(q)

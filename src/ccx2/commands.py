@@ -61,6 +61,7 @@ _commands = set([
     'rename',
     'rm',
     'same',
+    'save',
     'search',
     'tab',
     'toggle',
