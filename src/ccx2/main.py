@@ -90,14 +90,11 @@ class HeaderBar(urwid.WidgetWrap):
     signals.emit('need-redraw')
 
   def on_xmms_playback_current_info(self, info):
-    if type(info) == xmmsclient.PropDict:
-      self.info = info
-      self.ctx = dict(zip((k[1] for k in self.info), self.info.values()))
-      self._make_text()
-      self._invalidate()
-      signals.emit('need-redraw')
-    else:
-      self.ctx = {}
+    self.info = info
+    self.ctx = dict(zip((k[1] for k in self.info), self.info.values()))
+    self._make_text()
+    self._invalidate()
+    signals.emit('need-redraw')
 
 
 class StatusArea(urwid.Pile):

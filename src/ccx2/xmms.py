@@ -200,11 +200,14 @@ class XmmsService(object):
                    v.get('position'),
                    v.get('newposition'))
 
+  def _medialib_get_info_cb(self, r):
+    if not r.iserror() and type(r.value()) == xmmsclient.PropDict:
+      signals.emit('xmms-playback-current-info', r.value())
+
   def _on_playback_current_id(self, r):
     id = r.value()
     signals.emit('xmms-playback-current-id', id)
-    self.xmms.medialib_get_info(
-        id, lambda r: signals.emit('xmms-playback-current-info', r.value()))
+    self.xmms.medialib_get_info(id, self._medialib_get_info_cb)
 
   def _on_playback_playtime(self, r):
     signals.emit('xmms-playback-playtime', r.value())
