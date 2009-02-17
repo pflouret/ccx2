@@ -6,7 +6,7 @@ pkgdesc="Console client for xmms2"
 arch=(i686 x86_64)
 url=""
 license=("BSD")
-depends=("python" "python-urwid" "pyparsing" "xmms2-git")
+depends=("python" "python-urwid" "xmms2-git")
 source=()
 md5sums=()
 
@@ -17,7 +17,7 @@ build() {
   cd $startdir/src
 
   if [ -d $startdir/src/$_gitname ] ; then
-    cd $_gitname && git pull origin
+    cd $_gitname && git pull -f origin
   else
     git clone $_gitroot
     cd $_gitname
