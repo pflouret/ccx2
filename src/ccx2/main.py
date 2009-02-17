@@ -183,6 +183,7 @@ class Ccx2(object):
   def cmd_navpgup(self, args): self.view.keypress(self.size, 'page up')
   def cmd_navhome(self, args): self.view.keypress(self.size, 'home')
   def cmd_navend(self, args): self.view.keypress(self.size, 'end')
+  def cmd_search(self, args): self.search(args)
 
   def main(self):
     self.ui = urwid.curses_display.Screen()

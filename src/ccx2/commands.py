@@ -72,6 +72,7 @@ _aliases = {
     'q': 'quit',
     'sa': 'same artist',
     'sb': 'same album',
+    's': 'search',
 }
 
 _keys = {
