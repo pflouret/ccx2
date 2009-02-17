@@ -54,19 +54,17 @@ class HeaderBar(urwid.WidgetWrap):
   def __init__(self):
     self.__super.__init__(urwid.AttrWrap(urwid.Text(''), 'headerbar'))
     self.info = {}
+    self.ctx = {}
     self.time = 0
     self.status = xs.playback_status()
     self.parser = mif.FormatParser(
         r':status [# :a \> :t -- :l [:c?(:p) ]\[:elapsed[/:total]\]]')
-    self.ctx = {}
 
     signals.connect('xmms-playback-status', self.on_xmms_playback_status)
     signals.connect('xmms-playback-current-info', self.on_xmms_playback_current_info)
     signals.connect('xmms-playback-playtime', self.on_xmms_playback_playtime)
 
-    curid = xs.playback_current_id()
-    xs.medialib_get_info(
-        curid, cb=lambda r: self.on_xmms_playback_current_info(r.value()), sync=False)
+    xs.playback_current_info(self.on_xmms_playback_current_info, sync=False)
 
   def _make_text(self):
     self.ctx['status'] = HeaderBar.status_desc[self.status]

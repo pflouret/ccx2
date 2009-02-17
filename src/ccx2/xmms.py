@@ -290,6 +290,16 @@ class XmmsService(object):
         cb = self._on_xmms_playback_current_id
       self.xmms.playback_current_id(cb=cb)
 
+  def playback_current_info(self, cb=None, sync=True):
+    i = self.xmms_s.playback_current_id()
+    if sync:
+      return self.medialib_get_info(i)
+    elif cb is not None:
+      def _cb(r):
+        if not r.iserror() and type(r.value()) == xmmsclient.PropDict:
+          cb(r.value())
+      self.xmms.medialib_get_info(i, cb=_cb)
+
   def playback_next(self, cb=None, sync=True):
     self.playlist_set_next(pos=1, relative=True, sync=True)
     if sync:
