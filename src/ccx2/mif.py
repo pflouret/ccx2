@@ -34,6 +34,8 @@ _field_aliases = {'a': 'artist',
                   'c': 'compilation',
                   'p': 'performer'}
 
+_special_fields = {'CR': ('\n', False)}
+
 class FormatParser(list):
   def __init__(self, text):
     self._text = text
@@ -198,23 +200,23 @@ class Field(object):
     self.name = name
 
   def fields(self):
-    if self.name in _field_aliases:
-      name = _field_aliases[self.name]
+    if self.name in _special_fields:
+      return []
     else:
-      name = self.name
-    return [name]
+      return [_field_aliases.get(self.name, self.name)]
 
   def eval(self, ctx):
-    try:
+    v, b = None, None
+    if self.name in ctx:
       v = ctx[self.name]
-    except KeyError:
-      try:
-        v = ctx[_field_aliases[self.name]]
-      except KeyError:
-        v = None
+    elif self.name in _field_aliases and _field_aliases[self.name] in ctx:
+      v = ctx[_field_aliases[self.name]]
+    elif self.name in _special_fields:
+      v, b = _special_fields[self.name]
 
-    b = v is not None
-    v = v or u''
+    if b is None: b = v is not None
+    if v is None: v = u''
+
     return unicode(v), b
 
   def __str__(self): return u'Field(%s)' % self.name
