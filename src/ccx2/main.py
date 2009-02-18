@@ -30,12 +30,14 @@ import time
 
 import urwid
 import urwid.curses_display
+import urwid.raw_display
 import xmmsclient
 
 import commands
 import containers
 import keys
 import mif
+import nowplaying
 import playlist
 import search
 import signals
@@ -142,7 +144,11 @@ class Ccx2(object):
     ('active','light blue', 'default'),
     ('active-focus','black', 'dark blue'),
     ('headerbar','default', 'default'),
-    ('status','black', 'light gray')]
+    ('status','black', 'light gray'),
+    ('progress-normal', 'light gray', 'light gray'),
+    ('progress-complete', 'dark red', 'dark red'),
+    ('progress-smooth', 'dark red', 'light gray'),
+  ]
 
   def __init__(self):
     pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
@@ -150,6 +156,7 @@ class Ccx2(object):
                            ('weight', 5, playlist.Playlist(self))],
                           dividechars=1, focus_column=2)
     tabs = [('help', urwid.ListBox([urwid.Text('yeah right')])),
+            ('now playing', nowplaying.NowPlaying()),
             ('playlist', pview),
             ('search', search.Search(self))]
 
@@ -180,7 +187,7 @@ class Ccx2(object):
   def cmd_search(self, args): self.search(args)
 
   def main(self):
-    self.ui = urwid.curses_display.Screen()
+    self.ui = urwid.raw_display.Screen()
     self.ui.register_palette(self.palette)
     self.ui.set_input_timeouts(max_wait=0)
     self.ui.run_wrapper(self.run)

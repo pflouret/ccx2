@@ -66,6 +66,15 @@ default_ascii_borders = {
 default_formatting = {
     'search': r'[:c?:p|:a] \> :l \> [#[:partofset.]:n ][:c?:a \>] :t',
     'simple': r':a \> :t [:c?+:p+]',
+    'nowplaying': 
+        ':status:CR:CR'
+        ':a:CR'
+        '[:n. ]:t:CR'
+        ':l[:c? (:p)][ CD:partofset]:CR'
+        '[:d][ :g][ {:publisher}]:CR'
+        '[#:id][ :{bitrate}bps][ :{samplerate}Hz:CR'
+        ':CR'
+        r'\[:elapsed[/:total]\]',
 }
 
 formatting = default_formatting
