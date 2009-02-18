@@ -52,7 +52,6 @@ class HeaderBar(urwid.WidgetWrap):
                  xmmsclient.PLAYBACK_STATUS_PAUSE: 'PAUSED '}
 
   def __init__(self):
-    self.__super.__init__(urwid.AttrWrap(urwid.Text(''), 'headerbar'))
     self.info = {}
     self.ctx = {}
     self.time = 0
@@ -60,39 +59,39 @@ class HeaderBar(urwid.WidgetWrap):
     self.parser = mif.FormatParser(
         r':status [# :a \> :t -- :l [:c?(:p) ]\[:elapsed[/:total]\]]')
 
+    self.text = urwid.Text('')
+    self.__super.__init__(self.text)
+
     signals.connect('xmms-playback-status', self.on_xmms_playback_status)
     signals.connect('xmms-playback-current-info', self.on_xmms_playback_current_info)
     signals.connect('xmms-playback-playtime', self.on_xmms_playback_playtime)
 
     xs.playback_current_info(self.on_xmms_playback_current_info, sync=False)
 
-  def _make_text(self):
+
+  def _update(self):
     self.ctx['status'] = HeaderBar.status_desc[self.status]
     self.ctx['elapsed'] = util.humanize_time(self.time)
     if 'duration' in self.info:
       self.ctx['total'] = util.humanize_time(self.info['duration'])
 
-    self._w.set_text(self.parser.eval(self.ctx))
+    self.text.set_text(self.parser.eval(self.ctx))
+    self._invalidate()
+    signals.emit('need-redraw')
 
   def on_xmms_playback_playtime(self, milli):
     if self.time/1000 != milli/1000:
       self.time = milli
-      self._make_text()
-      self._invalidate()
-      signals.emit('need-redraw')
+      self._update()
 
   def on_xmms_playback_status(self, status):
     self.status = status
-    self._make_text()
-    self._invalidate()
-    signals.emit('need-redraw')
+    self._update()
 
   def on_xmms_playback_current_info(self, info):
     self.info = info
     self.ctx = dict(zip((k[1] for k in self.info), self.info.values()))
-    self._make_text()
-    self._invalidate()
-    signals.emit('need-redraw')
+    self._update()
 
 
 class StatusArea(urwid.Pile):
