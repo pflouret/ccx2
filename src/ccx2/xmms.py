@@ -211,7 +211,8 @@ class XmmsService(object):
 
   def _on_playback_playtime(self, r):
     signals.emit('xmms-playback-playtime', r.value())
-    PlaybackPlaytimeTimer(0.8, self.xmms, self._on_playback_playtime).start()
+    PlaybackPlaytimeTimer(0.2, self.xmms, self._on_playback_playtime).start()
+    return False
 
   def bindata_retrieve(self, hash, cb=None, sync=True):
     if sync:
