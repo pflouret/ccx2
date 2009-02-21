@@ -61,7 +61,7 @@ class NowPlaying(urwid.WidgetWrap):
     self.progress = urwid.ProgressBar('progress-normal', 'progress-complete', 0, 100,
                                       'progress-smooth')
     self.song = urwid.Text('', align='right')
-    self.cover = AlbumCoverWidget(maxcols=-1, align='center', valign='top')
+    self.cover = AlbumCoverWidget(maxcols=70, align='center', valign='top')
 
     fill = urwid.SolidFill(' ')
     w = urwid.Columns([#('fixed', 1, urwid.SolidFill(' ')),
