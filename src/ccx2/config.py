@@ -286,7 +286,6 @@ nowplaying =
 
 default = default,default
 focus = black,light gray
-focus = dark magenta,black
 dialog = black,light gray
 marked = yellow,default
 marked-focus = black,brown

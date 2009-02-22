@@ -288,7 +288,7 @@ class Ccx2(object):
     def _restore(*args):
       self.view.set_focus('body')
 
-    def _run(text):
+    def _run(widget, text):
       try:
         self.cm.run_command(text, contexts)
       except commands.CommandError, e:

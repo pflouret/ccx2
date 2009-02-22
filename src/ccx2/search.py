@@ -184,8 +184,8 @@ class Search(urwid.Pile):
     if self.app.config.search_find_as_you_type:
       urwid.connect_signal(self.input, 'change', self._on_query_change)
     urwid.connect_signal(self.input, 'done', self._on_done)
-    urwid.connect_signal(self.input, 'abort', lambda t=None: self.set_focus(self.lb))
-    urwid.connect_signal(self.input, 'abort', lambda: self.input.set_edit_text(''))
+    urwid.connect_signal(self.input, 'abort', lambda w: self.set_focus(self.lb))
+    urwid.connect_signal(self.input, 'abort', lambda w: self.input.set_edit_text(''))
 
     self.prev_q = ''
 
@@ -249,7 +249,7 @@ class Search(urwid.Pile):
     self.input.set_caption(caption)
     signals.emit('need-redraw')
 
-  def _on_done(self, q):
+  def _on_done(self, widget, q):
     if not self.app.config.search_find_as_you_type:
       self.process_query(q)
     else:
@@ -257,7 +257,7 @@ class Search(urwid.Pile):
     self.cmd_cycle()
     self._invalidate()
 
-  def _on_query_change(self, q):
+  def _on_query_change(self, widget, q):
     if self.app.config.search_find_as_you_type:
       if q != self.prev_q:
         signals.alarm(0.25, lambda s, f: self.process_query(q))

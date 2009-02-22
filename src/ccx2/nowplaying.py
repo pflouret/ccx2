@@ -94,7 +94,7 @@ class NowPlaying(urwid.WidgetWrap):
 
   def on_xmms_playback_playtime(self, milli):
     if not self.cur_hash:
-      self.cover.cheesy_animation()
+      self.cover.reset()
 
     if self.time/1000 != milli/1000:
       self.time = milli
@@ -138,26 +138,14 @@ class AlbumCoverWidget(urwid.WidgetWrap):
 
     self.text = urwid.Text('', wrap=urwid.ANY)
     self.filler = urwid.Filler(self.text, valign)
-    self.__super.__init__(urwid.Padding(self.filler, align))
-
-  legend = "\nno cover, how boring! let's dance\n\n"
-  dance = ['\\(^^o)   (/^^)/', 'o(^^\\)   (o^^)o', '(/^^)o   \\(^^\\)', '(o^^)/   o(^^o)']
-
-  def cheesy_animation(self):
-    t = time.time()
-    if t - self.cheesy_last_animated > 0.499:
-      self.text.set_text(self.legend+self.dance[self.step])
-      self.step = (self.step+1) % 4
-      self.cheesy_last_animated = t
-      self._invalidate()
-      signals.emit('need-redraw')
+    self.padding = urwid.Padding(self.filler, align)
+    self.__super.__init__(self.filler)
 
   def reset(self):
     self.dim = None
     self.img = None
     self.text.set_text('')
-    self.text.align = 'center'
-    self.text.set_wrap_mode(urwid.SPACE)
+    self._w = self.filler
     self._invalidate()
 
   def set_data(self, data):
@@ -168,7 +156,7 @@ class AlbumCoverWidget(urwid.WidgetWrap):
 
       self.dim = None
       self.text.align = 'left'
-      self.text.set_wrap_mode(urwid.ANY)
+      self._w = self.padding
     except IOError, e:
       self.reset()
     self._invalidate()
