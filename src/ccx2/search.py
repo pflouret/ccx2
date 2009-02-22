@@ -116,6 +116,11 @@ class SearchListBox(listbox.MarkableListBox):
     else:
       xs.playlist_insert_collection(int(pos), idl, ['id'], sync=False)
 
+    n = len(idl.ids)
+    pos_s = pos is not None and "at position %d" % pos or ''
+    msg = "added %d song%s to playlist %s" % (n, n > 1 and 's' or '', pos_s)
+    signals.emit('show-message', msg)
+
   def insert_marked_after_current(self):
     def _cb(r):
       if not r.iserror():
@@ -182,6 +187,8 @@ class Search(urwid.Pile):
       raise commands.CommandError, 'invalid collection'
 
     xs.coll_save(c, name, 'Collections', sync=False)
+    signals.emit('show-message',
+                 "saved collection %s with pattern %s" % (name, q))
 
   def set_query(self, q):
     self.input.set_edit_text(q)
@@ -202,7 +209,7 @@ class Search(urwid.Pile):
       try:
         self.lb.collection = coll.coll_parse(qs)
       except ValueError:
-        pass
+        signals.emit('show-message', "bad pattern", 'error')
 
       self.input.set_caption(caption)
       signals.emit('need-redraw')

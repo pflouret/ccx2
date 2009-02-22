@@ -96,23 +96,35 @@ class HeaderBar(urwid.WidgetWrap):
     self._update()
 
 
+signals.register('show-message')
+signals.register('clear-message')
+
 class StatusArea(urwid.Pile):
   def __init__(self):
     self.status = urwid.AttrWrap(urwid.Text(''), 'status')
     self._empty = urwid.Text('')
+    self.last_type = None
 
     self.__super.__init__([self.status, self._empty], 1)
+
+    signals.connect('show-message', self.set_message)
+    signals.connect('clear-message', lambda: self.clear_message(clear_loading=True))
 
   def _restore(self, *args, **kwargs):
     self.widget_list[1] = self._empty
     self.set_focus(1)
     self._invalidate()
 
-  def set_message(self, msg):
-    self.status.set_text(msg)
+  def set_message(self, msg, type='info'):
+    self.last_type = type
+    attr = 'message-'+type
+    self.status.set_text((attr, msg))
+    signals.emit('need-redraw')
 
-  def clear_message(self):
-    self.status.set_text('')
+  def clear_message(self, clear_loading=False):
+    if clear_loading or self.last_type != 'loading':
+      self.status.set_text('')
+      signals.emit('need-redraw')
 
   def show_prompt(self, caption=':', done_cb=[], abort_cb=[], change_cb=[]):
     input = widgets.InputEdit(caption=caption)
@@ -144,7 +156,11 @@ class Ccx2(object):
     ('active','light blue', 'default'),
     ('active-focus','black', 'dark blue'),
     ('headerbar','default', 'default'),
-    ('status','black', 'light gray'),
+    ('status','default', 'default'),
+    ('searchinput','yellow', 'default'),
+    ('message-info','default', 'default'),
+    ('message-loading','default', 'default'),
+    ('message-error','light red', 'default'),
     ('progress-normal', 'light gray', 'light gray'),
     ('progress-complete', 'dark red', 'dark red'),
     ('progress-smooth', 'dark red', 'light gray'),
@@ -217,8 +233,8 @@ class Ccx2(object):
     def _run(text):
       try:
         commands.run_command(text, contexts)
-      except commands.CommandError:
-        pass # FIXME
+      except commands.CommandError, e:
+        signals.emit('show-message', "command error: %s" % e, 'error')
 
     self.statusarea.show_prompt(done_cb=[_restore, _run], abort_cb=[_restore])
 
@@ -254,6 +270,8 @@ class Ccx2(object):
           self.redraw()
         time.sleep(0.01)
 
+      self.statusarea.clear_message()
+
       for k in input_keys:
         try:
           if k == 'window resize':
@@ -264,9 +282,11 @@ class Ccx2(object):
             continue
           elif k == keys.command_mode_key:
             self.show_command_prompt()
-          # TODO: else show unbound key msg
-        except commands.CommandError:
-          pass # TODO: show error
+          else:
+            signals.emit('show-message', "unbound key: %s" % k, 'error')
+        except commands.CommandError, e:
+          signals.emit('show-message', "command error: %s" % e, 'error')
+
 
 if __name__ == '__main__':
   Ccx2().main()
