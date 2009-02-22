@@ -96,6 +96,9 @@ class PlaylistWalker(urwid.ListWalker):
     self.focus = focus
     self._modified()
 
+  def focus_current_pos(self):
+    self.set_focus(self.current_pos)
+
   def set_focus_last(self): self.set_focus(len(self.feeder)-1)
   def get_focus(self): return self.get_pos(self.focus)
   def get_prev(self, pos): return self.get_pos(pos-1)
@@ -157,6 +160,16 @@ class Playlist(listbox.MarkableListBox):
       pos = self.get_focus()[1]
     if pos is not None:
       xs.playlist_play(playlist=self.view_pls, pos=pos)
+
+  def cmd_goto(self, args):
+    if args == 'playing':
+      self.body.focus_current_pos()
+    else:
+      try:
+        p = int(args)
+      except ValueError:
+        return commands.CONTINUE_RUNNING_COMMANDS
+      self.set_focus(p)
 
   def cmd_rm(self, args):
     m = self.marked_data
