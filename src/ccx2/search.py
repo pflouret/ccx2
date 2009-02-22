@@ -153,7 +153,7 @@ class Search(urwid.Pile):
 
     self.prev_q = ''
 
-    self.__super.__init__([self.lb, ('flow', self.input)], 1)
+    self.__super.__init__([('flow', urwid.AttrWrap(self.input, 'searchinput')), self.lb], 0)
 
   def cmd_cycle(self, args=None):
     cur = self.widget_list.index(self.focus_item)
