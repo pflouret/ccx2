@@ -30,12 +30,12 @@ import search
 import signals
 
 class TabContainer(urwid.Pile):
-  def __init__(self, app, tabs):
+  def __init__(self, app, tabs, focus_tab=0):
     self.app = app
 
     self.tabs = tabs
 
-    self.cur_tab = 1
+    self.cur_tab = focus_tab
     self.tabbar = urwid.Text('', align='left', wrap=urwid.CLIP)
     self._update_tabbar_string()
 

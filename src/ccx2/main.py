@@ -176,7 +176,8 @@ class Ccx2(object):
             ('playlist', pview),
             ('search', search.Search(self))]
 
-    self.tabcontainer = containers.TabContainer(self, tabs)
+    focus_tab = xs.playback_status() == xmmsclient.PLAYBACK_STATUS_PLAY and 1 or 2
+    self.tabcontainer = containers.TabContainer(self, tabs, focus_tab=focus_tab)
     self.headerbar = HeaderBar()
     self.statusarea = StatusArea()
     self.view = urwid.Frame(self.tabcontainer, header=self.headerbar, footer=self.statusarea)
