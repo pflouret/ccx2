@@ -61,7 +61,7 @@ class NowPlaying(urwid.WidgetWrap):
     self.progress = urwid.ProgressBar('progress-normal', 'progress-complete', 0, 100,
                                       'progress-smooth')
     self.song = urwid.Text('', align='right')
-    self.cover = AlbumCoverWidget(maxcols=70, align='center', valign='top')
+    self.cover = AlbumCoverWidget(maxcols=60, align='center', valign='top')
 
     fill = urwid.SolidFill(' ')
     w = urwid.Columns([#('fixed', 1, urwid.SolidFill(' ')),
@@ -95,8 +95,6 @@ class NowPlaying(urwid.WidgetWrap):
       self.progress.set_completion(float(self.time) / self.info['duration'] * 100)
 
     self.song.set_text(self.parser.eval(self.ctx))
-    self._invalidate()
-    signals.emit('need-redraw')
 
   def on_xmms_playback_playtime(self, milli):
     if not self.cur_hash:
@@ -212,29 +210,29 @@ class AlbumCoverWidget(urwid.WidgetWrap):
         c = self.closest_color(rgb)
         if c != last:
           if last:
-            markup.append((urwid.AttrSpec(last, last), ' '*2*n))
+            markup.append((urwid.AttrSpec(last, last), ' '*n))
           last = c
           n = 0
         n += 1
       if n:
-        markup.append((urwid.AttrSpec(last, last), ' '*2*n))
+        markup.append((urwid.AttrSpec(last, last), ' '*n))
       markup.append('\n')
 
     return markup[:-1]
 
   def scaled_dim(self, size):
-    w = size[0] / 2
+    w = size[0]
 
     if self.maxcols > 0 and size[0] > self.maxcols:
-      w = self.maxcols / 2
+      w = self.maxcols
 
     w = min(w, self.img.size[0])
 
-    h = w * self.img.size[1] / self.img.size[0]
+    h = (w/2) * self.img.size[1] / self.img.size[0]
 
     if len(size) > 1 and h > size[1]:
       h = size[1]
-      w = h * self.img.size[0] / self.img.size[1]
+      w = (h * self.img.size[0] / self.img.size[1])*2
 
     return w, h
 
@@ -245,7 +243,7 @@ class AlbumCoverWidget(urwid.WidgetWrap):
         self.dim = dim
         img = self.img.resize(dim, Image.ANTIALIAS)
         self.text.set_text(self.get_markup(img))
-        self._w.width = dim[0]*2
+        self._w.width = dim[0]
     return self._w.render(size)
 
 
