@@ -67,6 +67,7 @@ _commands = set([
     'tab',
     'toggle',
     'unmark-all',
+    'volume',
 ])
 
 _aliases = {
@@ -119,6 +120,9 @@ _keys = {
     ' ': 'toggle ; navdn',
     '<0>': 'navup ; toggle', # ctrl-space
     'meta  ': 'unmark-all', # meta-space
+    '+': 'volume +2',
+    '=': 'volume +2',
+    '-': 'volume -2',
 }
 
 _help = {

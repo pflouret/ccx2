@@ -203,6 +203,32 @@ class Ccx2(object):
   def cmd_navend(self, args): self.view.keypress(self.size, 'end')
   def cmd_search(self, args): self.search(args)
 
+  def cmd_volume(self, args):
+    cur = xs.playback_volume_get()
+
+    if isinstance(cur, basestring):
+      signals.emit('show-message', "volume: "+cur)
+      return
+
+    if args:
+      relative = args[0] in ('+', '-')
+
+      try:
+        volume = int(args)
+      except:
+        raise commands.CommandError, "wrong volume value"
+
+      for c in cur:
+        if relative:
+          cur[c] = cur[c] + volume
+        else:
+          cur[c] = volume
+        xs.playback_volume_set(c, cur[c])#, sync=False)
+
+    s = "volume: " + ' '.join("%s:%d" % (c, v) for c, v in cur.iteritems())
+    signals.emit('show-message', s)
+    return
+
   def main(self):
     self.ui = urwid.raw_display.Screen()
     self.ui.register_palette(self.palette)

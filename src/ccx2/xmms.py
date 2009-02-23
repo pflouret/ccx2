@@ -360,6 +360,18 @@ class XmmsService(object):
     else:
       self.xmms.playback_tickle(cb=cb)
 
+  def playback_volume_get(self, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.playback_volume_get()
+    else:
+      self.xmms.playback_volume_get(cb=cb)
+
+  def playback_volume_set(self, channel, volume, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.playback_volume_set(channel, volume)
+    else:
+      self.xmms.playback_volume_set(channel, volume, cb=cb)
+
   def playlist_add_collection(self, coll, order, playlist=None, cb=None, sync=True):
     if sync:
       return self.xmms_s.playlist_add_collection(coll, order, playlist)
