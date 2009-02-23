@@ -283,6 +283,12 @@ class XmmsService(object):
     else:
       return self.xmms.medialib_get_info(id, cb=cb)
 
+  def medialib_rehash(self, mid, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.medialib_rehash(mid)
+    else:
+      return self.xmms.medialib_rehash(mid, cb=cb)
+
   def playback_current_id(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playback_current_id()

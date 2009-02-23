@@ -32,6 +32,7 @@ import urwid
 import urwid.curses_display
 import urwid.raw_display
 import xmmsclient
+import xmmsclient.collections as coll
 
 import commands
 import containers
@@ -202,6 +203,17 @@ class Ccx2(object):
   def cmd_navhome(self, args): self.view.keypress(self.size, 'home')
   def cmd_navend(self, args): self.view.keypress(self.size, 'end')
   def cmd_search(self, args): self.search(args)
+
+  def cmd_rehash(self, args):
+    try:
+      c = coll.coll_parse(args)
+    except ValueError:
+      raise commands.CommandError, 'bad pattern'
+
+    ids = xs.coll_query_ids(c)
+
+    for i in ids:
+      xs.medialib_rehash(i, sync=False)
 
   def cmd_volume(self, args):
     cur = xs.playback_volume_get()

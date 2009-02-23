@@ -59,6 +59,7 @@ _commands = set([
     'pb-stop',
     'pb-toggle',
     'quit',
+    'rehash',
     'rename',
     'rm',
     'same',
