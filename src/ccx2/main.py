@@ -242,8 +242,14 @@ class Ccx2(object):
     return
 
   def main(self):
-    self.ui = urwid.raw_display.Screen()
+    self.ui = urwid.curses_display.Screen()
     self.ui.register_palette(self.palette)
+
+    i = len(self.ui.curses_pairs)
+    for j in range(16,256):
+      self.ui.curses_pairs.append((j,j))
+      self.ui.palette['h%d'%j] = (j+i-16, 0, 0)
+
     self.ui.set_input_timeouts(max_wait=0)
     self.ui.run_wrapper(self.run)
 

@@ -177,19 +177,20 @@ class AlbumCoverWidget(urwid.WidgetWrap):
       self.reset()
     self._invalidate()
 
-  # TODO: check if PIL can convert an image to 8-bit colors
   def closest_color(self, rgb):
     global _colormap_cache
 
     n = rgb[0] << 16 | rgb[1] << 8 | rgb[2]
 
     if n in _colormap_cache:
-      return 'h%d' % _colormap_cache[n]
+      return _colormap_cache[n]
 
     distance = 257*257*3
     match = 0
 
-    for i, values in enumerate(urwid.display_common._COLOR_VALUES_256):
+    colors = urwid.display_common._COLOR_VALUES_256[16:]
+    indexes = range(16,256)
+    for i, values in zip(indexes, colors):
       rd, gd, bd = rgb[0] - values[0], rgb[1] - values[1], rgb[2] - values[2]
       d = rd*rd + gd*gd + bd*bd
 
@@ -198,7 +199,7 @@ class AlbumCoverWidget(urwid.WidgetWrap):
         distance = d
 
     _colormap_cache[n] = match
-    return 'h%d' % match
+    return match
 
   def get_markup(self, img):
     markup = []
@@ -213,12 +214,14 @@ class AlbumCoverWidget(urwid.WidgetWrap):
         c = self.closest_color(rgb)
         if c != last:
           if last:
-            markup.append((urwid.AttrSpec(last, last), ' '*n))
+            #markup.append((urwid.AttrSpec(last, last), ' '*n))
+            markup.append(('h%d'%last, ' '*n))
           last = c
           n = 0
         n += 1
       if n:
-        markup.append((urwid.AttrSpec(last, last), ' '*n))
+        #markup.append((urwid.AttrSpec(last, last), ' '*n))
+        markup.append(('h%d'%last, ' '*n))
       markup.append('\n')
 
     return markup[:-1]
