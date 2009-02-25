@@ -167,6 +167,9 @@ class AlbumCoverWidget(urwid.WidgetWrap):
   def set_data(self, data):
     try:
       self.img = Image.open(StringIO(data))
+      if self.img.mode == 'P':
+        self.img = self.img.convert('RGB')
+
       self.dim = None
       self.text.align = 'left'
       self.text.set_wrap_mode(urwid.ANY)
