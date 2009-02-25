@@ -184,7 +184,24 @@ class Playlist(listbox.MarkableListBox):
 
     self.unmark_all()
 
-  def cmd_mvup(self, args):
+  def cmd_move(self, args):
+    try:
+      n = int(args)
+    except ValueError:
+      if not args:
+        n = self.get_focus()[1]+1
+      else:
+        raise CommandError, "bad argument"
+
+    if args and args[0] in ('+', '-'):
+      if n > 0:
+        self.move_down(n)
+      else:
+        self.move_up(-n)
+    else:
+      self.move_abs(n)
+
+  def _get_marked_for_move(self, reverse=False):
     m = self.marked_data.items()
     if not m:
       w, pos = self.get_focus()
@@ -192,48 +209,60 @@ class Playlist(listbox.MarkableListBox):
         return
       m = [(pos, self.get_mark_data(pos, w))]
 
-    m.sort(key=lambda e: e[0])
-    p = 0
-    while m and m[0][0] == p:
-      m.pop(0)
-      p += 1
+    m.sort(key=lambda e: e[0], reverse=reverse)
+
+    return m
+
+  def move_abs(self, n, m=None):
+    m = self._get_marked_for_move()
 
     if not m:
       return
 
+    n -= 1
+    if n > m[0][0]:
+      self.move_down(n-m[0][0], reversed(m))
+    else:
+      self.move_up(m[0][0]-n, m)
+
+  def move_up(self, n, m=None):
+    if m is None:
+      m = self._get_marked_for_move()
+
+    top = 0
     for pos, mid in m:
-      xs.playlist_move(pos, pos - 1, sync=False)
+      dest = pos - n
+
+      if dest < top:
+        dest = top
+        top += 1
+
+      xs.playlist_move(pos, dest, sync=False)
       if not self.marked_data: # moving only the focused song
-        self.set_focus(pos-1)
+        self.set_focus(dest)
       else:
         self.toggle_mark(pos, mid)
-        self.toggle_mark(pos-1, mid)
-        # TODO: scroll if moving past last row in view
+        self.toggle_mark(dest, mid)
+        # TODO: scroll if moving past first row in view
 
-  def cmd_mvdn(self, args):
-    m = self.marked_data.items()
-    if not m:
-      w, pos = self.get_focus()
-      if pos is None:
-        return
-      m = [(pos, self.get_mark_data(pos, w))]
+  def move_down(self, n, m=None):
+    if m is None:
+      m = self._get_marked_for_move(reverse=True)
 
-    m.sort(key=lambda e: e[0], reverse=True)
-    p = len(self.body) - 1
-    while m and m[0][0] == p:
-      m.pop(0)
-      p -= 1
-
-    if not m:
-      return
-
+    bottom = len(self.body)-1
     for pos, mid in m:
-      xs.playlist_move(pos, pos + 1, sync=False)
+      dest = pos+n
+
+      if dest > bottom:
+        dest = bottom
+        bottom -= 1
+
+      xs.playlist_move(pos, dest, sync=False)
       if not self.marked_data: # moving only the focused song
-        self.set_focus(pos+1)
+        self.set_focus(dest)
       else:
         self.toggle_mark(pos, mid)
-        self.toggle_mark(pos+1, mid)
+        self.toggle_mark(dest, mid)
         # TODO: scroll if moving past last row in view
 
   def cmd_same(self, args):
