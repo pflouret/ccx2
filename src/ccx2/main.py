@@ -167,8 +167,9 @@ class Ccx2(object):
     ('progress-smooth', 'dark red', 'light gray'),
   ]
 
-  def __init__(self):
-    self.config = config.Config('nccx2.conf') # FIXME
+  def __init__(self, config_path):
+    self.config = config.Config(config_path)
+
     self.cm = commands.CommandManager(self.config)
 
     pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),

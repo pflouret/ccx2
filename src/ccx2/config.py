@@ -24,7 +24,11 @@
 
 import ConfigParser
 import StringIO
+import copy
+import os
 import sys
+
+import xmmsclient
 
 # H: horizontal | V: vertical | D: down | U: up
 
@@ -43,12 +47,37 @@ def key_to_urwid_key(key):
   return key
 
 class Config(object):
-  def __init__(self, path, create=False):
+  def __init__(self, path=None):
+    if not path:
+      confdir = xmmsclient.userconfdir_get()
+      path = os.path.join(confdir, 'clients', 'ccx2')
+
+      try:
+        os.makedirs(path)
+      except OSError:
+        pass
+
+      path = os.path.join(path, 'ccx2.conf')
+
+      if not os.path.exists(path):
+        try:
+          f = open(path, 'w')
+          print >> f, DEFAULT_CONFIG
+          f.close()
+        except:
+          path = None
+
+    self.path = path
+
     self.cp = ConfigParser.SafeConfigParser()
+
     try:
-      self.cp.read(path)
-    except Exception, e:
-      msg = "warning: error while reading the config file:\n%s\nusing defaults" % e
+      if not self.cp.read(path):
+        raise ValueError
+    except:
+      self.path = None
+      self.cp = copy.deepcopy(default_cp)
+      msg = "warning: error while reading the config file, using defaults"
       print >> sys.stderr, msg
 
     self.keys = {}
