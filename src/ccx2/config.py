@@ -82,7 +82,6 @@ default_formatting = {
 
 formatting = default_formatting
 borders = default_unicode_borders
-word_separators = DEFAULT_WORD_SEPARATORS
 
 def key_to_urwid_key(key):
   if '-' in key and key != '-':

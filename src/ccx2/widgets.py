@@ -123,13 +123,13 @@ class InputEdit(urwid.Edit):
         p += move_delta
 
     if in_bounds(p):
-      if self.edit_text[p+look_delta] in config.word_separators:
+      if self.edit_text[p+look_delta] in config.WORD_SEPARATORS:
         # if separator from cursor eat all seps until not sep found
-        while in_bounds(p) and self.edit_text[p+look_delta] in config.word_separators:
+        while in_bounds(p) and self.edit_text[p+look_delta] in config.WORD_SEPARATORS:
           p += move_delta
       else:
         # letters, eat all until sep or white
-        while in_bounds(p) and self.edit_text[p+look_delta] not in white+config.word_separators:
+        while in_bounds(p) and self.edit_text[p+look_delta] not in white+config.WORD_SEPARATORS:
           p += move_delta
 
     return p
