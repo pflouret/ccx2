@@ -33,38 +33,7 @@ UBORDER_H = u'\u2500'
 UBORDER_V = u'\u2502'
 UBORDER_H_D = u'\u252c'
 
-UDOUBLE_BORDER_H = u'\u2550'
-UDOUBLE_BORDER_V = u'\u2551'
-UDOUBLE_BORDER_H_D = u'\u2566'
-
-# ascii
-ABORDER_H = u'-'
-ABORDER_V = u'|'
-ABORDER_H_D = u'-'
-
-ADOUBLE_BORDER_H = u'='
-ADOUBLE_BORDER_V = u'|'
-ADOUBLE_BORDER_H_D = u'='
-
 DEFAULT_WORD_SEPARATORS = '.,~:+][}{\\/-_;"'
-
-default_unicode_borders = {
-    'h': UBORDER_H,
-    'v': UBORDER_V,
-    'hd': UBORDER_H_D,
-    'dh': UDOUBLE_BORDER_H,
-    'dv': UDOUBLE_BORDER_V,
-    'dhd': UDOUBLE_BORDER_H_D,
-}
-
-default_ascii_borders = {
-    'h': ABORDER_H,
-    'v': ABORDER_V,
-    'hd': ABORDER_H_D,
-    'dh': ADOUBLE_BORDER_H,
-    'dv': ADOUBLE_BORDER_V,
-    'dhd': ADOUBLE_BORDER_H_D,
-}
 
 default_formatting = {
     'search': r'[:c?:p|:a] \> :l \> [#[:partofset.]:n ][:c?:a \>] :t',
@@ -81,7 +50,6 @@ default_formatting = {
 }
 
 formatting = default_formatting
-borders = default_unicode_borders
 
 def key_to_urwid_key(key):
   if '-' in key and key != '-':
