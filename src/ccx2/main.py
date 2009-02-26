@@ -246,7 +246,7 @@ class Ccx2(object):
 
       try:
         volume = int(args)
-      except:
+      except ValueError:
         raise commands.CommandError, "wrong volume value"
 
       for c in cur:
@@ -254,11 +254,10 @@ class Ccx2(object):
           cur[c] = cur[c] + volume
         else:
           cur[c] = volume
-        xs.playback_volume_set(c, cur[c])#, sync=False)
+        xs.playback_volume_set(c, cur[c])
 
     s = "volume: " + ' '.join("%s:%d" % (c, v) for c, v in cur.iteritems())
     signals.emit('show-message', s)
-    return
 
   def main(self):
     self.ui = urwid.curses_display.Screen()
