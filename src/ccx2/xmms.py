@@ -342,6 +342,12 @@ class XmmsService(object):
     else:
       self.xmms.playback_seek_ms(ms, cb=cb)
 
+  def playback_seek_ms_rel(self, ms, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.playback_seek_ms_rel(ms)
+    else:
+      self.xmms.playback_seek_ms_rel(ms, cb=cb)
+
   def playback_start(self, cb=None, sync=True):
     if sync:
       return self.xmms_s.playback_start()

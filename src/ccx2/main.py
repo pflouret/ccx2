@@ -215,6 +215,25 @@ class Ccx2(object):
     for i in ids:
       xs.medialib_rehash(i, sync=False)
 
+  def cmd_seek(self, args):
+    if args:
+      relative = args[0] in ('+', '-')
+
+      try:
+        mult = 1
+        seconds = 0
+        for p in reversed(args.split(':')):
+          seconds += int(p)*mult
+          mult *= 60
+        # FIXME: check for a valid time spec, laziness is my name
+      except ValueError:
+        raise commands.CommandError, "bad seconds value"
+
+      if relative:
+        xs.playback_seek_ms_rel(seconds*1000, sync=False)
+      else:
+        xs.playback_seek_ms(seconds*1000, sync=False)
+
   def cmd_volume(self, args):
     cur = xs.playback_volume_get()
 
