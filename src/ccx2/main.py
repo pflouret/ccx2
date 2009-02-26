@@ -177,7 +177,7 @@ class Ccx2(object):
                            ('weight', 5, playlist.Playlist(self))],
                           dividechars=1, focus_column=2)
     tabs = [('help', urwid.ListBox([urwid.Text('yeah right')])),
-            ('now playing', nowplaying.NowPlaying()),
+            ('now playing', nowplaying.NowPlaying(self)),
             ('playlist', pview),
             ('search', search.Search(self))]
 

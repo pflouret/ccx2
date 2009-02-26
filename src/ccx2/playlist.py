@@ -30,7 +30,6 @@ from xmmsclient.sync import XMMSError
 
 import collutil
 import commands
-import config
 import listbox
 import mif
 import signals
@@ -41,10 +40,10 @@ xs = xmms.get()
 
 
 class PlaylistWalker(urwid.ListWalker):
-  def __init__(self, pls, app, formatname):
+  def __init__(self, pls, format):
     self.pls = pls
-    self.format = formatname
-    self.parser = mif.FormatParser(config.formatting[formatname])
+    self.format = format
+    self.parser = mif.FormatParser(format)
     self.widgets = {}
     self.focus = 0
 
@@ -125,7 +124,7 @@ class Playlist(listbox.MarkableListBox):
 
   def load(self, pls, from_xmms=True):
     if pls not in self._walkers:
-      self._walkers[pls] = PlaylistWalker(pls, self.app, self.format)
+      self._walkers[pls] = PlaylistWalker(pls, self.app.config.formatting[self.format])
 
     self._set_active_attr(self.body.current_pos, self._walkers[pls].current_pos)
     self.body = self._walkers[pls]

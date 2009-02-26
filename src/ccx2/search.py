@@ -5,7 +5,6 @@ import xmmsclient.collections as coll
 
 import collutil
 import commands
-import config
 import keys
 import listbox
 import mif
@@ -18,9 +17,9 @@ xs = xmms.get()
 
 
 class SearchWalker(urwid.ListWalker):
-  def __init__(self, collection, formatname):
-    self.format = formatname
-    self.parser = mif.FormatParser(config.formatting[formatname])
+  def __init__(self, collection, format):
+    self.format = format
+    self.parser = mif.FormatParser(format)
     self.widgets = {}
     self.focus = 0
 
@@ -63,7 +62,7 @@ class SearchListBox(listbox.MarkableListBox):
   def __init__(self, formatname, app):
     self.app = app
     self.format = formatname
-    self.walker = SearchWalker(coll.IDList(), 'search')
+    self.walker = SearchWalker(coll.IDList(), self.app.config.formatting['search'])
 
     self.__super.__init__(self.walker)
 

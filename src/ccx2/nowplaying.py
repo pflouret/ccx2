@@ -29,7 +29,6 @@ import urwid.display_common
 import xmmsclient
 
 import commands
-import config
 import containers
 import mif
 import signals
@@ -50,9 +49,10 @@ except ImportError:
 xs = xmms.get()
 
 class NowPlaying(urwid.WidgetWrap):
-  def __init__(self, formatname='nowplaying'):
+  def __init__(self, app, formatname='nowplaying'):
+    self.app = app
     self.format = formatname
-    self.parser = mif.FormatParser(config.formatting[formatname])
+    self.parser = mif.FormatParser(self.app.config.formatting[formatname])
     self.ctx = self.info = {}
     self.cur_hash = None
     self.status = xs.playback_status()

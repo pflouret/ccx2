@@ -35,22 +35,6 @@ UBORDER_H_D = u'\u252c'
 
 DEFAULT_WORD_SEPARATORS = '.,~:+][}{\\/-_;"'
 
-default_formatting = {
-    'search': r'[:c?:p|:a] \> :l \> [#[:partofset.]:n ][:c?:a \>] :t',
-    'simple': r':a \> :t [:c?+:p+]',
-    'nowplaying':
-        ':status:CR:CR'
-        ':a:CR'
-        '[:n. ]:t:CR'
-        ':l[:c? (:p)][ CD:partofset]:CR'
-        '[:d][ :g][ {:publisher}]:CR'
-        '[#:id][ :{bitrate}bps][ :{samplerate}Hz:CR'
-        ':CR'
-        r'\[:elapsed[/:total]\]',
-}
-
-formatting = default_formatting
-
 def key_to_urwid_key(key):
   if '-' in key and key != '-':
     key = key.replace('-', ' ', 1)
@@ -71,11 +55,13 @@ class Config(object):
 
     self.keys = {}
     self.aliases = {}
-    self.formatting = {}
+    self._formatting = {}
 
     self._read_keys()
     self._read_aliases()
     self._read_formatting()
+
+  formatting = property(lambda self: self._formatting) # TODO
 
   def _read_keys(self):
     if not self.cp.has_section('keys'):
@@ -93,7 +79,7 @@ class Config(object):
 
   def _read_formatting(self):
     cp = self.cp.has_section('formatting') and self.cp or default_cp
-    self.formatting = dict(cp.items('formatting'))
+    self._formatting = dict(cp.items('formatting'))
 
 
 DEFAULT_CONFIG = """
