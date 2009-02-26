@@ -5,7 +5,6 @@ import xmmsclient.collections as coll
 
 import collutil
 import commands
-import keys
 import listbox
 import mif
 import signals

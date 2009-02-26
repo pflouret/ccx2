@@ -33,8 +33,6 @@ UBORDER_H = u'\u2500'
 UBORDER_V = u'\u2502'
 UBORDER_H_D = u'\u252c'
 
-DEFAULT_WORD_SEPARATORS = '.,~:+][}{\\/-_;"'
-
 def key_to_urwid_key(key):
   if '-' in key and key != '-':
     key = key.replace('-', ' ', 1)

@@ -26,8 +26,7 @@ import urwid
 
 from xmmsclient import collections as coll
 
-import config
-import keys
+WORD_SEPARATORS = '.,~:+][}{\\/-_;"'
 
 class SelectableText(urwid.Text):
   def selectable(self): return True
@@ -123,13 +122,13 @@ class InputEdit(urwid.Edit):
         p += move_delta
 
     if in_bounds(p):
-      if self.edit_text[p+look_delta] in config.WORD_SEPARATORS:
+      if self.edit_text[p+look_delta] in WORD_SEPARATORS:
         # if separator from cursor eat all seps until not sep found
-        while in_bounds(p) and self.edit_text[p+look_delta] in config.WORD_SEPARATORS:
+        while in_bounds(p) and self.edit_text[p+look_delta] in WORD_SEPARATORS:
           p += move_delta
       else:
         # letters, eat all until sep or white
-        while in_bounds(p) and self.edit_text[p+look_delta] not in white+config.WORD_SEPARATORS:
+        while in_bounds(p) and self.edit_text[p+look_delta] not in white+WORD_SEPARATORS:
           p += move_delta
 
     return p
@@ -153,21 +152,22 @@ class InputEdit(urwid.Edit):
     self.edit_pos = self._find_word_pos(self.BACK)
 
   def keypress(self, size, key):
-    if key in keys.bindings['general']['return']:
+    # XXX: un-hardcode?
+    if key in ('enter', 'ctrl m', 'ctrl j'):
       self._emit('done', self.edit_text)
-    elif key in keys.bindings['general']['cancel']:
+    elif key in ('esc', 'ctrl g'):
       self._emit('abort')
-    elif key in keys.bindings['text_edit']['delete-word-backward']:
+    elif key == 'ctrl w':
       self.delete_word_backward()
-    elif key in keys.bindings['text_edit']['delete-word-forward']:
+    elif key in ('meta d', 'meta delete'):
       self.delete_word_forward()
-    elif key in keys.bindings['text_edit']['move-char-backward']:
+    elif key == 'ctrl b':
       self.edit_pos -= 1
-    elif key in keys.bindings['text_edit']['move-char-forward']:
+    elif key == 'ctrl f':
       self.edit_pos += 1
-    elif key in keys.bindings['text_edit']['move-word-backward']:
+    elif key == 'meta b':
       self.move_word_backward()
-    elif key in keys.bindings['text_edit']['move-word-forward']:
+    elif key == 'meta f':
       self.move_word_forward()
     else:
       return self.__super.keypress(size, key)

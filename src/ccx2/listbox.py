@@ -25,7 +25,6 @@
 import urwid
 
 import commands
-import keys
 
 BADROWSMSG = "Widget %s at position %s within listbox calculated %d rows but rendered %d!"
 BADFOCUSROWSMSG = "Focus widget %s at position %s within listbox " \

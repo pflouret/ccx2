@@ -37,7 +37,6 @@ import xmmsclient.collections as coll
 import commands
 import config
 import containers
-import keys
 import mif
 import nowplaying
 import playlist
@@ -347,7 +346,7 @@ class Ccx2(object):
             continue
           elif self.cm.run_key(k, self.view.body.get_contexts() + [self]):
             continue
-          elif k == keys.command_mode_key:
+          elif k == ':':
             self.show_command_prompt()
           else:
             signals.emit('show-message', "unbound key: %s" % k, 'error')

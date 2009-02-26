@@ -25,7 +25,6 @@
 import urwid
 
 import commands
-import keys
 import search
 import signals
 
