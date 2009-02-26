@@ -71,155 +71,97 @@ _commands = set([
     'volume',
 ])
 
-_aliases = {
-    'q': 'quit',
-    'sa': 'same artist',
-    'sb': 'same album',
-    's': 'search',
-}
-
-_keys = {
-    'enter': 'activate',
-    'ctrl m': 'activate',
-    'ctrl j': 'activate',
-    'tab': 'cycle',
-    'a': 'insert',
-    'w': 'insert +1',
-    'g': 'goto playing',
-    'm': 'move',
-    'K': 'move -1',
-    'J': 'move +1',
-    'h': 'navl',
-    'k': 'navup',
-    'j': 'navdn',
-    'l': 'navr',
-    'page up': 'navpgup',
-    'page down': 'navpgdn',
-    'ctrl u': 'navpgup',
-    'ctrl d': 'navpgdn',
-    'home': 'navhome',
-    'end': 'navend',
-    'n': 'new',
-    'z': 'pb-prev',
-    'x': 'pb-toggle',
-    'c': 'pb-play',
-    'v': 'pb-stop',
-    'b': 'pb-next',
-    'q': 'quit',
-    'F2': 'rename',
-    'd': 'rm',
-    'del': 'rm',
-    '>': 'seek +5',
-    '<': 'seek -5',
-    '1': 'tab 1',
-    '2': 'tab 2',
-    '3': 'tab 3',
-    '4': 'tab 4',
-    'f1': 'tab 1',
-    'f2': 'tab 2',
-    'f3': 'tab 3',
-    'f4': 'tab 4',
-    '[': 'tab prev',
-    ']': 'tab next',
-    ' ': 'toggle ; navdn',
-    '<0>': 'navup ; toggle', # ctrl-space
-    'meta  ': 'unmark-all', # meta-space
-    '+': 'volume +2',
-    '=': 'volume +2',
-    '-': 'volume -2',
-}
-
 _help = {
 }
 
-def add_command(command):
-  _commands.add(command)
+class CommandManager(object):
+  def __init__(self, config):
+    self.config = config
 
-def add_alias(command, alias):
-  _aliases[alias] = command # XXX: check if alias exists?
+  def add_command(self, command):
+    # FIXME
+    _commands.add(command)
 
-def add_keybinding(command, key):
-  _keys[key] = command # XXX: check if command exists?
+  def add_command_help_doc(self, command, doc, context='general'):
+    # FIXME
+    _help.setdefault(context, {})[command] = doc
 
-def add_command_help_doc(command, doc, context='general'):
-  _help.setdefault(context, {})[command] = doc
+  def run_command(self, command, contexts):
+    if not command:
+      return False
 
-def run_command(command, contexts):
-  if not command:
-    return False
+    handled = False
+    for cmd, args in self._unalias_command(command):
+      if cmd not in _commands:
+        continue # hmmmm...
 
-  handled = False
-  for cmd, args in _unalias_command(command):
-    if cmd not in _commands:
-      continue # hmmmm...
+      fun_name = 'cmd_'+cmd.replace('-', '_')
 
-    fun_name = 'cmd_'+cmd.replace('-', '_')
+      for obj in contexts:
+        if hasattr(obj, fun_name):
+          r = getattr(obj, fun_name)(args)
+          handled = True
+        else:
+          r = CONTINUE_RUNNING_COMMANDS
 
-    for obj in contexts:
-      if hasattr(obj, fun_name):
-        r = getattr(obj, fun_name)(args)
-        handled = True
-      else:
-        r = CONTINUE_RUNNING_COMMANDS
+        if r == STOP_RUNNING_COMMANDS:
+          break
 
-      if r == STOP_RUNNING_COMMANDS:
-        break
+    return handled
 
-  return handled
+  def run_key(self, key, contexts):
+    if key not in self.config.keys:
+      return False
 
-def run_key(key, contexts):
-  if key not in _keys:
-    return False
+    return self.run_command(self.config.keys[key], contexts)
 
-  return run_command(_keys[key], contexts)
-
-def _split_cmd_args(s):
-  l = s.split(None, 1)
-  if len(l) == 1:
-    l.append('')
-  else:
-    l[1] = l[1].strip()
-  return tuple(l)
-
-# TODO: detect recursive aliases
-def _unalias_command(command):
-  commands = _unchain_command(command)
-
-  r = []
-  for c in commands:
-    cmd, args = _split_cmd_args(c)
-
-    if cmd in _aliases:
-      r.extend(_unalias_command(_aliases[cmd]))
-      r[-1] = (r[-1][0], (r[-1][1] + ' ' + args).strip())
+  def _split_cmd_args(self, s):
+    l = s.split(None, 1)
+    if len(l) == 1:
+      l.append('')
     else:
-      r.append((cmd, args))
-  return r
+      l[1] = l[1].strip()
+    return tuple(l)
 
-def _unchain_command(s):
-  if ';' not in s:
-    return [s]
+  # TODO: detect recursive aliases
+  def _unalias_command(self, command):
+    commands = self._unchain_command(command)
 
-  parts = []
-  acc = ''
-  i, n = 0, len(s)
-  while i < n:
-    c = s[i]
-    if c == ';':
-      if i+1 >= n:
-        break
-      if s[i+1] == ';':
-        i += 1
+    r = []
+    for c in commands:
+      cmd, args = self._split_cmd_args(c)
+
+      if cmd in self.config.aliases:
+        r.extend(self._unalias_command(self.config.aliases[cmd]))
+        r[-1] = (r[-1][0], (r[-1][1] + ' ' + args).strip())
       else:
-        parts.append(acc)
-        acc = ''
-        i += 1
-        continue
-    acc += c
-    i += 1
+        r.append((cmd, args))
+    return r
 
-  if acc:
-    parts.append(acc)
+  def _unchain_command(self, s):
+    if ';' not in s:
+      return [s]
 
-  return [p.strip() for p in parts]
+    parts = []
+    acc = ''
+    i, n = 0, len(s)
+    while i < n:
+      c = s[i]
+      if c == ';':
+        if i+1 >= n:
+          break
+        if s[i+1] == ';':
+          i += 1
+        else:
+          parts.append(acc)
+          acc = ''
+          i += 1
+          continue
+      acc += c
+      i += 1
+
+    if acc:
+      parts.append(acc)
+
+    return [p.strip() for p in parts]
 

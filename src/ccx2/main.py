@@ -35,6 +35,7 @@ import xmmsclient
 import xmmsclient.collections as coll
 
 import commands
+import config
 import containers
 import keys
 import mif
@@ -168,6 +169,9 @@ class Ccx2(object):
   ]
 
   def __init__(self):
+    self.config = config.Config('nccx2.conf') # FIXME
+    self.cm = commands.CommandManager(self.config)
+
     pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
                            ('fixed', 1, urwid.SolidFill(u'\u2502')),
                            ('weight', 5, playlist.Playlist(self))],
@@ -295,7 +299,7 @@ class Ccx2(object):
 
     def _run(text):
       try:
-        commands.run_command(text, contexts)
+        self.cm.run_command(text, contexts)
       except commands.CommandError, e:
         signals.emit('show-message', "command error: %s" % e, 'error')
 
@@ -341,7 +345,7 @@ class Ccx2(object):
             self.size = self.ui.get_cols_rows()
           elif self.view.keypress(self.size, k) is None:
             continue
-          elif commands.run_key(k, self.view.body.get_contexts() + [self]):
+          elif self.cm.run_key(k, self.view.body.get_contexts() + [self]):
             continue
           elif k == keys.command_mode_key:
             self.show_command_prompt()

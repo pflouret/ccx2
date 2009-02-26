@@ -22,6 +22,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import ConfigParser
+import StringIO
+import sys
 
 # H: horizontal | V: vertical | D: down | U: up
 
@@ -66,7 +69,7 @@ default_ascii_borders = {
 default_formatting = {
     'search': r'[:c?:p|:a] \> :l \> [#[:partofset.]:n ][:c?:a \>] :t',
     'simple': r':a \> :t [:c?+:p+]',
-    'nowplaying': 
+    'nowplaying':
         ':status:CR:CR'
         ':a:CR'
         '[:n. ]:t:CR'
@@ -80,3 +83,118 @@ default_formatting = {
 formatting = default_formatting
 borders = default_unicode_borders
 word_separators = DEFAULT_WORD_SEPARATORS
+
+def key_to_urwid_key(key):
+  if '-' in key and key != '-':
+    key = key.replace('-', ' ', 1)
+  if key == 'ctrl space':
+    key = '<0>'
+  key = key.replace('space', ' ')
+  key = key.replace('comma', ',')
+  return key
+
+class Config(object):
+  def __init__(self, path, create=False):
+    self.cp = ConfigParser.SafeConfigParser()
+    try:
+      self.cp.read(path)
+    except Exception, e:
+      msg = "warning: error while reading the config file:\n%s\nusing defaults" % e
+      print >> sys.stderr, msg
+
+    self.keys = {}
+    self.aliases = {}
+    self.formatting = {}
+
+    self._read_keys()
+    self._read_aliases()
+    self._read_formatting()
+
+  def _read_keys(self):
+    if not self.cp.has_section('keys'):
+      return
+    for cmd, keys in self.cp.items('keys'):
+      keys = [k.strip() for k in keys.split(',')]
+      for k in keys:
+        self.keys[k] = cmd
+        # TODO: multiple commands to the same key (context based) ?
+        # self.keys.setdefault(key_to_urwid_key(k), []).append(cmd)
+
+  def _read_aliases(self):
+    if self.cp.has_section('aliases'):
+      self.aliases = dict(self.cp.items('aliases'))
+
+  def _read_formatting(self):
+    cp = self.cp.has_section('formatting') and self.cp or default_cp
+    self.formatting = dict(cp.items('formatting'))
+
+
+DEFAULT_CONFIG = """
+[aliases]
+q = quit
+sa = same artist
+sb = same album
+s = search
+
+[keys]
+activate = enter,  ctrl-m,ctrl-j
+cycle = tab
+insert = a
+insert +1 = w
+goto playing = g
+move = m
+move -1 = K
+move +1 = J
+navl = h
+navdn = j
+navup = k
+navr = l
+navpgdn = page-down
+navpgup = page-up
+navhome = home
+navend = end
+new = n
+pb-prev = z
+pb-toggle = x
+pb-play = c
+pb-stop = v
+pb-next = b
+quit = q
+; rehash =
+rename = #
+rm = d,del
+; same =
+; save =
+; search =
+seek +5 = >
+seek -5 = <
+tab 1 = 1,f1
+tab 2 = 2,f2
+tab 3 = 3,f3
+tab 4 = 4,f4
+tab prev = [
+tab next = ]
+toggle ; navdn = space
+navup ; toggle = ctrl-space
+unmark-all = meta-space
+volume +2 = +,=
+volume -2 = -
+
+[formatting]
+search = [:c?:p|:a] \> :l \> [#[:partofset.]:n ][:c?:a \>] :t
+simple = :a \> :t [:c?+:p+]
+nowplaying =
+  :status:CR:CR
+  :a:CR
+  [:n. ]:t:CR
+  :l[:c? (:p)][ CD:partofset]:CR
+  [:d][ :g][ {:publisher}]:CR
+  [#:id][ :{bitrate}bps][ :{samplerate}Hz:CR
+  :CR
+  \[:elapsed[/:total]\]
+"""
+
+default_cp = ConfigParser.SafeConfigParser()
+default_cp.readfp(StringIO.StringIO(DEFAULT_CONFIG))
+
+#for k, v in Config('nccx2.conf').formatting.items(): print '%r\n%s\n\n' % (k,v)
