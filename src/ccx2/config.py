@@ -93,7 +93,7 @@ class Config(object):
     if not self.cp.has_section('keys'):
       return
     for cmd, keys in self.cp.items('keys'):
-      keys = [k.strip() for k in keys.split(',')]
+      keys = [key_to_urwid_key(k.strip()) for k in keys.split(',')]
       for k in keys:
         self.keys[k] = cmd
         # TODO: multiple commands to the same key (context based) ?
