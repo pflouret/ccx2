@@ -167,7 +167,7 @@ class Ccx2(object):
     ('progress-smooth', 'dark red', 'light gray'),
   ]
 
-  def __init__(self, config_path):
+  def __init__(self, config_path=None):
     self.config = config.Config(config_path)
 
     self.cm = commands.CommandManager(self.config)
