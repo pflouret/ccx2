@@ -32,7 +32,6 @@ import xmmsclient
 
 # H: horizontal | V: vertical | D: down | U: up
 
-# unicode
 UBORDER_H = u'\u2500'
 UBORDER_V = u'\u2502'
 UBORDER_H_D = u'\u252c'
@@ -177,4 +176,3 @@ nowplaying =
 default_cp = ConfigParser.SafeConfigParser()
 default_cp.readfp(StringIO.StringIO(DEFAULT_CONFIG))
 
-#for k, v in Config('nccx2.conf').formatting.items(): print '%r\n%s\n\n' % (k,v)
