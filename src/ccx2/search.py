@@ -105,7 +105,7 @@ class SearchListBox(listbox.MarkableListBox):
       if w is None:
         return
 
-      m = [w.id]
+      m = [w.mid]
 
     idl = coll.IDList()
     idl.ids += m
@@ -130,7 +130,7 @@ class SearchListBox(listbox.MarkableListBox):
     xs.playlist_current_pos(cb=_cb, sync=False)
 
   def get_mark_data(self, pos, w):
-    return w.id
+    return w.mid
 
   def keypress(self, size, key):
     k = self.__super.keypress(size, key)

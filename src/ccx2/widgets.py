@@ -34,9 +34,9 @@ class SelectableText(urwid.Text):
 
 
 class SongWidget(SelectableText):
-  def __init__(self, id, *args, **kwargs):
+  def __init__(self, mid, *args, **kwargs):
     self.__super.__init__(*args, **kwargs)
-    self.id = id
+    self.mid = mid
 
 class PlaylistWidget(SelectableText):
   def __init__(self, name, *args, **kwargs):

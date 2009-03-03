@@ -38,13 +38,39 @@ import xmms
 
 xs = xmms.get()
 
+class RowColumns(urwid.Columns):
+  def __init__(self, song_w, pos, max_pos):
+    self.song_w = song_w
+    self.pos_w = urwid.Text('', align='right')
+    self.pos = -1
+    self.max_pos = 0
+
+    self.__super.__init__([self.pos_w, self.song_w], focus_column=1, dividechars=1)
+
+    self.set_pos(pos, max_pos)
+
+  mid = property(lambda self: self.song_w.mid)
+
+  def set_pos(self, pos, max_pos):
+    if pos != self.pos:
+      self.pos = pos
+      self.pos_w.set_text('%d.' % (pos+1))
+      self._invalidate()
+
+    if max_pos != self.max_pos:
+      self.max_pos = max_pos
+      max_pos_len = len(str(max_pos))
+      self.column_types[0] = ('fixed', max_pos_len+1)
+      self._invalidate()
+
 
 class PlaylistWalker(urwid.ListWalker):
   def __init__(self, pls, format):
     self.pls = pls
     self.format = format
     self.parser = mif.FormatParser(format)
-    self.widgets = {}
+    self.song_widgets = {}
+    self.row_widgets = {}
     self.focus = 0
 
     self.feeder = collutil.PlaylistFeeder(self.pls, self.parser.fields())
@@ -78,11 +104,15 @@ class PlaylistWalker(urwid.ListWalker):
     if pos < 0 or mid is None:
       return None, None
 
-    if mid not in self.widgets:
+    if mid not in self.song_widgets:
       text = self.parser.eval(self.feeder[pos])
-      self.widgets[mid] = widgets.SongWidget(mid, text)
+      self.song_widgets[mid] = widgets.SongWidget(mid, text)
 
-    w = self.widgets[mid]
+    try:
+      w = self.row_widgets[pos]
+      w.set_pos(pos, len(self.feeder))
+    except KeyError:
+      w = self.row_widgets[pos] = RowColumns(self.song_widgets[mid], pos, len(self.feeder))
 
     return w, pos
 
@@ -268,7 +298,7 @@ class Playlist(listbox.MarkableListBox):
     fields = args.split()
     w, p = self.get_focus()
     if w is not None:
-      info = xs.medialib_get_info(w.id)
+      info = xs.medialib_get_info(w.mid)
       q = ' AND '.join('%s:"%s"' % (f, info[f]) for f in fields if info.get(f))
       if q:
         self.app.search(q)
@@ -276,7 +306,7 @@ class Playlist(listbox.MarkableListBox):
         pass # TODO: error message
 
   def get_mark_data(self, pos, w):
-    return w.id
+    return w.mid
 
   def get_contexts(self):
     return [self]
