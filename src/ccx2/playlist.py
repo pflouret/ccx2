@@ -140,7 +140,7 @@ class Playlist(listbox.MarkableListBox):
     self.body.current_pos = -1 # filthy filthy
 
     self.app = app
-    self.format = 'simple'
+    self.format = 'playlist'
 
     self._walkers = {} # pls => walker
     self.active_pls = xs.playlist_current_active()
@@ -154,7 +154,7 @@ class Playlist(listbox.MarkableListBox):
 
   def load(self, pls, from_xmms=True):
     if pls not in self._walkers:
-      self._walkers[pls] = PlaylistWalker(pls, self.app.config.formatting[self.format])
+      self._walkers[pls] = PlaylistWalker(pls, self.app.config.format(self.format))
 
     self._set_active_attr(self.body.current_pos, self._walkers[pls].current_pos)
     self.body = self._walkers[pls]

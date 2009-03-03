@@ -61,7 +61,7 @@ class SearchListBox(listbox.MarkableListBox):
   def __init__(self, formatname, app):
     self.app = app
     self.format = formatname
-    self.walker = SearchWalker(coll.IDList(), self.app.config.formatting['search'])
+    self.walker = SearchWalker(coll.IDList(), self.app.config.format('search'))
 
     self.__super.__init__(self.walker)
 

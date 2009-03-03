@@ -26,6 +26,7 @@ import ConfigParser
 import StringIO
 import copy
 import os
+import re
 import sys
 
 import xmmsclient
@@ -86,8 +87,18 @@ class Config(object):
     self._read_keys()
     self._read_aliases()
     self._read_formatting()
+    self._read_sections()
 
-  formatting = property(lambda self: self._formatting) # TODO
+  def format(self, key):
+    try:
+      f = getattr(self, 'default_%s_format' % key)
+    except AttributeError:
+      f = key
+
+    try:
+      return self._formatting[f]
+    except KeyError:
+      return ''
 
   def _read_keys(self):
     if not self.cp.has_section('keys'):
@@ -107,8 +118,20 @@ class Config(object):
     cp = self.cp.has_section('formatting') and self.cp or default_cp
     self._formatting = dict(cp.items('formatting'))
 
+  def _read_sections(self):
+    rx = re.compile(r'[^a-zA-Z 0-9]')
+    for s in (section for section in self.cp.sections()
+              if section not in ('keys', 'formatting', 'aliases')):
+      for k, v in self.cp.items(s):
+        setattr(self, rx.sub('_', k), v)
+
 
 DEFAULT_CONFIG = """
+[options]
+default-nowplaying-format = nowplaying
+default-playlist-format = simple
+default-search-format = search
+
 [aliases]
 q = quit
 sa = same artist
@@ -161,7 +184,7 @@ volume -2 = -
 
 [formatting]
 search = [:c?:p|:a] \> :l \> [#[:partofset.]:n ][:c?:a \>] :t
-simple = :a \> :t [:c?+:p+]
+simple = :a \> :t [:c?{ :p }]
 nowplaying =
   :status:CR:CR
   :a:CR

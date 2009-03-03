@@ -52,7 +52,7 @@ class NowPlaying(urwid.WidgetWrap):
   def __init__(self, app, formatname='nowplaying'):
     self.app = app
     self.format = formatname
-    self.parser = mif.FormatParser(self.app.config.formatting[formatname])
+    self.parser = mif.FormatParser(self.app.config.format(formatname))
     self.ctx = self.info = {}
     self.cur_hash = None
     self.status = xs.playback_status()
