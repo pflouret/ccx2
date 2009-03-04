@@ -167,11 +167,16 @@ class Playlist(listbox.MarkableListBox):
     self.load(self.active_pls)
 
   def load(self, pls, from_xmms=True):
+    focus_active = False
     if pls not in self._walkers:
       self._walkers[pls] = PlaylistWalker(pls, self.app.config.format(self.format))
+      focus_active = True
 
-    self._set_active_attr(self.body.current_pos, self._walkers[pls].current_pos)
     self.body = self._walkers[pls]
+
+    if focus_active:
+      self.set_focus(self.body.current_pos)
+    self._set_active_attr(self.body.current_pos, self._walkers[pls].current_pos)
     self._invalidate()
 
     if from_xmms:
