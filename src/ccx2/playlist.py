@@ -90,6 +90,9 @@ class PlaylistWalker(urwid.ListWalker):
     if pls != self.pls:
       return
 
+    if type not in (xmmsclient.PLAYLIST_CHANGED_ADD, xmmsclient.PLAYLIST_CHANGED_UPDATE):
+      self.row_widgets = {}
+
     self.set_focus(self.focus)
     signals.emit('need-redraw')
 

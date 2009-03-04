@@ -83,8 +83,8 @@ class CollectionFeeder(object):
   def reset_window(self):
     self.window = [0, 0]
 
-  def _in_window(self, n):
-    return n >= self.window[0] and n < self.window[1]
+  def _in_window(self, n, inclusive=False):
+    return n >= self.window[0] and n < self.window[1] + (inclusive and 1 or 0)
 
   def _move_window(self, center):
     new_window = [max(center-self.size/2, 0), min(center+self.size/2, self.len)]
@@ -118,7 +118,7 @@ class PlaylistFeeder(CollectionFeeder):
       return
 
     if type == xmmsclient.PLAYLIST_CHANGED_ADD:
-      if self._in_window(pos):
+      if self._in_window(pos, inclusive=True):
         self.window[1] += 1
         if mid not in self.infos:
           self.infos[mid] = xs.medialib_get_info(mid)
