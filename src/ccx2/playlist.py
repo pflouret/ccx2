@@ -341,7 +341,6 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     self.nplaylists = 0
 
     signals.connect('xmms-collection-changed', self.on_xmms_collection_changed)
-    signals.connect('xmms-playlist-loaded', self.on_xmms_playlist_loaded)
     signals.connect('xmms-playlist-changed', self.on_xmms_playlist_changed)
 
     self._load()
@@ -352,7 +351,6 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
   def _load(self):
     self.playlists = [p for p in sorted(xs.playlist_list()) if not p.startswith('_')]
     self.nplaylists = len(self.playlists)
-    self.cur_active = xs.playlist_current_active()
 
   def _reload(self):
     self.rows = {}
@@ -394,9 +392,6 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
       self._reload()
       signals.emit('need-redraw')
 
-  def on_xmms_playlist_loaded(self, pls):
-    self.cur_active = pls
-
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     if pos is None and \
        type in (xmmsclient.PLAYLIST_CHANGED_ADD,
@@ -412,16 +407,27 @@ class PlaylistSwitcher(listbox.MarkableListBox):
 
     self.app = app
     self.cur_active = xs.playlist_current_active()
+    self.active_pos = 0
     self._set_active_attr(None, self.cur_active)
 
-    # TODO: renames screw things up
     signals.connect('xmms-playlist-loaded', self.on_xmms_playlist_loaded)
+    signals.connect('xmms-collection-changed', self.on_xmms_collection_changed)
 
   def on_xmms_playlist_loaded(self, pls):
     self._set_active_attr(self.cur_active, pls)
     self.cur_active = pls
     self._invalidate()
     signals.emit('need-redraw')
+
+  def on_xmms_collection_changed(self, pls, type, namespace, newname):
+    if namespace == 'Playlists' and type == xmmsclient.COLLECTION_CHANGED_RENAME:
+      if pls == self.cur_active:
+        self.cur_active = newname
+
+      self.clear_attrs()
+      self._set_active_attr(None, self.cur_active)
+
+      signals.emit('need-redraw')
 
   def _set_active_attr(self, prevpls, newpls):
     try:

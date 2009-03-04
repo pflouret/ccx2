@@ -64,6 +64,9 @@ class AttrListBox(urwid.ListBox):
     except KeyError:
       pass
 
+  def clear_attrs(self):
+    self.row_attrs = {}
+
   def render(self, size, focus=False ):
     """Render listbox and return canvas. """
     (maxcol, maxrow) = size
