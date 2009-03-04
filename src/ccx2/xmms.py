@@ -72,6 +72,10 @@ signals.register('xmms-playlist-loaded')
 signals.register('xmms-playlist-changed')
 
 # args --
+# id:int
+signals.register('xmms-medialib-entry-changed')
+
+# args --
 # name:string
 # type:int
 # namespace:string (if present, or None)
@@ -80,7 +84,6 @@ signals.register('xmms-collection-changed')
 signals.register('xmms-configval-changed')
 signals.register('xmms-mediainfo-reader-status')
 signals.register('xmms-medialib-entry-added')
-signals.register('xmms-medialib-entry-changed')
 signals.register('xmms-playback-volume-changed')
 signals.register('xmms-playlist-current-pos')
 
@@ -166,6 +169,8 @@ class XmmsService(object):
     self.xmms.broadcast_playlist_current_pos(self._on_playlist_current_pos)
     self.xmms.broadcast_playlist_changed(self._on_playlist_changed)
     self.xmms.broadcast_collection_changed(self._on_collection_changed)
+    self.xmms.broadcast_medialib_entry_changed(
+        self._simple_emit_fun('xmms-medialib-entry-changed'))
     self.xmms.signal_playback_playtime(self._on_playback_playtime)
 
     self.ioout()
@@ -173,7 +178,6 @@ class XmmsService(object):
     #self.xmms.broadcast_configval_changed()
     #self.xmms.broadcast_mediainfo_reader_status()
     #self.xmms.broadcast_medialib_entry_added()
-    #self.xmms.broadcast_medialib_entry_changed()
     #self.xmms.broadcast_playback_volume_changed()
 
   def _on_collection_changed(self, r):

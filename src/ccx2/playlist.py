@@ -80,11 +80,22 @@ class PlaylistWalker(urwid.ListWalker):
     except ValueError:
       self.current_pos = -1
 
+    signals.connect('xmms-medialib-entry-changed', self.on_medialib_entry_changed)
     signals.connect('xmms-playlist-current-pos', self.on_xmms_playlist_current_pos)
     signals.connect('xmms-playlist-changed', self.on_xmms_playlist_changed)
 
   def __len__(self):
     return len(self.feeder)
+
+  def on_medialib_entry_changed(self, mid):
+    if mid in self.song_widgets:
+      del self.song_widgets[mid]
+      for pos in self.feeder.id_positions(mid):
+        try:
+          del self.row_widgets[pos]
+        except KeyError:
+          pass
+      signals.emit('need-redraw')
 
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     if pls != self.pls:

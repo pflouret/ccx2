@@ -24,6 +24,8 @@ class SearchWalker(urwid.ListWalker):
 
     self.feeder = collutil.CollectionFeeder(collection, self.parser.fields())
 
+    signals.connect('xmms-medialib-entry-changed', self.on_medialib_entry_changed)
+
   def __len__(self):
     return len(self.feeder)
 
@@ -55,6 +57,10 @@ class SearchWalker(urwid.ListWalker):
   def get_focus(self): return self.get_pos(self.focus)
   def get_prev(self, pos): return self.get_pos(pos-1)
   def get_next(self, pos): return self.get_pos(pos+1)
+
+  def on_medialib_entry_changed(self, mid):
+    if mid in self.widgets:
+      del self.widgets[mid]
 
 
 class SearchListBox(listbox.MarkableListBox):

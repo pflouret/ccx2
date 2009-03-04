@@ -45,6 +45,8 @@ class CollectionFeeder(object):
 
     self.reload_ids()
 
+    signals.connect('xmms-medialib-entry-changed', self.on_medialib_entry_changed)
+
   def __getitem__(self, position):
     if not self._in_window(position):
       self._move_window(position)
@@ -70,6 +72,9 @@ class CollectionFeeder(object):
       return self.ids[position]
     except IndexError:
       return None
+
+  def id_positions(self, mid):
+    return [i for i,m in enumerate(self.ids) if m == mid]
 
   def reload_ids(self):
     if hasattr(self.collection, 'ids') and self.collection.ids:
@@ -104,6 +109,11 @@ class CollectionFeeder(object):
       self.infos[info['id']] = info
 
     self.window = new_window
+
+  def on_medialib_entry_changed(self, mid):
+    if mid in self.infos:
+      self.infos[mid] = xs.medialib_get_info(mid)
+
 
 class PlaylistFeeder(CollectionFeeder):
   def __init__(self, pls_name, fields, size=100):
