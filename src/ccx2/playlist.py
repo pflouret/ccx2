@@ -192,7 +192,12 @@ class Playlist(listbox.MarkableListBox):
       pass
 
   def on_xmms_playlist_current_pos(self, pls, pos):
-    self._set_active_attr(self.body.current_pos, pos)
+    cp = self.body.current_pos
+    self._set_active_attr(cp, pos)
+
+    if cp <= self._bottom_pos and cp >= self._top_pos and \
+       pos > self._bottom_pos or pos < self._top_pos:
+      self.set_focus(pos)
 
   def cmd_activate(self, args):
     if args:

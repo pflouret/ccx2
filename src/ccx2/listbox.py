@@ -43,6 +43,10 @@ class AttrListBox(urwid.ListBox):
     self.focus_str = focus_str
     self.row_attrs = row_attrs is not None and row_attrs or {}
 
+    self._bottom_pos = None
+    self._top_pos = None
+    self._focus_pos = None
+
   def get_row_attr(self, pos):
     return self.row_attrs.get(pos, [(self.attr, 0)])[-1][0]
 
@@ -79,6 +83,16 @@ class AttrListBox(urwid.ListBox):
     _ignore, focus_widget, focus_pos, focus_rows, cursor = middle
     trim_top, fill_above = top
     trim_bottom, fill_below = bottom
+
+    if bottom[1]:
+      self._bottom_pos = bottom[1][-1][1]
+    else:
+      self._bottom_pos = None
+    if top[1]:
+      self._top_pos = top[1][-1][1]
+    else:
+      self._top_pos = None
+    self._focus_pos = focus_pos
 
     combinelist = []
     rows = 0
