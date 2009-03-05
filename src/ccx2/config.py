@@ -87,7 +87,7 @@ class Config(object):
     self._read_keys()
     self._read_aliases()
     self._read_formatting()
-    self._read_sections()
+    self._read_options()
 
   def format(self, key):
     try:
@@ -118,6 +118,14 @@ class Config(object):
     cp = self.cp.has_section('formatting') and self.cp or default_cp
     self._formatting = dict(cp.items('formatting'))
 
+  def _read_options(self):
+    rx = re.compile(r'[^a-zA-Z 0-9]')
+    for k, v in self.cp.items('options'):
+      if k in ('search-find-as-you-type',):
+        setattr(self, rx.sub('_', k), self.cp.getboolean('options', k))
+      else:
+        setattr(self, rx.sub('_', k), v)
+
   def _read_sections(self):
     rx = re.compile(r'[^a-zA-Z 0-9]')
     for s in (section for section in self.cp.sections()
@@ -128,6 +136,7 @@ class Config(object):
 
 DEFAULT_CONFIG = """
 [options]
+search-find-as-you-type = yes
 default-nowplaying-format = nowplaying
 default-playlist-format = simple
 default-search-format = search
@@ -151,8 +160,8 @@ navl = h
 navdn = j
 navup = k
 navr = l
-navpgdn = page-down
-navpgup = page-up
+navpgdn = page-down,ctrl-d
+navpgup = page-up,ctrl-u
 navhome = home
 navend = end
 new = n

@@ -28,6 +28,7 @@ import urwid
 import xmmsclient.collections as coll
 
 import collutil
+import config
 import commands
 import listbox
 import mif
@@ -179,8 +180,9 @@ class Search(urwid.Pile):
     self.lb = SearchListBox('simple', self.app)
     self.input = widgets.InputEdit(caption='quick search: ')
 
-    urwid.connect_signal(self.input, 'change', self._on_query_change)
-    urwid.connect_signal(self.input, 'done', lambda t=None: self.cmd_cycle())
+    if self.app.config.search_find_as_you_type:
+      urwid.connect_signal(self.input, 'change', self._on_query_change)
+    urwid.connect_signal(self.input, 'done', self._on_done)
     urwid.connect_signal(self.input, 'abort', lambda t=None: self.set_focus(self.lb))
     urwid.connect_signal(self.input, 'abort', lambda: self.input.set_edit_text(''))
 
@@ -195,8 +197,8 @@ class Search(urwid.Pile):
     while i != cur and not self.widget_list[i].selectable():
       i = (i + 1) % n
 
-    if i != cur and (i != 0 or len(self.lb.body) != 0):
-      self.set_focus(i)
+    #if i != cur and (i != 0 or len(self.lb.body) != 0):
+    self.set_focus(i)
 
   def cmd_save(self, args):
     # TODO: playlists and playlist types/options
@@ -222,31 +224,42 @@ class Search(urwid.Pile):
     self.input.set_edit_text(q)
     self.input.edit_pos = len(q)
 
-  def _on_query_change(self, q):
-    def _f(sig, frame):
-      caption = 'quick search: '
-      qs = q
-      if q:
-        if coll_parser_pattern_rx.search(q):
-          caption = 'pattern search: '
-        else:
-          qs = ' '.join(['~'+s for s in q.split()])
+  def update_caption(self, q):
+    caption = 'quick search: '
+    if q and coll_parser_pattern_rx.search(q):
+      caption = 'pattern search: '
+    self.input.set_caption(caption)
+
+  def process_query(self, q):
+    caption = 'quick search: '
+    if q:
+      if coll_parser_pattern_rx.search(q):
+        caption = 'pattern search: '
       else:
-        self.lb.walker.clear_cache()
+        q = ' '.join(['~'+s for s in q.split()])
+    else:
+      self.lb.walker.clear_cache()
 
-      try:
-        self.lb.collection = coll.coll_parse(qs)
-      except ValueError:
-        signals.emit('show-message', "bad pattern", 'error')
+    try:
+      self.lb.collection = coll.coll_parse(q)
+    except ValueError:
+      signals.emit('show-message', "bad pattern", 'error')
 
-      self.input.set_caption(caption)
-      signals.emit('need-redraw')
+    self.input.set_caption(caption)
+    signals.emit('need-redraw')
 
-    if q != self.prev_q:
-      # TODO: make a LimitCollectionFeeder to see if it helps and we can avoid the alarm
-      # FIXME: crashes if press enter at the prompt before the alarm fires and 
-      # FIXME: the collection is populated
-      signals.alarm(0.25, _f)
+  def _on_done(self, q):
+    if not self.app.config.search_find_as_you_type:
+      self.process_query(q)
+    else:
+      self.update_caption(q)
+    self.cmd_cycle()
+    self._invalidate()
+
+  def _on_query_change(self, q):
+    if self.app.config.search_find_as_you_type:
+      if q != self.prev_q:
+        signals.alarm(0.25, lambda s, f: self.process_query(q))
     self.prev_q = q
 
   def get_contexts(self):
