@@ -193,14 +193,6 @@ class Ccx2(object):
     signals.connect('need-redraw', _need_redraw)
 
   def cmd_clear(self, args): xs.playlist_clear(sync=False)
-  def cmd_navl(self, args): self.view.keypress(self.size, 'left')
-  def cmd_navdn(self, args): self.view.keypress(self.size, 'down')
-  def cmd_navup(self, args): self.view.keypress(self.size, 'up')
-  def cmd_navr(self, args): self.view.keypress(self.size, 'right')
-  def cmd_navpgdn(self, args): self.view.keypress(self.size, 'page down')
-  def cmd_navpgup(self, args): self.view.keypress(self.size, 'page up')
-  def cmd_navhome(self, args): self.view.keypress(self.size, 'home')
-  def cmd_navend(self, args): self.view.keypress(self.size, 'end')
   def cmd_pb_play(self, args): xs.playback_start(sync=False)
   def cmd_pb_toggle(self, args): xs.playback_play_pause_toggle(sync=False)
   def cmd_pb_stop(self, args): xs.playback_stop(sync=False)
@@ -208,6 +200,14 @@ class Ccx2(object):
   def cmd_pb_prev(self, args): xs.playback_prev(sync=False)
   def cmd_quit(self, args): sys.exit(0)
   def cmd_search(self, args): self.search(args)
+
+  def cmd_nav(self, args):
+    map = {'page-up': 'page up', 'page-down': 'page down'}
+
+    if args not in ('left', 'down', 'up', 'right', 'page-up', 'page-down', 'home', 'end'):
+      raise commands.CommandError('wrong navigation direction')
+
+    self.view.keypress(self.size, map.get(args, args))
 
   def cmd_rehash(self, args):
     try:
