@@ -26,10 +26,6 @@
 Ex-like command dispatching via a prompt or keybindings
 """
 
-import urwid
-
-import widgets
-
 __docformat__ = "restructuredtext en"
 
 STOP_RUNNING_COMMANDS = None
