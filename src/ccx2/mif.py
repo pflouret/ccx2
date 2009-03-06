@@ -54,9 +54,14 @@ class FormatParser(list):
     if self._fieldlist is not None:
       return self._fieldlist
 
-    self._fieldlist = []
+    fieldlist = []
     for e in self:
-      self._fieldlist.extend(e.fields())
+      fieldlist.extend(e.fields())
+
+    self._fieldlist = []
+    for f in fieldlist:
+      if f not in self._fieldlist:
+        self._fieldlist.append(f)
 
     return self._fieldlist
 
