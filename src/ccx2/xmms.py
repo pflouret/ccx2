@@ -230,32 +230,33 @@ class XmmsService(object):
     else:
       self.xmms.coll_get(name, ns, cb=cb)
 
-  def coll_query_ids(self, collection, cb=None, sync=True):
+  def coll_query_ids(self, collection, start=0, leng=0, order=None, cb=None, sync=True):
     if sync:
       try:
-        r = self.xmms_s.coll_query_ids(collection)
+        r = self.xmms_s.coll_query_ids(collection, start=start, leng=leng, order=order)
         if type(r) != list:
           r = []
         return r
       except xmmsclient.XMMSError:
         return []
     else:
-      self.xmms.coll_query_ids(collection, cb=cb)
+      self.xmms.coll_query_ids(collection, start=start, leng=leng, order=order, cb=cb)
 
-  def coll_query_infos(self, collection, fields, cb=None, sync=True, add_id=True):
+  def coll_query_infos(self, collection, fields, start=0, leng=0,
+                       order=None, cb=None, sync=True, add_id=True):
     if add_id and 'id' not in fields:
       fields = fields + ['id']
 
     if sync:
       try:
-        r = self.xmms_s.coll_query_infos(collection, fields)
+        r = self.xmms_s.coll_query_infos(collection, fields, start=start, leng=leng, order=order)
         if type(r) != list:
           r = []
         return r
       except xmmsclient.XMMSError:
         return []
     else:
-      self.xmms.coll_query_infos(collection, fields, cb=cb)
+      self.xmms.coll_query_infos(collection, fields, start=start, leng=leng, order=order, cb=cb)
 
   def coll_rename(self, oldname, newname, ns, cb=None, sync=True):
     if sync:
