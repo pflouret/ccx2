@@ -192,6 +192,7 @@ class Ccx2(object):
     def _need_redraw(): self.need_redraw = True
     signals.connect('need-redraw', _need_redraw)
 
+  def cmd_clear(self, args): xs.playlist_clear(sync=False)
   def cmd_pb_play(self, args): xs.playback_start(sync=False)
   def cmd_pb_toggle(self, args): xs.playback_play_pause_toggle(sync=False)
   def cmd_pb_stop(self, args): xs.playback_stop(sync=False)

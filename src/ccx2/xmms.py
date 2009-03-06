@@ -400,6 +400,12 @@ class XmmsService(object):
     else:
       self.xmms.playlist_add_id(id, playlist, cb=cb)
 
+  def playlist_clear(self, playlist=None, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.playlist_clear(playlist)
+    else:
+      self.xmms.playlist_clear(playlist, cb=cb)
+
   def playlist_create(self, playlist, cb=None, sync=True):
     if sync:
       return self.xmms_s.playlist_create(playlist)

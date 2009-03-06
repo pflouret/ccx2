@@ -39,6 +39,7 @@ class CommandError(Exception): pass
 
 _commands = set([
     'activate',
+    'clear',
     'cycle',
     'insert',
     'goto',
