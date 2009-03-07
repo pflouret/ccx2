@@ -16,5 +16,5 @@ p.add_option('-c', '--config',
 
 opts, args = p.parse_args()
 
-Ccx2(config_path=opts.config).main()
+Ccx2(config_path=opts.config).run()
 

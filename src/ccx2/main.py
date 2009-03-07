@@ -171,6 +171,116 @@ class Ccx2(object):
     def _need_redraw(): self.need_redraw = True
     signals.connect('need-redraw', _need_redraw)
 
+  def run(self):
+    self.setup_ui()
+    self.ui.run_wrapper(self.main_loop)
+
+  def setup_ui(self):
+    self.ui = urwid.curses_display.Screen()
+    self.ui.register_palette(self.config.palette)
+
+    i = len(self.ui.curses_pairs)
+    for j in range(16,256):
+      self.ui.curses_pairs.append((j,j))
+      self.ui.palette['h%d'%j] = (j+i-16, 0, 0)
+
+    self.ui.set_input_timeouts(max_wait=0)
+
+  def redraw(self):
+    canvas = self.view.render(self.size, focus=1)
+    self.ui.draw_screen(self.size, canvas)
+    self.need_redraw = False
+
+  def main_loop(self):
+    self.size = self.ui.get_cols_rows()
+
+    xmmsfd = self.xs.xmms.get_fd()
+    stdinfd = sys.stdin.fileno()
+
+    while 1:
+      if self.need_redraw:
+        self.redraw()
+
+      input_keys = None
+
+      w = self.xs.xmms.want_ioout() and [xmmsfd] or []
+
+      try:
+        (i, o, e) = select.select([xmmsfd, stdinfd], w, [])
+      except select.error:
+        # a window resize, an alarm or a magical unicorn... process everything just in case
+        i = [xmmsfd, stdinfd]
+
+      if not self.xs.connected:
+        sys.exit(0) # TODO
+
+      for fd in i:
+        if fd == xmmsfd:
+          self.xs.ioin()
+        elif fd == stdinfd:
+          input_keys = self.ui.get_input()
+
+      if o and o[0] == xmmsfd:
+        self.xs.ioout()
+
+      if not input_keys:
+        continue
+
+      self.statusarea.clear_message()
+
+      for k in input_keys:
+        try:
+          if k == 'window resize':
+            self.size = self.ui.get_cols_rows()
+          elif self.view.keypress(self.size, k) is None:
+            continue
+          elif self.cm.run_key(k, self.view.body.get_contexts() + [self]):
+            continue
+          elif k == ':':
+            self.show_command_prompt()
+          else:
+            signals.emit('show-message', "unbound key: %s" % k, 'error')
+        except commands.CommandError, e:
+          signals.emit('show-message', "command error: %s" % e, 'error')
+
+  def show_dialog(self, dialog):
+    return dialog.show(self.ui, self.size, self.view)
+
+  def show_prompt(self, caption, done_cb=[], abort_cb=[], change_cb=[]):
+    def _restore(*args):
+      self.view.set_focus('body')
+
+    if type(done_cb) != list: done_cb = [done_cb]
+    if type(abort_cb) != list: abort_cb = [abort_cb]
+    if type(change_cb) != list: change_cb = [change_cb]
+    done_cb.insert(0, _restore)
+    abort_cb.insert(0, _restore)
+
+    self.statusarea.show_prompt(caption, done_cb=done_cb, abort_cb=abort_cb, change_cb=change_cb)
+    self.view.set_focus('footer')
+
+  def show_command_prompt(self):
+    contexts = self.view.body.get_contexts() + [self]
+
+    def _restore(*args):
+      self.view.set_focus('body')
+
+    def _run(text):
+      try:
+        self.cm.run_command(text, contexts)
+      except commands.CommandError, e:
+        signals.emit('show-message', "command error: %s" % e, 'error')
+
+    self.statusarea.show_prompt(done_cb=[_restore, _run], abort_cb=[_restore])
+
+    self.view.set_focus('footer')
+
+  def search(self, query=None):
+    self.tabcontainer.load_tab_by_name('search')
+    if query:
+      search = self.tabcontainer.get_current()
+      search.set_query(query)
+
   def cmd_clear(self, args): self.xs.playlist_clear(sync=False)
   def cmd_pb_play(self, args): self.xs.playback_start(sync=False)
   def cmd_pb_toggle(self, args): self.xs.playback_play_pause_toggle(sync=False)
@@ -243,114 +353,8 @@ class Ccx2(object):
     s = "volume: " + ' '.join("%s:%d" % (c, v) for c, v in cur.iteritems())
     signals.emit('show-message', s)
 
-  def main(self):
-    self.ui = urwid.curses_display.Screen()
-    self.ui.register_palette(self.config.palette)
-
-    i = len(self.ui.curses_pairs)
-    for j in range(16,256):
-      self.ui.curses_pairs.append((j,j))
-      self.ui.palette['h%d'%j] = (j+i-16, 0, 0)
-
-    self.ui.set_input_timeouts(max_wait=0)
-    self.ui.run_wrapper(self.run)
-
-  def show_dialog(self, dialog):
-    return dialog.show(self.ui, self.size, self.view)
-
-  def show_prompt(self, caption, done_cb=[], abort_cb=[], change_cb=[]):
-    def _restore(*args):
-      self.view.set_focus('body')
-
-    if type(done_cb) != list: done_cb = [done_cb]
-    if type(abort_cb) != list: abort_cb = [abort_cb]
-    if type(change_cb) != list: change_cb = [change_cb]
-    done_cb.insert(0, _restore)
-    abort_cb.insert(0, _restore)
-
-    self.statusarea.show_prompt(caption, done_cb=done_cb, abort_cb=abort_cb, change_cb=change_cb)
-    self.view.set_focus('footer')
-
-  def show_command_prompt(self):
-    contexts = self.view.body.get_contexts() + [self]
-
-    def _restore(*args):
-      self.view.set_focus('body')
-
-    def _run(text):
-      try:
-        self.cm.run_command(text, contexts)
-      except commands.CommandError, e:
-        signals.emit('show-message', "command error: %s" % e, 'error')
-
-    self.statusarea.show_prompt(done_cb=[_restore, _run], abort_cb=[_restore])
-
-    self.view.set_focus('footer')
-
-  def search(self, query=None):
-    self.tabcontainer.load_tab_by_name('search')
-    if query:
-      search = self.tabcontainer.get_current()
-      search.set_query(query)
-
-  def redraw(self):
-    canvas = self.view.render(self.size, focus=1)
-    self.ui.draw_screen(self.size, canvas)
-    self.need_redraw = False
-
-  def run(self):
-    self.size = self.ui.get_cols_rows()
-
-    xmmsfd = self.xs.xmms.get_fd()
-    stdinfd = sys.stdin.fileno()
-
-    while 1:
-      if self.need_redraw:
-        self.redraw()
-
-      input_keys = None
-
-      w = self.xs.xmms.want_ioout() and [xmmsfd] or []
-
-      try:
-        (i, o, e) = select.select([xmmsfd, stdinfd], w, [])
-      except select.error:
-        # a window resize, an alarm or a magical unicorn... process everything just in case
-        i = [xmmsfd, stdinfd]
-
-      if not self.xs.connected:
-        sys.exit(0) # TODO
-
-      for fd in i:
-        if fd == xmmsfd:
-          self.xs.ioin()
-        elif fd == stdinfd:
-          input_keys = self.ui.get_input()
-
-      if o and o[0] == xmmsfd:
-        self.xs.ioout()
-
-      if not input_keys:
-        continue
-
-      self.statusarea.clear_message()
-
-      for k in input_keys:
-        try:
-          if k == 'window resize':
-            self.size = self.ui.get_cols_rows()
-          elif self.view.keypress(self.size, k) is None:
-            continue
-          elif self.cm.run_key(k, self.view.body.get_contexts() + [self]):
-            continue
-          elif k == ':':
-            self.show_command_prompt()
-          else:
-            signals.emit('show-message', "unbound key: %s" % k, 'error')
-        except commands.CommandError, e:
-          signals.emit('show-message', "command error: %s" % e, 'error')
 
 
 if __name__ == '__main__':
-  Ccx2().main()
+  Ccx2().run()
 

@@ -116,17 +116,18 @@ class XmmsService(object):
     super(XmmsService, self).__init__()
     self.xmms = xmmsclient.XMMS(name)
     self.xmms_s = xmmsclient.XMMSSync(name+'-sync')
-    path = os.environ.get("XMMS_PATH", None)
-    self.connected = True
+    self.path = path or os.environ.get("XMMS_PATH", None)
 
     def disconnect(r):
       self.connected = False
 
-    self.xmms.connect(path=path, disconnect_func=disconnect)
-    self.xmms_s.connect(path=path)
+    try:
+      self.xmms.connect(path=self.path, disconnect_func=disconnect)
+      self.xmms_s.connect(path=self.path)
+    except IOError:
+      self.connected = False
 
     self.connected = True
-
     self.connect_signals()
 
   def _callback_wrapper(self, cb):
