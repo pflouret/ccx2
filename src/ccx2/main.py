@@ -48,18 +48,17 @@ import widgets
 import xmms
 
 
-xs = xmms.get()
-
 class HeaderBar(urwid.WidgetWrap):
   status_desc = {xmmsclient.PLAYBACK_STATUS_PLAY: 'PLAYING',
                  xmmsclient.PLAYBACK_STATUS_STOP: 'STOPPED',
                  xmmsclient.PLAYBACK_STATUS_PAUSE: 'PAUSED '}
 
   def __init__(self):
+    self.xs = xmms.get()
     self.info = {}
     self.ctx = {}
     self.time = 0
-    self.status = xs.playback_status()
+    self.status = self.xs.playback_status()
     self.parser = mif.FormatParser(
         r':status [# :a \> :t -- :l [:c?(:p) ]\[:elapsed[/:total]\]]')
 
@@ -70,7 +69,7 @@ class HeaderBar(urwid.WidgetWrap):
     signals.connect('xmms-playback-current-info', self.on_xmms_playback_current_info)
     signals.connect('xmms-playback-playtime', self.on_xmms_playback_playtime)
 
-    xs.playback_current_info(self.on_xmms_playback_current_info, sync=False)
+    self.xs.playback_current_info(self.on_xmms_playback_current_info, sync=False)
 
 
   def _update(self):
@@ -148,8 +147,8 @@ signals.register('need-redraw-non-urgent')
 
 class Ccx2(object):
   def __init__(self, config_path=None):
+    self.xs = xmms.get()
     self.config = config.Config(config_path)
-
     self.cm = commands.CommandManager(self.config)
 
     pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
@@ -161,7 +160,7 @@ class Ccx2(object):
             ('playlist', pview),
             ('search', search.Search(self))]
 
-    focus_tab = xs.playback_status() == xmmsclient.PLAYBACK_STATUS_PLAY and 1 or 2
+    focus_tab = self.xs.playback_status() == xmmsclient.PLAYBACK_STATUS_PLAY and 1 or 2
     self.tabcontainer = containers.TabContainer(self, tabs, focus_tab=focus_tab)
     self.headerbar = HeaderBar()
     self.statusarea = StatusArea()
@@ -172,12 +171,12 @@ class Ccx2(object):
     def _need_redraw(): self.need_redraw = True
     signals.connect('need-redraw', _need_redraw)
 
-  def cmd_clear(self, args): xs.playlist_clear(sync=False)
-  def cmd_pb_play(self, args): xs.playback_start(sync=False)
-  def cmd_pb_toggle(self, args): xs.playback_play_pause_toggle(sync=False)
-  def cmd_pb_stop(self, args): xs.playback_stop(sync=False)
-  def cmd_pb_next(self, args): xs.playback_next(sync=False)
-  def cmd_pb_prev(self, args): xs.playback_prev(sync=False)
+  def cmd_clear(self, args): self.xs.playlist_clear(sync=False)
+  def cmd_pb_play(self, args): self.xs.playback_start(sync=False)
+  def cmd_pb_toggle(self, args): self.xs.playback_play_pause_toggle(sync=False)
+  def cmd_pb_stop(self, args): self.xs.playback_stop(sync=False)
+  def cmd_pb_next(self, args): self.xs.playback_next(sync=False)
+  def cmd_pb_prev(self, args): self.xs.playback_prev(sync=False)
   def cmd_quit(self, args): sys.exit(0)
   def cmd_search(self, args): self.search(args)
 
@@ -195,10 +194,10 @@ class Ccx2(object):
     except ValueError:
       raise commands.CommandError, 'bad pattern'
 
-    ids = xs.coll_query_ids(c)
+    ids = self.xs.coll_query_ids(c)
 
     for i in ids:
-      xs.medialib_rehash(i, sync=False)
+      self.xs.medialib_rehash(i, sync=False)
 
   def cmd_seek(self, args):
     if args:
@@ -215,12 +214,12 @@ class Ccx2(object):
         raise commands.CommandError, "bad seconds value"
 
       if relative:
-        xs.playback_seek_ms_rel(seconds*1000, sync=False)
+        self.xs.playback_seek_ms_rel(seconds*1000, sync=False)
       else:
-        xs.playback_seek_ms(seconds*1000, sync=False)
+        self.xs.playback_seek_ms(seconds*1000, sync=False)
 
   def cmd_volume(self, args):
-    cur = xs.playback_volume_get()
+    cur = self.xs.playback_volume_get()
 
     if isinstance(cur, basestring):
       signals.emit('show-message', "volume: "+cur)
@@ -239,7 +238,7 @@ class Ccx2(object):
           cur[c] = cur[c] + volume
         else:
           cur[c] = volume
-        xs.playback_volume_set(c, cur[c])
+        self.xs.playback_volume_set(c, cur[c])
 
     s = "volume: " + ' '.join("%s:%d" % (c, v) for c, v in cur.iteritems())
     signals.emit('show-message', s)
@@ -302,7 +301,7 @@ class Ccx2(object):
   def run(self):
     self.size = self.ui.get_cols_rows()
 
-    xmmsfd = xs.xmms.get_fd()
+    xmmsfd = self.xs.xmms.get_fd()
     stdinfd = sys.stdin.fileno()
 
     while 1:
@@ -311,7 +310,7 @@ class Ccx2(object):
 
       input_keys = None
 
-      w = xs.xmms.want_ioout() and [xmmsfd] or []
+      w = self.xs.xmms.want_ioout() and [xmmsfd] or []
 
       try:
         (i, o, e) = select.select([xmmsfd, stdinfd], w, [])
@@ -319,17 +318,17 @@ class Ccx2(object):
         # a window resize, an alarm or a magical unicorn... process everything just in case
         i = [xmmsfd, stdinfd]
 
-      if not xs.connected:
+      if not self.xs.connected:
         sys.exit(0) # TODO
 
       for fd in i:
         if fd == xmmsfd:
-          xs.ioin()
+          self.xs.ioin()
         elif fd == stdinfd:
           input_keys = self.ui.get_input()
 
       if o and o[0] == xmmsfd:
-        xs.ioout()
+        self.xs.ioout()
 
       if not input_keys:
         continue

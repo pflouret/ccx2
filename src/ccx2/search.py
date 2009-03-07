@@ -37,9 +37,6 @@ import widgets
 import xmms
 
 
-xs = xmms.get()
-
-
 class SearchWalker(urwid.ListWalker):
   def __init__(self, collection, format):
     self.format = format
@@ -90,6 +87,7 @@ class SearchWalker(urwid.ListWalker):
 
 class SearchListBox(listbox.MarkableListBox):
   def __init__(self, formatname, app):
+    self.xs = xmms.get()
     self.app = app
     self.format = formatname
     self.walker = SearchWalker(coll.IDList(), self.app.config.format('search'))
@@ -116,7 +114,7 @@ class SearchListBox(listbox.MarkableListBox):
 
       if relative:
         try:
-          cur = xs.playlist_current_pos()['position']
+          cur = self.xs.playlist_current_pos()['position']
           pos = cur + pos + (args[0] == '-' and 1 or 0)
         except:
           pos = None
@@ -141,9 +139,9 @@ class SearchListBox(listbox.MarkableListBox):
     idl = coll.IDList()
     idl.ids += m
     if pos is None:
-      xs.playlist_add_collection(idl, ['id'], sync=False)
+      self.xs.playlist_add_collection(idl, ['id'], sync=False)
     else:
-      xs.playlist_insert_collection(int(pos), idl, ['id'], sync=False)
+      self.xs.playlist_insert_collection(int(pos), idl, ['id'], sync=False)
 
     n = len(idl.ids)
     pos_s = pos is not None and "at position %d" % pos or ''
@@ -158,7 +156,7 @@ class SearchListBox(listbox.MarkableListBox):
           self.insert_marked()
         else:
           self.insert_marked(pos=v['position']+1)
-    xs.playlist_current_pos(cb=_cb, sync=False)
+    self.xs.playlist_current_pos(cb=_cb, sync=False)
 
   def get_mark_data(self, pos, w):
     return w.mid
@@ -175,6 +173,7 @@ coll_parser_pattern_rx = re.compile(r'\(|\)|#|:|~|<|>|=|\+|OR|AND|NOT')
 
 class Search(urwid.Pile):
   def __init__(self, app):
+    self.xs = xmms.get()
     self.app = app
 
     self.lb = SearchListBox('simple', self.app)
@@ -216,7 +215,7 @@ class Search(urwid.Pile):
     except ValueError:
       raise commands.CommandError, 'invalid collection'
 
-    xs.coll_save(c, name, 'Collections', sync=False)
+    self.xs.coll_save(c, name, 'Collections', sync=False)
     signals.emit('show-message',
                  "saved collection %s with pattern %s" % (name, q))
 

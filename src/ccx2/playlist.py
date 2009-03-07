@@ -36,7 +36,6 @@ import signals
 import widgets
 import xmms
 
-xs = xmms.get()
 
 class RowColumns(urwid.Columns):
   def __init__(self, song_w, pos, max_pos):
@@ -151,13 +150,15 @@ class PlaylistWalker(urwid.ListWalker):
 class Playlist(listbox.MarkableListBox):
   def __init__(self, app):
     self.__super.__init__([])
+
     self.body.current_pos = -1 # filthy filthy
 
+    self.xs = xmms.get()
     self.app = app
     self.format = 'playlist'
 
     self._walkers = {} # pls => walker
-    self.active_pls = xs.playlist_current_active()
+    self.active_pls = self.xs.playlist_current_active()
     self.view_pls = self.active_pls
 
     signals.connect('xmms-playlist-loaded', self.load)
@@ -212,7 +213,7 @@ class Playlist(listbox.MarkableListBox):
     else:
       pos = self.get_focus()[1]
     if pos is not None:
-      xs.playlist_play(playlist=self.view_pls, pos=pos)
+      self.xs.playlist_play(playlist=self.view_pls, pos=pos)
 
   def cmd_goto(self, args):
     if args == 'playing':
@@ -233,7 +234,7 @@ class Playlist(listbox.MarkableListBox):
       m = {pos: self.get_mark_data(pos, w)}
 
     for pos, w in sorted(m.items(), key=lambda e: e[0], reverse=True):
-      xs.playlist_remove_entry(pos, self.view_pls, sync=False)
+      self.xs.playlist_remove_entry(pos, self.view_pls, sync=False)
 
     self.unmark_all()
 
@@ -290,7 +291,7 @@ class Playlist(listbox.MarkableListBox):
         dest = top
         top += 1
 
-      xs.playlist_move(pos, dest, sync=False)
+      self.xs.playlist_move(pos, dest, sync=False)
       if not self.marked_data: # moving only the focused song
         self.set_focus(dest)
       else:
@@ -310,7 +311,7 @@ class Playlist(listbox.MarkableListBox):
         dest = bottom
         bottom -= 1
 
-      xs.playlist_move(pos, dest, sync=False)
+      self.xs.playlist_move(pos, dest, sync=False)
       if not self.marked_data: # moving only the focused song
         self.set_focus(dest)
       else:
@@ -322,7 +323,7 @@ class Playlist(listbox.MarkableListBox):
     fields = args.split()
     w, p = self.get_focus()
     if w is not None:
-      info = xs.medialib_get_info(w.mid)
+      info = self.xs.medialib_get_info(w.mid)
       q = ' AND '.join('%s:"%s"' % (f, info[f]) for f in fields if info.get(f))
       if q:
         self.app.search(q)
@@ -345,6 +346,7 @@ class Playlist(listbox.MarkableListBox):
 
 class PlaylistSwitcherWalker(urwid.ListWalker):
   def __init__(self):
+    self.xs = xmms.get()
     self.focus = 0
     self.rows = {}
     self.playlists = []
@@ -359,7 +361,7 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
     return self.nplaylists
 
   def _load(self):
-    self.playlists = [p for p in sorted(xs.playlist_list()) if not p.startswith('_')]
+    self.playlists = [p for p in sorted(self.xs.playlist_list()) if not p.startswith('_')]
     self.nplaylists = len(self.playlists)
 
   def _reload(self):
@@ -415,8 +417,9 @@ class PlaylistSwitcher(listbox.MarkableListBox):
   def __init__(self, app):
     self.__super.__init__(PlaylistSwitcherWalker())
 
+    self.xs = xmms.get()
     self.app = app
-    self.cur_active = xs.playlist_current_active()
+    self.cur_active = self.xs.playlist_current_active()
     self.active_pos = 0
     self._set_active_attr(None, self.cur_active)
 
@@ -456,7 +459,7 @@ class PlaylistSwitcher(listbox.MarkableListBox):
   def cmd_activate(self, args):
     w = self.get_focus()[0]
     if w:
-      xs.playlist_load(w.name, sync=False)
+      self.xs.playlist_load(w.name, sync=False)
 
   # FIXME: works like crap
   def cmd_insert(self, args):
@@ -466,31 +469,31 @@ class PlaylistSwitcher(listbox.MarkableListBox):
       # but collections in the playlist namespace don't have order, doh
       # coll2.0 should fix this mess
       idl = coll.IDList()
-      cur_active = xs.playlist_current_active()
-      ids_from = xs.playlist_list_entries(w.name, 'Playlists')
-      ids_to = xs.playlist_list_entries(cur_active, 'Playlists')
+      cur_active = self.xs.playlist_current_active()
+      ids_from = self.xs.playlist_list_entries(w.name, 'Playlists')
+      ids_to = self.xs.playlist_list_entries(cur_active, 'Playlists')
 
       for id in ids_to+ids_from:
         idl.ids.append(id)
 
-      xs.coll_save(idl, cur_active, 'Playlists')
+      self.xs.coll_save(idl, cur_active, 'Playlists')
 
   def cmd_rm(self, args):
     w = self.get_focus()[0]
     if w:
-      xs.playlist_remove(w.name, sync=False)
+      self.xs.playlist_remove(w.name, sync=False)
 
   def cmd_rename(self, args):
     w = self.get_focus()[0]
     if w:
       def rename(new_name):
-        xs.coll_rename(w.name, new_name, 'Playlists', sync=False)
+        self.xs.coll_rename(w.name, new_name, 'Playlists', sync=False)
       self.app.show_prompt('new name: ', rename)
 
   def cmd_new(self, args):
     def create(name):
       if name:
-        xs.playlist_create(name, sync=False)
+        self.xs.playlist_create(name, sync=False)
     self.app.show_prompt('playlist name: ', create)
 
   def get_contexts(self):

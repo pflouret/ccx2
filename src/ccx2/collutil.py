@@ -28,13 +28,12 @@ from xmmsclient import collections as coll
 import signals
 import xmms
 
-xs = xmms.get()
-
 
 class CollectionFeeder(object):
   def __init__(self, collection, fields, size=100):
     super(CollectionFeeder, self).__init__()
 
+    self.xs = xmms.get()
     self._collection = collection
     self.fields = fields
     self.infos = {}
@@ -80,7 +79,7 @@ class CollectionFeeder(object):
     if hasattr(self.collection, 'ids') and self.collection.ids:
       self.ids = list(self.collection.ids)
     else:
-      self.ids = xs.coll_query_ids(self.collection)
+      self.ids = self.xs.coll_query_ids(self.collection)
 
     self.len = len(self.ids)
     self.reset_window()
@@ -105,22 +104,24 @@ class CollectionFeeder(object):
 
     c = coll.IDList()
     c.ids += self.ids[new_window[0]:new_window[1]]
-    for info in xs.coll_query_infos(c, self.fields):
+    for info in self.xs.coll_query_infos(c, self.fields):
       self.infos[info['id']] = info
 
     self.window = new_window
 
   def on_medialib_entry_changed(self, mid):
     if mid in self.infos:
-      self.infos[mid] = xs.medialib_get_info(mid)
+      self.infos[mid] = self.xs.medialib_get_info(mid)
 
 
 class PlaylistFeeder(CollectionFeeder):
   def __init__(self, pls_name, fields, size=100):
-    c = xs.coll_get(pls_name, 'Playlists')
+    self.xs = xmms.get()
+    self.name = pls_name
+
+    c = self.xs.coll_get(pls_name, 'Playlists')
     super(PlaylistFeeder, self).__init__(c, fields, size)
 
-    self.name = pls_name
     signals.connect('xmms-playlist-changed', self._on_playlist_changed)
 
   def _on_playlist_changed(self, pls, type, mid, pos, newpos):
@@ -131,14 +132,14 @@ class PlaylistFeeder(CollectionFeeder):
       if self._in_window(pos, inclusive=True):
         self.window[1] += 1
         if mid not in self.infos:
-          self.infos[mid] = xs.medialib_get_info(mid)
+          self.infos[mid] = self.xs.medialib_get_info(mid)
       self.ids.append(mid)
       self.len += 1
     elif type == xmmsclient.PLAYLIST_CHANGED_INSERT:
       if self._in_window(pos):
         self.window[1] += 1
         if mid not in self.infos:
-          self.infos[mid] = xs.medialib_get_info(mid)
+          self.infos[mid] = self.xs.medialib_get_info(mid)
       self.ids.insert(pos, mid)
       self.len += 1
     elif type == xmmsclient.PLAYLIST_CHANGED_REMOVE:

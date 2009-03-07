@@ -46,16 +46,15 @@ except ImportError:
   pass
 
 
-xs = xmms.get()
-
 class NowPlaying(urwid.WidgetWrap):
   def __init__(self, app, formatname='nowplaying'):
+    self.xs = xmms.get()
     self.app = app
     self.format = formatname
     self.parser = mif.FormatParser(self.app.config.format(formatname))
     self.ctx = self.info = {}
     self.cur_hash = None
-    self.status = xs.playback_status()
+    self.status = self.xs.playback_status()
     self.time = 0
 
     self.progress = urwid.ProgressBar('progress-normal', 'progress-complete', 0, 100,
@@ -78,7 +77,7 @@ class NowPlaying(urwid.WidgetWrap):
     signals.connect('xmms-playback-status', self.on_xmms_playback_status)
     signals.connect('xmms-playback-current-info', self.on_xmms_playback_current_info)
     signals.connect('xmms-playback-playtime', self.on_xmms_playback_playtime)
-    xs.playback_current_info(self.on_xmms_playback_current_info, sync=False)
+    self.xs.playback_current_info(self.on_xmms_playback_current_info, sync=False)
 
   def update(self):
     status_desc = {xmmsclient.PLAYBACK_STATUS_PLAY: 'PLAYING',
@@ -112,7 +111,7 @@ class NowPlaying(urwid.WidgetWrap):
       # TODO: cache the picture to disk (or open directly from disk if local?)
       hash = self.info['picture_front']
       if hash != self.cur_hash:
-        xs.bindata_retrieve(hash, cb=self._set_cover_cb, sync=False)
+        self.xs.bindata_retrieve(hash, cb=self._set_cover_cb, sync=False)
         self.cur_hash = hash
     else:
       self.cover.reset()
