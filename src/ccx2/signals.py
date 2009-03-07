@@ -68,3 +68,4 @@ if hasattr(signal, 'setitimer'):
   alarm = _alarm_available
 else:
   alarm = _alarm_not_available
+

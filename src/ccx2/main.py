@@ -24,6 +24,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import select
 import signal
 import sys
 import time
@@ -166,7 +167,7 @@ class Ccx2(object):
     self.statusarea = StatusArea()
     self.view = urwid.Frame(self.tabcontainer, header=self.headerbar, footer=self.statusarea)
 
-    self.need_redraw = False
+    self.need_redraw = True
 
     def _need_redraw(): self.need_redraw = True
     signals.connect('need-redraw', _need_redraw)
@@ -301,21 +302,37 @@ class Ccx2(object):
   def run(self):
     self.size = self.ui.get_cols_rows()
 
+    xmmsfd = xs.xmms.get_fd()
+    stdinfd = sys.stdin.fileno()
+
     while 1:
-      self.redraw()
+      if self.need_redraw:
+        self.redraw()
 
       input_keys = None
-      while not input_keys:
-        input_keys = self.ui.get_input()
 
-        if not xs.connected:
-          sys.exit(0)
+      w = xs.xmms.want_ioout() and [xmmsfd] or []
 
-        xs.ioin()
+      try:
+        (i, o, e) = select.select([xmmsfd, stdinfd], w, [])
+      except select.error:
+        # a window resize, an alarm or a magical unicorn... process everything just in case
+        i = [xmmsfd, stdinfd]
+
+      if not xs.connected:
+        sys.exit(0) # TODO
+
+      for fd in i:
+        if fd == xmmsfd:
+          xs.ioin()
+        elif fd == stdinfd:
+          input_keys = self.ui.get_input()
+
+      if o and o[0] == xmmsfd:
         xs.ioout()
-        if self.need_redraw:
-          self.redraw()
-        time.sleep(0.01)
+
+      if not input_keys:
+        continue
 
       self.statusarea.clear_message()
 

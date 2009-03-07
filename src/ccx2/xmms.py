@@ -109,6 +109,7 @@ class PlaybackPlaytimeTimer(threading.Thread):
   def run(self):
     time.sleep(self.seconds)
     self.xmms.signal_playback_playtime(self.fun)
+    self.xmms.ioout()
 
 class XmmsService(object):
   def __init__(self, path=None, name='ccx2'):
