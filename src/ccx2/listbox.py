@@ -198,11 +198,13 @@ class MarkableListBox(AttrListBox):
       self.remove_row_attr(pos, 'marked')
     self._invalidate()
 
-  def cmd_navhome(self, args):
-    self.set_focus(0)
-
-  def cmd_navend(self, args):
-    self.set_focus_last()
+  def cmd_nav(self, args):
+    if args == 'home':
+      self.set_focus(0)
+    elif args == 'end':
+      self.set_focus_last()
+    else:
+      return commands.CONTINUE_RUNNING_COMMANDS
 
   def cmd_toggle(self, args):
     if args:
