@@ -71,7 +71,6 @@ class HeaderBar(urwid.WidgetWrap):
 
     self.xs.playback_current_info(self.on_xmms_playback_current_info, sync=False)
 
-
   def _update(self):
     self.ctx['status'] = HeaderBar.status_desc[self.status]
     self.ctx['elapsed'] = util.humanize_time(self.time)
@@ -151,21 +150,6 @@ class Ccx2(object):
     self.config = config.Config(config_path)
     self.cm = commands.CommandManager(self.config)
 
-    pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
-                           ('fixed', 1, urwid.SolidFill(u'\u2502')),
-                           ('weight', 5, playlist.Playlist(self))],
-                          dividechars=1, focus_column=2)
-    tabs = [('help', urwid.ListBox([urwid.Text('yeah right')])),
-            ('now playing', nowplaying.NowPlaying(self)),
-            ('playlist', pview),
-            ('search', search.Search(self))]
-
-    focus_tab = self.xs.playback_status() == xmmsclient.PLAYBACK_STATUS_PLAY and 1 or 2
-    self.tabcontainer = containers.TabContainer(self, tabs, focus_tab=focus_tab)
-    self.headerbar = HeaderBar()
-    self.statusarea = StatusArea()
-    self.view = urwid.Frame(self.tabcontainer, header=self.headerbar, footer=self.statusarea)
-
     self.need_redraw = True
 
     def _need_redraw(): self.need_redraw = True
@@ -185,6 +169,26 @@ class Ccx2(object):
       self.ui.palette['h%d'%j] = (j+i-16, 0, 0)
 
     self.ui.set_input_timeouts(max_wait=0)
+
+    if not self.xs.connected:
+      print >> sys.stderr, "error: couldn't connect to server"
+      sys.exit(0)
+
+    pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
+                           ('fixed', 1, urwid.SolidFill(u'\u2502')),
+                           ('weight', 5, playlist.Playlist(self))],
+                          dividechars=1, focus_column=2)
+    tabs = [('help', urwid.ListBox([urwid.Text('yeah right')])),
+            ('now playing', nowplaying.NowPlaying(self)),
+            ('playlist', pview),
+            ('search', search.Search(self))]
+
+    focus_tab = self.xs.playback_status() == xmmsclient.PLAYBACK_STATUS_PLAY and 1 or 2
+    self.tabcontainer = containers.TabContainer(self, tabs, focus_tab=focus_tab)
+    self.headerbar = HeaderBar()
+    self.statusarea = StatusArea()
+    self.view = urwid.Frame(self.tabcontainer, header=self.headerbar, footer=self.statusarea)
+
 
   def redraw(self):
     canvas = self.view.render(self.size, focus=1)
@@ -212,6 +216,7 @@ class Ccx2(object):
         i = [xmmsfd, stdinfd]
 
       if not self.xs.connected:
+        print >> sys.stderr, "disconnected from server"
         sys.exit(0) # TODO
 
       for fd in i:
