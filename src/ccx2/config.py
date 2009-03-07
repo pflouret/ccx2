@@ -46,6 +46,25 @@ def key_to_urwid_key(key):
   key = key.replace('comma', ',')
   return key
 
+_default_palette = {
+    'default': ('default','default','default'),
+    'focus': ('focus','black','light gray'),
+    'dialog': ('dialog', 'black', 'light gray'),
+    'marked': ('marked','yellow','default'),
+    'marked-focus': ('marked-focus','black','brown'),
+    'active': ('active','light blue', 'default'),
+    'active-focus': ('active-focus','black', 'dark blue'),
+    'headerbar': ('headerbar','default', 'default'),
+    'status': ('status','default', 'default'),
+    'searchinput': ('searchinput','yellow', 'default'),
+    'message-info': ('message-info','default', 'default'),
+    'message-loading': ('message-loading','default', 'default'),
+    'message-error': ('message-error','light red', 'default'),
+    'progress-normal': ('progress-normal', 'light gray', 'light gray'),
+    'progress-complete': ('progress-complete', 'dark red', 'dark red'),
+    'progress-smooth': ('progress-smooth', 'dark red', 'light gray'),
+}
+
 class Config(object):
   def __init__(self, path=None):
     if not path:
@@ -82,12 +101,16 @@ class Config(object):
 
     self.keys = {}
     self.aliases = {}
+    self._palette = dict(_default_palette)
     self._formatting = {}
 
     self._read_keys()
     self._read_aliases()
     self._read_formatting()
     self._read_options()
+    self._read_colors()
+
+  palette = property(lambda self: self._palette.values())
 
   def format(self, key):
     try:
@@ -126,12 +149,35 @@ class Config(object):
       else:
         setattr(self, rx.sub('_', k), v)
 
-  def _read_sections(self):
-    rx = re.compile(r'[^a-zA-Z 0-9]')
-    for s in (section for section in self.cp.sections()
-              if section not in ('keys', 'formatting', 'aliases')):
-      for k, v in self.cp.items(s):
-        setattr(self, rx.sub('_', k), v)
+  def _read_colors(self):
+    fg_colors = ['black', 'dark red', 'dark green', 'brown', 'dark blue', 'dark magenta',
+                 'dark cyan', 'light gray', 'dark gray', 'light red', 'light green', 'yellow',
+                 'light blue', 'light magenta', 'light cyan', 'white', 'default']
+    bg_colors = ['black', 'dark red', 'dark green', 'brown', 'dark blue', 'dark magenta',
+                 'dark cyan', 'light gray', 'default']
+
+    for key, value in self.cp.items('colors'):
+      if key not in self._palette:
+        continue
+
+      sp = [v.strip() for v in value.split(',')]
+      l = len(sp)
+      if l == 1:
+        fg, bg = sp[0], 'default'
+      elif l == 2:
+        fg, bg = sp
+      else:
+        print >> sys.stderr, 'warning: wrong color specification for %s, ignoring' % key
+
+      if fg not in fg_colors:
+        print >> sys.stderr, 'warning: bad color %s for foreground, ignoring' % fg
+        continue
+
+      if bg not in bg_colors:
+        print >> sys.stderr, 'warning: bad color %s for background, ignoring' % bg
+        continue
+
+      self._palette[key] = (key, fg, bg)
 
 
 DEFAULT_CONFIG = """
@@ -203,6 +249,39 @@ nowplaying =
   [#:id][ :{bitrate}bps][ :{samplerate}Hz:CR
   :CR
   \[:elapsed[/:total]\]
+
+
+[colors]
+# specify as foreground, background
+# background can be omitted and the terminal default color will be used
+#
+# valid foreground colors:
+# default, black, white, brown, yellow,
+# dark blue, light blue, dark cyan, light cyan,
+# dark gray, light gray, dark green, light green,
+# dark magenta, light magenta, dark red, light red,
+#
+# valid background colors:
+# default, black, brown, dark blue, dark cyan,
+# light gray, dark green, dark magenta, dark red,
+
+default = default,default
+focus = black,light gray
+focus = dark magenta,black
+dialog = black,light gray
+marked = yellow,default
+marked-focus = black,brown
+active = light blue,default
+active-focus = black,dark blue
+headerbar = default,default
+status = default,default
+searchinput = yellow,default
+message-info = default,default
+message-loading = default,default
+message-error = light red,default
+progress-normal = light gray,light gray
+progress-complete = dark red,dark red
+progress-smooth = dark red,light gray
 """
 
 default_cp = ConfigParser.SafeConfigParser()

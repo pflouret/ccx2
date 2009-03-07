@@ -146,27 +146,6 @@ signals.register('need-redraw')
 signals.register('need-redraw-non-urgent')
 
 class Ccx2(object):
-  # default black white brown yellow
-  # light/dark: red green blue magenta cyan gray
-  palette = [
-    ('default','default','default'),
-    ('focus','black','light gray'),
-    ('dialog', 'black', 'light gray'),
-    ('marked','yellow','default'),
-    ('marked-focus','black','brown'),
-    ('active','light blue', 'default'),
-    ('active-focus','black', 'dark blue'),
-    ('headerbar','default', 'default'),
-    ('status','default', 'default'),
-    ('searchinput','yellow', 'default'),
-    ('message-info','default', 'default'),
-    ('message-loading','default', 'default'),
-    ('message-error','light red', 'default'),
-    ('progress-normal', 'light gray', 'light gray'),
-    ('progress-complete', 'dark red', 'dark red'),
-    ('progress-smooth', 'dark red', 'light gray'),
-  ]
-
   def __init__(self, config_path=None):
     self.config = config.Config(config_path)
 
@@ -266,7 +245,7 @@ class Ccx2(object):
 
   def main(self):
     self.ui = urwid.curses_display.Screen()
-    self.ui.register_palette(self.palette)
+    self.ui.register_palette(self.config.palette)
 
     i = len(self.ui.curses_pairs)
     for j in range(16,256):
