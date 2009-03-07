@@ -24,6 +24,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import curses
 import select
 import signal
 import sys
@@ -149,6 +150,7 @@ class Ccx2(object):
     self.xs = xmms.get()
     self.config = config.Config(config_path)
     self.cm = commands.CommandManager(self.config)
+    self.colors = 8
 
     self.need_redraw = True
 
@@ -162,13 +164,13 @@ class Ccx2(object):
   def setup_ui(self):
     self.ui = urwid.curses_display.Screen()
     self.ui.register_palette(self.config.palette)
-
-    i = len(self.ui.curses_pairs)
-    for j in range(16,256):
-      self.ui.curses_pairs.append((j,j))
-      self.ui.palette['h%d'%j] = (j+i-16, 0, 0)
-
     self.ui.set_input_timeouts(max_wait=0)
+
+    try:
+      curses.setupterm()
+      self.colors = curses.tigetnum('colors')
+    except:
+      pass
 
     if not self.xs.connected:
       print >> sys.stderr, "error: couldn't connect to server"
@@ -178,10 +180,18 @@ class Ccx2(object):
                            ('fixed', 1, urwid.SolidFill(u'\u2502')),
                            ('weight', 5, playlist.Playlist(self))],
                           dividechars=1, focus_column=2)
+
     tabs = [('help', urwid.ListBox([urwid.Text('yeah right')])),
-            ('now playing', nowplaying.NowPlaying(self)),
             ('playlist', pview),
             ('search', search.Search(self))]
+
+    if self.colors == 256:
+      i = len(self.ui.curses_pairs)
+      for j in range(16,256):
+        self.ui.curses_pairs.append((j,j))
+        self.ui.palette['h%d'%j] = (j+i-16, 0, 0)
+
+      tabs.insert(1, ('now playing', nowplaying.NowPlaying(self)))
 
     focus_tab = self.xs.playback_status() == xmmsclient.PLAYBACK_STATUS_PLAY and 1 or 2
     self.tabcontainer = containers.TabContainer(self, tabs, focus_tab=focus_tab)
