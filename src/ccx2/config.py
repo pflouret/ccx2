@@ -46,6 +46,15 @@ def key_to_urwid_key(key):
   key = key.replace('comma', ',')
   return key
 
+def urwid_key_to_key(key):
+  if key != ' ':
+    key = key.replace(' ', '-', 1)
+  key = key.replace(',', 'comma')
+  key = key.replace(' ', 'space')
+  if key == '<0>':
+    key = 'ctrl-space'
+  return key
+
 _default_palette = {
     'default': ('default','default','default'),
     'focus': ('focus','black','light gray'),
@@ -239,8 +248,8 @@ tab 3 = 3,f3
 tab 4 = 4,f4
 tab prev = [
 tab next = ]
-toggle ; navdn = space
-navup ; toggle = ctrl-space
+toggle ; nav down = space
+nav up ; toggle = ctrl-space
 unmark-all = meta-space
 volume +2 = +,=
 volume -2 = -
