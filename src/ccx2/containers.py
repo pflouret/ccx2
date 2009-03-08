@@ -29,6 +29,8 @@ import search
 import signals
 
 class TabContainer(urwid.Pile):
+  context_name = 'tabs'
+
   def __init__(self, app, tabs, focus_tab=0):
     self.app = app
 

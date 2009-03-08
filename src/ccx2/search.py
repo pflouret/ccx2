@@ -172,6 +172,8 @@ class SearchListBox(listbox.MarkableListBox):
 coll_parser_pattern_rx = re.compile(r'\(|\)|#|:|~|<|>|=|\+|OR|AND|NOT')
 
 class Search(urwid.Pile):
+  context_name = 'search'
+
   def __init__(self, app):
     self.xs = xmms.get()
     self.app = app

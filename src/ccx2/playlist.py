@@ -148,6 +148,8 @@ class PlaylistWalker(urwid.ListWalker):
 
 
 class Playlist(listbox.MarkableListBox):
+  context_name = 'playlist'
+
   def __init__(self, app):
     self.__super.__init__([])
 
@@ -414,6 +416,8 @@ class PlaylistSwitcherWalker(urwid.ListWalker):
 
 
 class PlaylistSwitcher(listbox.MarkableListBox):
+  context_name = 'playlist-switcher'
+
   def __init__(self, app):
     self.__super.__init__(PlaylistSwitcherWalker())
 

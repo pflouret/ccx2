@@ -146,6 +146,8 @@ signals.register('need-redraw')
 signals.register('need-redraw-non-urgent')
 
 class Ccx2(object):
+  context_name = 'main'
+
   def __init__(self, config_path=None):
     self.xs = xmms.get()
     self.config = config.Config(config_path)

@@ -33,37 +33,6 @@ CONTINUE_RUNNING_COMMANDS = 1
 
 class CommandError(Exception): pass
 
-_commands = set([
-    'activate',
-    'clear',
-    'cycle',
-    'insert',
-    'goto',
-    'move',
-    'nav',
-    'new',
-    'pb-next',
-    'pb-play',
-    'pb-prev',
-    'pb-stop',
-    'pb-toggle',
-    'quit',
-    'rehash',
-    'rename',
-    'rm',
-    'same',
-    'save',
-    'search',
-    'seek',
-    'tab',
-    'toggle',
-    'unmark-all',
-    'volume',
-])
-
-_help = {
-}
-
 class CommandManager(object):
   def __init__(self, config):
     self.config = config
@@ -154,4 +123,111 @@ class CommandManager(object):
       parts.append(acc)
 
     return [p.strip() for p in parts]
+
+_commands = set([
+    'activate',
+    'clear',
+    'cycle',
+    'insert',
+    'goto',
+    'move',
+    'nav',
+    'new',
+    'pb-next',
+    'pb-play',
+    'pb-prev',
+    'pb-stop',
+    'pb-toggle',
+    'quit',
+    'rehash',
+    'rename',
+    'rm',
+    'same',
+    'save',
+    'search',
+    'seek',
+    'tab',
+    'toggle',
+    'unmark-all',
+    'volume',
+])
+
+_help = {
+    'main': {
+        'clear': {'usage': 'clear',
+                  'desc': 'Clear the current playlist'},
+        'nav': {'usage': 'nav up|down|left|right|page-up|page-down|home|end',
+                'desc': 'Move cursor in a direction'},
+        'pb-next': {'usage': 'pb-next',
+                    'desc': 'Jump to next song'},
+        'pb-play': {'usage': 'pb-play',
+                    'desc': 'Start playback'},
+        'pb-prev': {'usage': 'pb-prev',
+                    'desc': 'Jump to previous song'},
+        'pb-stop': {'usage': 'pb-stop',
+                    'desc': 'Stop playback'},
+        'pb-toggle': {'usage': 'pb-toggle',
+                      'desc': 'Toggle playback'},
+        'quit': {'usage': 'quit',
+                 'desc': 'Exit ccx2'},
+        'rehash': {'usage': 'rehash <pattern>',
+                   'desc': 'Rehash the media matched by pattern'},
+        'search': {'usage': 'search [<pattern>]',
+                   'desc': 'Focus the search tab and search for pattern if provided'},
+        'seek': {'usage': 'seek +<seconds>|-<seconds>|<time>',
+                 'desc': 'Seek to a relative or absolute position\n'
+                         'time format is H:M:S, hours and minutes can be omitted.'},
+        'volume': {'usage': 'volume [+<value>|-<value>|<value>]',
+                   'desc': 'Get or set the volume for all channels. Value range is 0-100'},
+    },
+    'playlist': {
+        'activate': {'usage': 'activate',
+                     'desc': "Play the focused song."},
+        'goto': {'usage': 'goto <pos>|playing',
+                 'desc': "Go to <pos> position in playlist or currently playing song"},
+        'rm': {'usage': 'rm',
+               'desc': "Remove marked songs or focused song if none are marked"},
+        'move': {'usage': 'move [+<pos>|-<pos>|<pos>]',
+                 'desc': "Move marked songs to position or offset. "
+                         "The focused song is moved if no songs are marked"},
+        'same': {'usage': 'same <field>',
+                 'desc': "Search songs in the medialib with the same <field> value as "
+                         "the focused song"},
+        'toggle': {'usage': 'toggle [<pos>]',
+                   'desc': "Toggle mark on position or focused song if no position is given"},
+        'unmark-all': {'usage': 'unmark-all',
+                       'desc': "Unmark all songs"},
+    },
+    'playlist-switcher': {
+        'activate': {'usage': 'activate',
+                     'desc': "Switch to focused playlist"},
+        'insert': {'usage': 'insert',
+                   'desc': "Add focused playlist contents to current playlist"},
+        'rm': {'usage': 'rm',
+               'desc': "Remove focused playlist"},
+        'rename': {'usage': 'rename [<new-name>]',
+                   'desc': "Rename focused playlist. Prompt for a name if none is given"},
+        'new': {'usage': 'new [<name>]',
+                'desc': "Create a new playlist. Prompt for a name if none is given"},
+    },
+    'search': {
+        'cycle': {'usage': 'cycle',
+                  'desc': "Cycle between the search input and results"},
+        'insert': {'usage': 'insert [+<pos>|-<pos>|pos]',
+                   'desc': "Insert the marked songs to a position in the playlist.\n"
+                           "If no songs are marked insert the focused song.\n"
+                           "Relative positions are relative to the current playing song.\n"
+                           "If no position is given append the song to the playlist"},
+        'save': {'usage': 'save <collection-name>',
+                 'desc': "Save the current search as a collection"},
+        'toggle': {'usage': 'toggle [<pos>]',
+                   'desc': "Toggle mark on position or focused song if no position is given"},
+        'unmark-all': {'usage': 'unmark-all',
+                       'desc': "Unmark all songs"},
+    },
+    'tabs': {
+        'tab': {'usage': 'tab <number>|<name>',
+             'desc': "Focus tab by number or name"},
+    }
+}
 
