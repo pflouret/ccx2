@@ -3,7 +3,6 @@ ccx2
 
 A console client for the XMMS2 music player.
 
-- - -
 
 Requirements
 ------------
@@ -31,7 +30,6 @@ For cover art display:
 [urxvt]: http://scie.nti.st/2008/10/13/get-rxvt-unicode-with-256-color-support-on-ubunut
 [putty]: http://www.emacswiki.org/emacs/PuTTY#toc2
 
-- - -
 
 Installation
 ------------
@@ -42,13 +40,11 @@ To run:
 
     $ ccx2
 
-- - -
 
 Bugs
 ----
 Most likely!, send bug reports or comments of any kind to `quuxbaz@gmail.com`
 
-- - -
 
 License
 -------
