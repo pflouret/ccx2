@@ -311,6 +311,7 @@ class Ccx2(object):
   def cmd_pb_prev(self, args): self.xs.playback_prev(sync=False)
   def cmd_quit(self, args): sys.exit(0)
   def cmd_search(self, args): self.search(args)
+  def cmd_slow_as_hell(self, args): signals.emit('show-message', 'Indeed!')
 
   def cmd_nav(self, args):
     map = {'page-up': 'page up', 'page-down': 'page down'}

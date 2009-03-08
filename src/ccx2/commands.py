@@ -146,6 +146,7 @@ _commands = set([
     'save',
     'search',
     'seek',
+    'slow-as-hell',
     'tab',
     'toggle',
     'unmark-all',
@@ -177,6 +178,8 @@ _help = {
         'seek': {'usage': 'seek +<seconds>|-<seconds>|<time>',
                  'desc': 'Seek to a relative or absolute position\n'
                          'time format is H:M:S, hours and minutes can be omitted.'},
+        'slow-as-hell': {'usage': 'slow-as-hell',
+                         'desc': "Complain about ccx2's speed"},
         'volume': {'usage': 'volume [+<value>|-<value>|<value>]',
                    'desc': 'Get or set the volume for all channels. Value range is 0-100'},
     },
