@@ -488,13 +488,19 @@ class PlaylistSwitcher(listbox.MarkableListBox):
     if w:
       def rename(new_name):
         self.xs.coll_rename(w.name, new_name, 'Playlists', sync=False)
-      self.app.show_prompt('new name: ', rename)
+      if args:
+        rename(args)
+      else:
+        self.app.show_prompt('new name: ', rename)
 
   def cmd_new(self, args):
     def create(name):
       if name:
         self.xs.playlist_create(name, sync=False)
-    self.app.show_prompt('playlist name: ', create)
+    if args:
+      create(args)
+    else:
+      self.app.show_prompt('playlist name: ', create)
 
   def get_contexts(self):
     return [self]
