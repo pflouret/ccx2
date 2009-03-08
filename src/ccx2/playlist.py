@@ -199,8 +199,9 @@ class Playlist(listbox.MarkableListBox):
     cp = self.body.current_pos
     self._set_active_attr(cp, pos)
 
-    if cp <= self._bottom_pos and cp >= self._top_pos and \
-       pos > self._bottom_pos or pos < self._top_pos:
+    if self._bottom_pos is not None and self._top_pos is not None and \
+       cp <= self._bottom_pos and cp >= self._top_pos and \
+       (pos > self._bottom_pos or pos < self._top_pos):
       self.set_focus(pos)
 
   def cmd_activate(self, args):
