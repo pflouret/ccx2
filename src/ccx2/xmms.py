@@ -133,6 +133,8 @@ class XmmsService(object):
     except IOError:
       self.connected = False
 
+    return self.connected
+
   def _callback_wrapper(self, cb):
     def _w(r):
       if r.iserror():

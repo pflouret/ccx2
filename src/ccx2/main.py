@@ -25,6 +25,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import curses
+import os
 import select
 import signal
 import sys
@@ -159,6 +160,14 @@ class Ccx2(object):
     def _need_redraw(): self.need_redraw = True
     signals.connect('need-redraw', _need_redraw)
 
+    if not self.xs.connected:
+      if self.config.autostart_server:
+        os.system('xmms2-launcher')
+      if not self.xs.connect():
+        print >> sys.stderr, "error: couldn't connect to server"
+        sys.exit(0)
+
+
   def run(self):
     self.setup_ui()
     self.ui.run_wrapper(self.main_loop)
@@ -173,10 +182,6 @@ class Ccx2(object):
       self.colors = curses.tigetnum('colors')
     except:
       pass
-
-    if not self.xs.connected:
-      print >> sys.stderr, "error: couldn't connect to server"
-      sys.exit(0)
 
     pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
                            ('fixed', 1, urwid.SolidFill(u'\u2502')),

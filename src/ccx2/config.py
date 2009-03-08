@@ -144,7 +144,8 @@ class Config(object):
   def _read_options(self):
     rx = re.compile(r'[^a-zA-Z 0-9]')
     for k, v in self.cp.items('options'):
-      if k in ('search-find-as-you-type',):
+      if k in ('search-find-as-you-type',
+               'autostart-server'):
         setattr(self, rx.sub('_', k), self.cp.getboolean('options', k))
       else:
         setattr(self, rx.sub('_', k), v)
@@ -182,6 +183,7 @@ class Config(object):
 
 DEFAULT_CONFIG = """
 [options]
+server-autostart = yes
 search-find-as-you-type = yes
 default-nowplaying-format = nowplaying
 default-playlist-format = simple
