@@ -89,10 +89,12 @@ class Config(object):
 
       if not os.path.exists(path):
         try:
+          print >> sys.stderr, 'no config file found, making default one in %s' % path
           f = open(path, 'w')
           print >> f, DEFAULT_CONFIG
           f.close()
-        except:
+        except Exception, e:
+          print >> sys.stderr, 'error while writing config file: %s' % e
           path = None
 
     self.path = path
