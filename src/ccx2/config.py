@@ -110,6 +110,12 @@ class Config(object):
     self._read_options()
     self._read_colors()
 
+    try:
+      import PIL
+      self.has_pil = True
+    except ImportError:
+      self.has_pil = False
+
   palette = property(lambda self: self._palette.values())
 
   def format(self, key):

@@ -192,7 +192,7 @@ class Ccx2(object):
             ('playlist', pview),
             ('search', search.Search(self))]
 
-    if self.colors == 256:
+    if self.colors == 256 and self.config.has_pil:
       i = len(self.ui.curses_pairs)
       for j in range(16,256):
         self.ui.curses_pairs.append((j,j))
