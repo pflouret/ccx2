@@ -40,6 +40,7 @@ import xmmsclient.collections as coll
 import commands
 import config
 import containers
+import help
 import mif
 import nowplaying
 import playlist
@@ -188,7 +189,7 @@ class Ccx2(object):
                            ('weight', 5, playlist.Playlist(self))],
                           dividechars=1, focus_column=2)
 
-    tabs = [('help', urwid.ListBox([urwid.Text('yeah right')])),
+    tabs = [('help', help.Help(self)),
             ('playlist', pview),
             ('search', search.Search(self))]
 
