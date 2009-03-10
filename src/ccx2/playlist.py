@@ -439,7 +439,7 @@ class PlaylistSwitcher(listbox.MarkableListBox):
     signals.emit('need-redraw')
 
   def on_xmms_collection_changed(self, pls, type, namespace, newname):
-    if namespace == 'Playlists' and type == xmmsclient.COLLECTION_CHANGED_RENAME:
+    if namespace == 'Playlists' and type != xmmsclient.COLLECTION_CHANGED_UPDATE:
       if pls == self.cur_active:
         self.cur_active = newname
 
