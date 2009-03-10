@@ -37,7 +37,7 @@ class Help(urwid.ListBox):
     keys = sorted(keys.items(), key=lambda e: e[0])
 
     # ugly for py2.4, >= 2.5 has a key argument for max
-    pad = len(list(sorted(keys, key=lambda e: len(e[0]), reversed=True))[0][0]) + 2
+    pad = len(list(sorted(keys, key=lambda e: len(e[0]), reverse=True))[0][0]) + 2
     format = '%%%ds : %%s' % pad
 
     rows = [urwid.Text('Keys\n====\n')]
