@@ -202,15 +202,17 @@ class Ccx2(object):
             ('playlist', pview),
             ('search', search.Search(self))]
 
-    if self.colors == 256 and self.config.has_pil:
+    show_cover = self.config.show_cover and self.colors == 256 and self.config.has_pil
+    tabs.insert(1, ('now playing', nowplaying.NowPlaying(self, show_cover=show_cover)))
+
+    if show_cover:
       i = len(self.ui.curses_pairs)
       for j in range(16,256):
         self.ui.curses_pairs.append((j,j))
         self.ui.palette['h%d'%j] = (j+i-16, 0, 0)
 
-      tabs.insert(1, ('now playing', nowplaying.NowPlaying(self)))
-
     focus_tab = self.xs.playback_status() == xmmsclient.PLAYBACK_STATUS_PLAY and 1 or 2
+
     self.tabcontainer = containers.TabContainer(self, tabs, focus_tab=focus_tab)
     self.headerbar = HeaderBar()
     self.statusarea = StatusArea()

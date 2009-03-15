@@ -47,9 +47,10 @@ except ImportError:
 
 
 class NowPlaying(urwid.WidgetWrap):
-  def __init__(self, app, formatname='nowplaying'):
+  def __init__(self, app, show_cover=True, formatname='nowplaying'):
     self.xs = xmms.get()
     self.app = app
+    self.show_cover = show_cover
     self.format = formatname
     self.parser = mif.FormatParser(self.app.config.format(formatname))
     self.ctx = self.info = {}
@@ -60,11 +61,15 @@ class NowPlaying(urwid.WidgetWrap):
     self.progress = urwid.ProgressBar('progress-normal', 'progress-complete', 0, 100,
                                       'progress-smooth')
     self.song = urwid.Text('', align='right')
-    self.cover = AlbumCoverWidget(maxcols=65, align='center', valign='top')
+    if self.show_cover:
+      self.cover = AlbumCoverWidget(maxcols=65, align='center', valign='top')
+      cover_w = self.cover
+    else:
+      cover_w = urwid.SolidFill(' ')
 
     fill = urwid.SolidFill(' ')
     w = urwid.Columns([('fixed', 1, fill),
-                       self.cover,
+                       cover_w,
                        ('fixed', 2, fill),
                        urwid.Filler(urwid.Pile([('flow', self.song),
                                                 ('fixed', 1, urwid.SolidFill(' ')),
@@ -93,7 +98,7 @@ class NowPlaying(urwid.WidgetWrap):
     self.song.set_text(self.parser.eval(self.ctx))
 
   def on_xmms_playback_playtime(self, milli):
-    if not self.cur_hash:
+    if self.show_cover and not self.cur_hash:
       self.cover.reset()
 
     if self.time/1000 != milli/1000:
@@ -107,15 +112,16 @@ class NowPlaying(urwid.WidgetWrap):
   def on_xmms_playback_current_info(self, info):
     self.info = info
     self.ctx = dict(zip((k[1] for k in self.info), self.info.values()))
-    if 'picture_front' in self.info:
-      # TODO: cache the picture to disk (or open directly from disk if local?)
-      hash = self.info['picture_front']
-      if hash != self.cur_hash:
-        self.xs.bindata_retrieve(hash, cb=self._set_cover_cb, sync=False)
-        self.cur_hash = hash
-    else:
-      self.cover.reset()
-      self.cur_hash = None
+    if self.show_cover:
+      if 'picture_front' in self.info:
+        # TODO: cache the picture to disk (or open directly from disk if local?)
+        hash = self.info['picture_front']
+        if hash != self.cur_hash:
+          self.xs.bindata_retrieve(hash, cb=self._set_cover_cb, sync=False)
+          self.cur_hash = hash
+      else:
+        self.cover.reset()
+        self.cur_hash = None
     self.update()
 
   def _set_cover_cb(self, r):

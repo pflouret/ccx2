@@ -157,7 +157,8 @@ class Config(object):
     rx = re.compile(r'[^a-zA-Z 0-9]')
     for k, v in self.cp.items('options'):
       if k in ('search-find-as-you-type',
-               'autostart-server'):
+               'autostart-server',
+               'show-cover'):
         setattr(self, rx.sub('_', k), self.cp.getboolean('options', k))
       else:
         setattr(self, rx.sub('_', k), v)
@@ -199,6 +200,8 @@ DEFAULT_CONFIG = """
 server-autostart = yes
 ; find as you type in the search tab, can get slow
 search-find-as-you-type = yes
+; show album cover in now playing, if possible
+show-cover = yes
 
 ; format strings to use, define them in the formatting section
 ; format for the now playing tab
