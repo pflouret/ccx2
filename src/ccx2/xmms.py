@@ -1,4 +1,4 @@
-# Copyright (c) 2008, Pablo Flouret <quuxbaz@gmail.com>
+# Copyright (c) 2008-2009 Pablo Flouret <quuxbaz@gmail.com>
 # All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without modification,
