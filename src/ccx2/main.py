@@ -30,10 +30,14 @@ import select
 import signal
 import sys
 import time
+import warnings
 
+warnings.filterwarnings('ignore', category=DeprecationWarning)
 import urwid
 import urwid.curses_display
 import urwid.raw_display
+warnings.filterwarnings('default', category=DeprecationWarning)
+
 import xmmsclient
 import xmmsclient.collections as coll
 
@@ -172,7 +176,11 @@ class Ccx2(object):
 
   def run(self):
     self.setup_ui()
-    self.ui.run_wrapper(self.main_loop)
+
+    try:
+      self.ui.run_wrapper(self.main_loop)
+    except KeyboardInterrupt:
+      sys.exit(0)
 
   def setup_ui(self):
     self.ui = urwid.curses_display.Screen()
