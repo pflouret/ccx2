@@ -55,6 +55,9 @@ Known issues
 There's a bug in XMMS2 0.5 that makes adding songs to the playlist appear in
 reversed order, this is fixed in the XMMS2 0.6 DrM development version.
 
+Adding a playlist to the current one works, but the current playlist isn't
+refreshed correctly.
+
 Testing was mostly done with python 2.6 and XMMS2 0.6, there may be unforseen
 bugs when used with previous versions of these applications.
 

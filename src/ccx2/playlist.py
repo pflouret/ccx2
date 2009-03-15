@@ -63,6 +63,8 @@ class RowColumns(urwid.Columns):
       self._invalidate()
 
 
+# FIXME: cleanup all the xmms-playlist-changed mess
+
 class PlaylistWalker(urwid.ListWalker):
   def __init__(self, pls, format):
     self.pls = pls
@@ -100,7 +102,7 @@ class PlaylistWalker(urwid.ListWalker):
     if pls != self.pls:
       return
 
-    if type not in (xmmsclient.PLAYLIST_CHANGED_ADD, xmmsclient.PLAYLIST_CHANGED_UPDATE):
+    if type != xmmsclient.PLAYLIST_CHANGED_ADD:
       self.row_widgets = {}
 
     self.set_focus(self.focus)
@@ -163,6 +165,7 @@ class Playlist(listbox.MarkableListBox):
     self.active_pls = self.xs.playlist_current_active()
     self.view_pls = self.active_pls
 
+    signals.connect('xmms-collection-changed', self.on_xmms_collection_changed)
     signals.connect('xmms-playlist-loaded', self.load)
     signals.connect('xmms-playlist-changed', self.on_xmms_playlist_changed)
     signals.connect('xmms-playlist-current-pos', self.on_xmms_playlist_current_pos)
@@ -187,6 +190,17 @@ class Playlist(listbox.MarkableListBox):
 
     self.view_pls = pls
     self._invalidate()
+
+  def on_xmms_collection_changed(self, pls, type, namespace, newname):
+    if namespace == 'Playlists':
+      if type == xmmsclient.COLLECTION_CHANGED_RENAME:
+        try:
+          del self._walkers[pls]
+          if pls == self.active_pls:
+            self.load(newname)
+        except KeyError:
+          pass
+        signals.emit('need-redraw')
 
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     try:
