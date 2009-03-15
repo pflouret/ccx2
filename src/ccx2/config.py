@@ -200,12 +200,20 @@ class Config(object):
 
 DEFAULT_CONFIG = """
 [options]
+; try to start the server if not running
 server-autostart = yes
+; find as you type in the search tab, can get slow
 search-find-as-you-type = yes
+
+; format strings to use, define them in the formatting section
+; format for the now playing tab
 default-nowplaying-format = nowplaying
+; format for the playlist
 default-playlist-format = simple
+; format for the search tab
 default-search-format = search
 
+; Run ccx2 and look at the help tab for a full list of commands and their usage.
 [aliases]
 q = quit
 sa = same artist
@@ -213,11 +221,18 @@ sb = same album
 s = search
 
 [keys]
-activate = enter,  ctrl-m,ctrl-j
+; Key bindings
+;
+; command = <comma separated keycodes>
+; Run the :keycode command to get the keycode of a key combination
+
+activate = enter
+; clear =
 cycle = tab
 insert = a
 insert +1 = w
 goto playing = g
+; keycode =
 move = m
 move -1 = K
 move +1 = J
@@ -257,32 +272,88 @@ volume +2 = +,=
 volume -2 = -
 
 [formatting]
-search = [:c?:p|:a] \> :l \> [#[:partofset.]:n ][:c?:a \>] :t
-simple = :a \> :t [:c?{ :p }]
+; Syntax:
+;
+; Fields
+;
+; Fields start with a colon, whatever field is in the medialib is valid:
+;   :artist :date :samplerate etc.
+;
+; Braces can be used to delimit the field name:
+;   :{bitrate}bps
+;
+; Some shorthand names are available:
+; :a -> :artist  :l -> :album       :t -> :title
+; :n -> tracknr  :d -> date         :g -> genre
+; :u -> url      :c -> compilation  :p -> performer
+;
+; Special Fields
+;
+; :CR
+;   carriage return (\\n)
+; :elapsed
+;   time elapsed, available in nowplaying and header formatting
+; :total
+;   song total time in human format, available in nowplaying and header
+;   formatting
+; :status
+;   playback status, available in nowplaying and header formatting
+;
+; Conditionals
+;
+; [:title]
+;   Will print the :title if it's set, nothing if it's not.
+;
+; [:p text|:a othertext|:t]
+;   Will print the first field with a value, or nothing if none are set.
+;   "text" and "othertext" don't influence the conditional, only the field.
+;
+; [:compilation? :performer|:artist]
+;   If :compilation is set it will print the :performer, otherwise it will
+;   print the :artist.
+;
+; Reserved characters
+;
+; The characters : [ ] | > ? are reserved so the have to be escaped in most
+; places.
+; To escape any character use \\
+; e.g. :artist \> :title \[:date\]
+; The \ character also has to be escaped -> :title \\\\:date\\\\
+
+search =
+  [
+   [:c?:performer|:artist] \>
+   :album \>
+   [#[:partofset.]:tracknr ]
+   [:c?:artist \> ]:title
+  |
+   :url
+  ]
+simple = [:a \> :t [:c?{ :p }]|:url]
 nowplaying =
   :status:CR:CR
-  :a:CR
-  [:n. ]:t:CR
-  :l[:c? (:p)][ CD:partofset]:CR
-  [:d][ :g][ {:publisher}]:CR
-  [#:id][ :{bitrate}bps][ :{samplerate}Hz:CR
+  :artist:CR
+  [:tracknr. ]:title:CR
+  :album[:c? (:performer)][ CD:partofset]:CR
+  [:date][ :genre][ {:publisher}]:CR
+  [#:id][ :{bitrate}bps][ :{samplerate}Hz]:CR
   :CR
   \[:elapsed[/:total]\]
 
 
 [colors]
-# specify as foreground, background
-# background can be omitted and the terminal default color will be used
-#
-# valid foreground colors:
-# default, black, white, brown, yellow,
-# dark blue, light blue, dark cyan, light cyan,
-# dark gray, light gray, dark green, light green,
-# dark magenta, light magenta, dark red, light red,
-#
-# valid background colors:
-# default, black, brown, dark blue, dark cyan,
-# light gray, dark green, dark magenta, dark red,
+; specify as foreground, background
+; background can be omitted and the terminal default color will be used
+;
+; valid foreground colors:
+; default, black, white, brown, yellow,
+; dark blue, light blue, dark cyan, light cyan,
+; dark gray, light gray, dark green, light green,
+; dark magenta, light magenta, dark red, light red,
+;
+; valid background colors:
+; default, black, brown, dark blue, dark cyan,
+; light gray, dark green, dark magenta, dark red,
 
 default = default,default
 focus = black,light gray
@@ -300,6 +371,8 @@ message-error = light red,default
 progress-normal = light gray,light gray
 progress-complete = dark red,dark red
 progress-smooth = dark red,light gray
+
+; vim: ft=dosini et sw=2
 """
 
 default_cp = ConfigParser.SafeConfigParser()
