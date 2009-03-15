@@ -186,6 +186,11 @@ help = {
         'volume': {'usage': 'volume [+<value>|-<value>|<value>]',
                    'desc': 'Get or set the volume for all channels. Value range is 0-100.'},
     },
+    'nowplaying': {
+        'same': {'usage': 'same <fields>',
+                 'desc': "Search songs in the medialib with the same field values as "
+                         "the current song."},
+    },
     'playlist': {
         'activate': {'usage': 'activate',
                      'desc': "Play the focused song."},
@@ -196,8 +201,8 @@ help = {
         'move': {'usage': 'move [+<pos>|-<pos>|<pos>]',
                  'desc': "Move marked songs to position or offset.\n"
                          "The focused song is moved if no songs are marked."},
-        'same': {'usage': 'same <field>',
-                 'desc': "Search songs in the medialib with the same <field> value as "
+        'same': {'usage': 'same <fields>',
+                 'desc': "Search songs in the medialib with the same field values as "
                          "the focused song."},
         'toggle': {'usage': 'toggle [<pos>]',
                    'desc': "Toggle mark on position or focused song if no position is given."},

@@ -123,6 +123,18 @@ class NowPlaying(urwid.WidgetWrap):
       self.cover.set_data(r.value())
       self._invalidate()
 
+  def cmd_same(self, args):
+    fields = args.split()
+    if 'id' in self.info:
+      q = ' AND '.join('%s:"%s"' % (f, self.info[f]) for f in fields if self.info.get(f))
+      if q:
+        self.app.search(q)
+      else:
+        pass # TODO: error message
+
+  def get_contexts(self):
+    return [self]
+
 _colormap_cache = {}
 
 class AlbumCoverWidget(urwid.WidgetWrap):
