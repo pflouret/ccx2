@@ -266,3 +266,12 @@ class Search(urwid.Pile):
   def get_contexts(self):
     return [self, self.lb]
 
+  def keypress(self, size, key):
+    # XXX: huge ugly hack
+    key = self.__super.keypress(size, key)
+    if key and key in ('esc', 'ctrl g'):
+      self.app.tabcontainer.load_previous_tab()
+    else:
+      return key
+
+

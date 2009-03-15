@@ -37,6 +37,8 @@ class TabContainer(urwid.Pile):
     self.tabs = tabs
 
     self.cur_tab = focus_tab
+    self.prev_tab = focus_tab
+
     self.tabbar = urwid.Text('', align='left', wrap=urwid.CLIP)
     self._update_tabbar_string()
 
@@ -68,6 +70,7 @@ class TabContainer(urwid.Pile):
       else:
         return
 
+    self.prev_tab = self.cur_tab
     self.cur_tab = n
 
     self._update_tabbar_string()
@@ -80,6 +83,9 @@ class TabContainer(urwid.Pile):
       if t[0] == name:
         self.load_tab(i)
         return
+
+  def load_previous_tab(self):
+    self.load_tab(self.prev_tab)
 
   def add_tab(self, name, body, switch=False):
     self.tabs.append((name, body))
@@ -98,6 +104,9 @@ class TabContainer(urwid.Pile):
 
     if self.cur_tab == n:
       self.load_tab(n-1)
+
+    if self.prev_tab == n:
+      self.prev_tab = self.cur_tab
 
     try:
       del self.tabs[n]
