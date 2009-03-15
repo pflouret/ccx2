@@ -130,6 +130,7 @@ _commands = set([
     'cycle',
     'insert',
     'goto',
+    'keycode',
     'move',
     'nav',
     'new',
@@ -178,6 +179,8 @@ help = {
         'seek': {'usage': 'seek +<seconds>|-<seconds>|<time>',
                  'desc': 'Seek to a relative or absolute position.\n'
                          'Time format is H:M:S, hours and minutes can be omitted.'},
+        'keycode': {'usage': 'keycode',
+                   'desc': 'Print a config compatible keycode.'},
         'slow-as-hell': {'usage': 'slow-as-hell',
                          'desc': "Complain about ccx2's speed."},
         'volume': {'usage': 'volume [+<value>|-<value>|<value>]',

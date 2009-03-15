@@ -155,6 +155,7 @@ class Ccx2(object):
     self.config = config.Config(config_path)
     self.cm = commands.CommandManager(self.config)
     self.colors = 8
+    self.show_key = False
 
     self.need_redraw = True
 
@@ -252,6 +253,11 @@ class Ccx2(object):
       self.statusarea.clear_message()
 
       for k in input_keys:
+        if self.show_key:
+          #signals.emit('show-message', 'key: %s' % config.urwid_key_to_key(k))
+          signals.emit('show-message', 'key: %s' % k)
+          self.show_key = False
+          continue
         try:
           if k == 'window resize':
             self.size = self.ui.get_cols_rows()
@@ -313,6 +319,10 @@ class Ccx2(object):
   def cmd_quit(self, args): sys.exit(0)
   def cmd_search(self, args): self.search(args)
   def cmd_slow_as_hell(self, args): signals.emit('show-message', 'Indeed!')
+
+  def cmd_keycode(self, args):
+    signals.emit('show-message', "Press any key to see the config compatible keycode")
+    self.show_key = True
 
   def cmd_nav(self, args):
     map = {'page-up': 'page up', 'page-down': 'page down'}
