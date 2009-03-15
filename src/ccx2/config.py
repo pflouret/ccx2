@@ -98,15 +98,14 @@ class Config(object):
           path = None
 
     self.path = path
-
     self.cp = ConfigParser.SafeConfigParser()
 
     try:
+      self.cp.readfp(StringIO.StringIO(DEFAULT_CONFIG))
       if not self.cp.read(path):
         raise ValueError
     except:
       self.path = None
-      self.cp = copy.deepcopy(default_cp)
       msg = "warning: error while reading the config file, using defaults"
       print >> sys.stderr, msg
 
@@ -141,8 +140,6 @@ class Config(object):
       return ''
 
   def _read_keys(self):
-    if not self.cp.has_section('keys'):
-      return
     for cmd, keys in self.cp.items('keys'):
       keys = [key_to_urwid_key(k.strip()) for k in keys.split(',')]
       for k in keys:
@@ -151,12 +148,10 @@ class Config(object):
         # self.keys.setdefault(key_to_urwid_key(k), []).append(cmd)
 
   def _read_aliases(self):
-    if self.cp.has_section('aliases'):
-      self.aliases = dict(self.cp.items('aliases'))
+    self.aliases = dict(self.cp.items('aliases'))
 
   def _read_formatting(self):
-    cp = self.cp.has_section('formatting') and self.cp or default_cp
-    self._formatting = dict(cp.items('formatting'))
+    self._formatting = dict(self.cp.items('formatting'))
 
   def _read_options(self):
     rx = re.compile(r'[^a-zA-Z 0-9]')
@@ -374,7 +369,4 @@ progress-smooth = dark red,light gray
 
 ; vim: ft=dosini et sw=2
 """
-
-default_cp = ConfigParser.SafeConfigParser()
-default_cp.readfp(StringIO.StringIO(DEFAULT_CONFIG))
 
