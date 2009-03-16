@@ -197,7 +197,7 @@ class Config(object):
 DEFAULT_CONFIG = """
 [options]
 ; try to start the server if not running
-server-autostart = yes
+autostart-server = yes
 ; find as you type in the search tab, can get slow
 search-find-as-you-type = yes
 ; show album cover in now playing, if possible
