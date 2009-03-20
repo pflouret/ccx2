@@ -264,8 +264,7 @@ class Ccx2(object):
 
       for k in input_keys:
         if self.show_key:
-          #signals.emit('show-message', 'key: %s' % config.urwid_key_to_key(k))
-          signals.emit('show-message', 'key: %s' % k)
+          signals.emit('show-message', 'key: %s' % config.urwid_key_to_key(k))
           self.show_key = False
           continue
         try:
