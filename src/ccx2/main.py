@@ -160,6 +160,7 @@ class Ccx2(object):
     self.cm = commands.CommandManager(self.config)
     self.colors = 8
     self.show_key = False
+    self._pipe = os.pipe()
 
     self.need_redraw = True
 
@@ -172,7 +173,6 @@ class Ccx2(object):
       if not self.xs.connect():
         print >> sys.stderr, "error: couldn't connect to server"
         sys.exit(0)
-
 
   def run(self):
     self.setup_ui()
@@ -218,6 +218,8 @@ class Ccx2(object):
     self.statusarea = StatusArea()
     self.view = urwid.Frame(self.tabcontainer, header=self.headerbar, footer=self.statusarea)
 
+  def notify(self):
+    os.write(self._pipe[1], '\0')
 
   def redraw(self):
     canvas = self.view.render(self.size, focus=1)
@@ -230,7 +232,7 @@ class Ccx2(object):
     xmmsfd = self.xs.xmms.get_fd()
     stdinfd = sys.stdin.fileno()
 
-    while 1:
+    while True:
       if self.need_redraw:
         self.redraw()
 
@@ -239,9 +241,8 @@ class Ccx2(object):
       w = self.xs.xmms.want_ioout() and [xmmsfd] or []
 
       try:
-        (i, o, e) = select.select([xmmsfd, stdinfd], w, [])
+        (i, o, e) = select.select([xmmsfd, stdinfd, self._pipe[0]], w, [])
       except select.error:
-        # a window resize, an alarm or a magical unicorn... process everything just in case
         i = [xmmsfd, stdinfd]
 
       if not self.xs.connected:
@@ -253,6 +254,8 @@ class Ccx2(object):
           self.xs.ioin()
         elif fd == stdinfd:
           input_keys = self.ui.get_input()
+        elif fd == self._pipe[0]:
+          os.read(self._pipe[0], 1)
 
       if o and o[0] == xmmsfd:
         self.xs.ioout()

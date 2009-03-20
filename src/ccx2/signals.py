@@ -54,18 +54,3 @@ def emit(name, *args):
   for callback in _signals[name]:
     callback(*args)
 
-def _alarm_available(t, f):
-  def _f(sig, frame):
-    signal.signal(signal.SIGALRM, signal.SIG_DFL)
-    f(sig, frame)
-  signal.signal(signal.SIGALRM, _f)
-  signal.setitimer(signal.ITIMER_REAL, t)
-
-def _alarm_not_available(t, f):
-  f(signal.SIGALRM, None)
-
-if hasattr(signal, 'setitimer'):
-  alarm = _alarm_available
-else:
-  alarm = _alarm_not_available
-

@@ -22,7 +22,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import os
 import re
+import threading
+import time
 
 import urwid
 import xmmsclient.collections as coll
@@ -189,6 +192,9 @@ class Search(urwid.Pile):
 
     self.prev_q = ''
 
+    self.lock = threading.RLock()
+    self._timer = None
+
     self.__super.__init__([('flow', urwid.AttrWrap(self.input, 'searchinput')), self.lb], 0)
 
   def cmd_cycle(self, args=None):
@@ -222,8 +228,10 @@ class Search(urwid.Pile):
                  "saved collection %s with pattern %s" % (name, q))
 
   def set_query(self, q):
+    self.set_focus(0)
     self.input.set_edit_text(q)
     self.input.edit_pos = len(q)
+    self.input.keypress(self.app.size, 'enter')
 
   def update_caption(self, q):
     caption = 'quick search: '
@@ -232,22 +240,27 @@ class Search(urwid.Pile):
     self.input.set_caption(caption)
 
   def process_query(self, q):
-    caption = 'quick search: '
-    if q:
-      if coll_parser_pattern_rx.search(q):
-        caption = 'pattern search: '
-      else:
-        q = ' '.join(['~'+s for s in q.split()])
-    else:
-      self.lb.walker.clear_cache()
-
     try:
-      self.lb.collection = coll.coll_parse(q)
-    except ValueError:
-      signals.emit('show-message', "bad pattern", 'error')
+      self.lock.acquire()
+      caption = 'quick search: '
+      if q:
+        if coll_parser_pattern_rx.search(q):
+          caption = 'pattern search: '
+        else:
+          q = ' '.join(['~'+s for s in q.split()])
+      else:
+        self.lb.walker.clear_cache()
 
-    self.input.set_caption(caption)
-    signals.emit('need-redraw')
+      try:
+        self.lb.collection = coll.coll_parse(q)
+      except ValueError:
+        signals.emit('show-message', "bad pattern", 'error')
+
+      self.input.set_caption(caption)
+      signals.emit('need-redraw')
+      self.app.notify()
+    finally:
+      self.lock.release()
 
   def _on_done(self, widget, q):
     if not self.app.config.search_find_as_you_type:
@@ -260,7 +273,10 @@ class Search(urwid.Pile):
   def _on_query_change(self, widget, q):
     if self.app.config.search_find_as_you_type:
       if q != self.prev_q:
-        signals.alarm(0.25, lambda s, f: self.process_query(q))
+        if self._timer:
+          self._timer.cancel()
+        self._timer = threading.Timer(0.25, lambda: self.process_query(q))
+        self._timer.start()
     self.prev_q = q
 
   def get_contexts(self):
