@@ -210,6 +210,8 @@ default-nowplaying-format = nowplaying
 default-playlist-format = simple
 ; format for the search tab
 default-search-format = search
+; format for the header
+default-header-format = header
 
 ; Run ccx2 and look at the help tab for a full list of commands and their usage.
 [aliases]
@@ -328,6 +330,7 @@ search =
    :url
   ]
 simple = [:a \> :t [:c?{ :p }]|:url]
+header = :status [# :a \> :t -- :l [:c?(:p) ]\[:elapsed[/:total]\]]
 nowplaying =
   :status:CR:CR
   :artist:CR

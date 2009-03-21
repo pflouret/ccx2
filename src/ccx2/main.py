@@ -60,14 +60,14 @@ class HeaderBar(urwid.WidgetWrap):
                  xmmsclient.PLAYBACK_STATUS_STOP: 'STOPPED',
                  xmmsclient.PLAYBACK_STATUS_PAUSE: 'PAUSED '}
 
-  def __init__(self):
+  def __init__(self, app):
+    self.app = app
     self.xs = xmms.get()
     self.info = {}
     self.ctx = {}
     self.time = 0
     self.status = self.xs.playback_status()
-    self.parser = mif.FormatParser(
-        r':status [# :a \> :t -- :l [:c?(:p) ]\[:elapsed[/:total]\]]')
+    self.parser = mif.FormatParser(self.app.config.format('header'))
 
     self.text = urwid.Text('')
     self.__super.__init__(self.text)
@@ -214,7 +214,7 @@ class Ccx2(object):
     focus_tab = self.xs.playback_status() == xmmsclient.PLAYBACK_STATUS_PLAY and 1 or 2
 
     self.tabcontainer = containers.TabContainer(self, tabs, focus_tab=focus_tab)
-    self.headerbar = HeaderBar()
+    self.headerbar = HeaderBar(self)
     self.statusarea = StatusArea()
     self.view = urwid.Frame(self.tabcontainer, header=self.headerbar, footer=self.statusarea)
 
