@@ -224,11 +224,13 @@ help = {
     'search': {
         'cycle': {'usage': 'cycle',
                   'desc': "Cycle between the search input and results."},
-        'insert': {'usage': 'insert [+<pos>|-<pos>|pos]',
+        'insert': {'usage': 'insert [+<pos>|-<pos>|pos] [field]',
                    'desc': "Insert the marked songs to a position in the playlist.\n"
                            "If no songs are marked insert the focused song.\n"
                            "If no position is given append the song to the playlist."
-                           "Relative positions are relative to the current playing song.\n"},
+                           "Relative positions are relative to the current playing song.\n"
+                           "If a field is given, songs that have the same field as the "
+                           "focused song will be added to the playlist.\n"},
         'save': {'usage': 'save <collection-name>',
                  'desc': "Save the current search as a collection."},
         'toggle': {'usage': 'toggle [<pos>]',
