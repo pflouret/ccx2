@@ -1,6 +1,6 @@
 # Maintainer palbo <quuxbaz@gmail.com>
 pkgname=ccx2
-pkgver=0.1
+pkgver=0.1.1
 pkgrel=1
 pkgdesc="Console client for xmms2"
 arch=(i686 x86_64)

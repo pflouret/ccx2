@@ -2,7 +2,7 @@ from distutils.core import setup
 from glob import glob
 
 setup(name='ccx2',
-      version='0.1',
+      version='0.1.1',
       description='console client for xmms2',
       author='Pablo Flouret',
       author_email='quuxbaz@gmail.com',
