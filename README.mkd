@@ -3,7 +3,7 @@ ccx2
 
 A console client for the XMMS2 music player.
 
-http://github.com/palbo/ccx2
+http://palbo.github.com/ccx2
 
 
 Requirements
@@ -43,11 +43,8 @@ To run:
 
 Or you can try it out without installing
 
-    $ CCX2=/home/fisk/some/path/ccx2
-
-    $ python $CCX2/src/ccx2/main.py
-    $ # or perhaps
-    $ PYTHONPATH=$CCX2/src $CCX2/scripts/ccx2
+    $ cd /home/you/some/path/ccx2/src/ccx2
+    $ python main.py
 
 
 Known issues
