@@ -8,10 +8,12 @@
   
   <style type="text/css">
     body {
-      font-size: 15px;
+      font-size: 14px;
+      background-color: #fff7d7;
       background-color: #fff;
       font-family: georgia, "helvetica"; 
-      color: #444;
+      font-family: "helvetica"; 
+      color: #000;
       margin-top: 8px;
     }
 
@@ -26,30 +28,52 @@
 
     #header h1 {
       margin-top: 28px;
+      margin-left: -5px;
     }
 
     #header p {
-      margin: 5px 0 0 30px;
-      font-size: 10px;
+      margin: 7px 0 0 0;
+      font-size: 12px;
       font-family: terminus,monospace;
     }
 
-    #nav {
+    hr {
+      margin: 0;
+      border: 0;
+      width: 100%;
+    }
+
+    hr#top1 {
+      padding: 4px;
+      margin-top: 3px;
+      background-color: #fff7d7;
+    }
+
+    hr#top2 {
+      padding: 1px 4px;
+      background-color: #a40000;
+    }
+
+    hr#top3 {
+      padding: 1px 4px;
+      background-color: #1c86ee;
+    }
+
+    hr#top4 {
+      padding: 1px 4px;
+      background-color: #edd400;
+    }
+
+    .nav {
       text-align: center;
       float: right;
       font-size: 11px;
       font-family: sans-serif;
     }
 
-    #nav a {
-      color: #555;
+    .nav a {
+      color: #000;
       text-decoration: none;
-    }
-
-    #nav a:hover {
-      color: #33f;
-      text-decoration: underline;
-      color: #4DB300;
     }
 
     #footer {
@@ -62,78 +86,49 @@
       margin-top: 30px;
     }
 
-    hr {
-      padding-top: 8px;
-      float: right;
-      border: 0;
-      width: 75%;
-      border-bottom: 1px solid #aaa;
-    }
-
-    hr#top {
-      float: none;
-      padding: 4px;
-      margin-top: 20px;
-      border: 0;
-      width: 100%;
-      background-color: #eee;
+    a {
+      color: #001F0B;
+      color: #0000d3;
     }
 
     h1 {
-      font-size: 3.8em;
-      letter-spacing: -4px;
+      font-family: georgia, serif;
+      font-size: 80px;
+      letter-spacing: -7px;
       line-height: 0.6;
       margin: 0;
       padding: 0;
     }
 
     h1 a {
-      color: #222;
+      color: #000;
       text-decoration: none;
     }
 
     h2, h3 {
-      color: #333;
+      font-family: garamond, helvetica, georgia, sans-serif;
+      color: #000;
       letter-spacing: -1px;
-      margin: 15px 0;
+      margin: 8px 0;
     }
 
     h2 {
-      font-size: 1.4em;
-      padding-top: 5px;
-      /*
-      border-top: 4px solid #EDFFD4;
-      border-color: #FFED9B;
-      */
-    }
-
-    h3 {
-      font-size: 1em;
+      font-size: 1.8em;
     }
 
     ul {
       padding: 0 22px;
-      list-style-type: none;
+      margin: 0 5px;
     } 
-
-    li {
-      background: transparent url(image/arrow.png) no-repeat;
-      background-position: 0 2px;
-      padding-left: 16px;
-    }
-
-    a {
-      color: #001F0B;
-    }
-
-    a:hover {
-      color: #4DB300;
-    }
 
     p#screenshots img {
       background-color: #111;
       padding: 5px 5px 0 5px;
       margin-top: 5px;
+    }
+
+    p {
+      margin: 8px 0;
     }
 
     pre,code {
@@ -144,6 +139,7 @@
       background: #292929;
       color: #fff;
       padding: 15px;
+      margin: 5px 0;
     }
     .download {
       float: right;
@@ -166,7 +162,7 @@
     -->
       
     <div id="header">
-      <div id="nav">
+      <div class="nav">
         <a href="#f">features</a> &middot;
         <a href="#d">download</a> &middot;
         <a href="#rr">requirements</a> &middot;
@@ -176,11 +172,13 @@
         <a href="#c">contact</a>
       </div>
       <h1><a href="http://palbo.github.com/ccx2">ccx2</a></h1>
-      <p>a console client for the xmms2 music player</p>
+      <p>console client for the xmms2 music player</p>
     </div>
-
-    <hr id="top">
-
+    
+    <hr id="top1">
+    <hr id="top2">
+    <hr id="top3">
+    <hr id="top4">
 
     <div class="section">
       <!--
@@ -204,7 +202,6 @@
     </div>
 
     <div class="section">
-      <hr>
       <h2 id="d">Download</h2>
       <p>
         Release: <a href="http://cloud.github.com/downloads/palbo/ccx2/ccx2-0.1.1.tar.gz">latest version</a> (v0.1.1)
@@ -217,22 +214,25 @@
       </p>
 
       <p>
-        Git: source at <a href="http://github.com/palbo/ccx2">github</a>
+        Use the source, Luke: <a href="http://github.com/palbo/ccx2">github</a>
         --
         <code>git clone git://github.com/palbo/ccx2.git</code>
       </p>
     </div>
 
     <div class="section">
-      <hr>
       <h2 id="rr">Requirements</h2>
       <p>
         <ul>
           <li><a href="http://xmms2.xmms.se">XMMS2</a> &gt;= 0.5 DrLecter
           <li>Python &gt;= 2.4
         </ul>
+      </p>
+
+      <p style="margin-top: 15px">
         Optionals, for album cover display:
-        <ul>
+
+        <ul style="margin-top: -4px">
           <li><a href="http://www.pythonware.com/products/pil/">Python imaging library</a>
           <li>
             A 256-color enabled terminal
@@ -246,7 +246,6 @@
     </div>
 
     <div class="section">
-      <hr>
       <h2 id="i">Install</h2>
     <pre>$ tar xzfv ccx2-0.1.1.tar.gz
 $ cd ccx2-0.1.1
@@ -254,16 +253,18 @@ $ sudo python setup.py install</pre>
     </div>
 
     <div class="section">
-      <hr>
       <h2 id="r">Run</h2>
       <pre>$ ccx2</pre>
-      or to try it without installing:
-      <pre>$ cd /home/you/some/path/ccx2/src/ccx2
+
+      <p style="margin-top: 16px">
+        or to try it without installing:
+
+        <pre>$ cd /home/you/some/path/ccx2/src/ccx2
 $ python main.py </pre>
+      </p>
     </div>
 
     <div class="section">
-      <hr>
       <h2 id="s">Screenshots</h2>
       <p id="screenshots">
         <img src="image/ccx2-screenshot-1.png" title="screenshot-1">
@@ -274,7 +275,6 @@ $ python main.py </pre>
     </div>
 
     <div class="section">
-      <hr>
       <h2 id="l">License</h2>
       <p>
         BSD License, see the <a href="http://github.com/palbo/ccx2/blob/master/LICENSE">LICENSE</a>
@@ -283,7 +283,6 @@ $ python main.py </pre>
     </div>
 
     <div class="section">
-      <hr>
       <h2 id="c">Contact</h2>
       <p>
         Bug reports, comments, patches, ideas and/or free pizza &nbsp; &rarr;
@@ -292,6 +291,15 @@ $ python main.py </pre>
     </div>
 
     <div id="footer">
+      <div class="nav" style="float: none">
+        <a href="#f">features</a> &middot;
+        <a href="#d">download</a> &middot;
+        <a href="#rr">requirements</a> &middot;
+        <a href="#i">install</a> &middot;
+        <a href="#r">run</a> &middot;
+        <a href="#s">screenshots</a> &middot;
+        <a href="#c">contact</a>
+      </div>
       <p>copyright &copy; 2008-2009 pablo flouret</p>
     </div>
   </div>
