@@ -147,6 +147,7 @@ _commands = set([
     'save',
     'search',
     'seek',
+    'shuffle',
     'slow-as-hell',
     'tab',
     'toggle',
@@ -179,6 +180,8 @@ help = {
         'seek': {'usage': 'seek +<seconds>|-<seconds>|<time>',
                  'desc': 'Seek to a relative or absolute position.\n'
                          'Time format is H:M:S, hours and minutes can be omitted.'},
+        'shuffle': {'usage': 'shuffle [<playlist>]',
+                    'desc': 'Shuffle the given <playlist>, or the current one by default.'},
         'keycode': {'usage': 'keycode',
                    'desc': 'Print a config compatible keycode.'},
         'slow-as-hell': {'usage': 'slow-as-hell',

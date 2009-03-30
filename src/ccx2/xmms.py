@@ -515,3 +515,10 @@ class XmmsService(object):
       else:
         self.xmms.playlist_set_next(pos, cb=cb)
 
+  def playlist_shuffle(self, playlist=None, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.playlist_shuffle(playlist)
+    else:
+      self.xmms.playlist_shuffle(playlist, cb=cb)
+
+

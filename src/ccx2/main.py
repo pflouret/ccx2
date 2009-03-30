@@ -330,6 +330,7 @@ class Ccx2(object):
   def cmd_pb_prev(self, args): self.xs.playback_prev(sync=False)
   def cmd_quit(self, args): sys.exit(0)
   def cmd_search(self, args): self.search(args)
+  def cmd_shuffle(self, args): self.xs.playlist_shuffle(args or None, sync=False)
   def cmd_slow_as_hell(self, args): signals.emit('show-message', 'Indeed!')
 
   def cmd_keycode(self, args):
