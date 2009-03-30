@@ -208,11 +208,14 @@ class Playlist(listbox.MarkableListBox):
       if not pos:
         del self._walkers[pls]
         if pls == self.active_pls:
-          self.load(pls)
+          self.load(pls, from_xmms=False)
     except KeyError:
       pass
 
   def on_xmms_playlist_current_pos(self, pls, pos):
+    if pls != self.active_pls:
+      return
+
     cp = self.body.current_pos
     self._set_active_attr(cp, pos)
 
