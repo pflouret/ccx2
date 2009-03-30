@@ -204,8 +204,11 @@ class Playlist(listbox.MarkableListBox):
 
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     try:
-      if type == xmmsclient.PLAYLIST_CHANGED_REMOVE and not pos:
+      # FIXME
+      if not pos:
         del self._walkers[pls]
+        if pls == self.active_pls:
+          self.load(pls)
     except KeyError:
       pass
 
