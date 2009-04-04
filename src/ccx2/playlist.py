@@ -205,7 +205,7 @@ class Playlist(listbox.MarkableListBox):
   def on_xmms_playlist_changed(self, pls, type, id, pos, newpos):
     try:
       # FIXME
-      if not pos:
+      if pos is None:
         del self._walkers[pls]
         if pls == self.active_pls:
           self.load(pls, from_xmms=False)
