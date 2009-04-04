@@ -149,7 +149,7 @@ class SearchListBox(listbox.MarkableListBox):
     if field not in info:
       raise commands.CommandError("the song doesn't have a value for '%s'" % field)
 
-    c = coll.Equals(field=field, value=info[field])
+    c = coll.Equals(field=field, value=info[field].encode('utf-8'))
 
     if pos is None:
       self.xs.playlist_add_collection(c, ['id'], sync=False)
