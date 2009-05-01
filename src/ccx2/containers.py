@@ -76,6 +76,12 @@ class TabContainer(urwid.Pile):
     self._update_tabbar_string()
     self.tab_w._w = self.tabs[n][1]
 
+    if hasattr(self.tabs[self.cur_tab][1], "tab_loaded"):
+      self.tabs[self.cur_tab][1].tab_loaded()
+
+    if hasattr(self.tabs[self.prev_tab][1], "tab_unloaded"):
+      self.tabs[self.prev_tab][1].tab_unloaded()
+
     signals.emit('need-redraw')
 
   def load_tab_by_name(self, name):

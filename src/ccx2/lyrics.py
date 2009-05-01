@@ -88,7 +88,7 @@ class FetcherThread(threading.Thread):
 
     if lyrics:
       self.lyrics.set_lyrics(lyrics)
-    elif results:
+    else:
       self.lyrics.show_results(results)
 
 
@@ -147,6 +147,7 @@ class Lyrics(urwid.Pile):
     self.app = app
     self.xs = xmms.get()
 
+    self.on_display = False
     self.info = None
     self.fetcher_thread = None
     self.results_fetcher_thread = None
@@ -168,12 +169,11 @@ class Lyrics(urwid.Pile):
                            self.llbw], 3)
 
     signals.connect('xmms-playback-current-info', self.on_xmms_playback_current_info)
-    self.xs.playback_current_info(self.on_xmms_playback_current_info, sync=False)
-
 
   def on_xmms_playback_current_info(self, info):
     self.info = info
-    self.fetch_lyrics()
+    if self.on_display:
+      self.fetch_lyrics()
 
   def search(self, widget, query):
     if self.results_fetcher_thread:
@@ -182,21 +182,28 @@ class Lyrics(urwid.Pile):
     self.results_fetcher_thread.start()
 
   def fetch_lyrics(self, url=None):
-    if self.fetcher_thread:
-      self.fetcher_thread.abort = True
+    try:
+      self.lock.acquire()
 
-    if not url:
-      lyrics = self.info.get('lyrics')
+      self.set_lyrics('')
 
-      s = "%s %s" % (self.info['artist'], self.info['title'])
-      self.input.set_edit_text(s)
-      self.input.edit_pos = len(s)
+      if self.fetcher_thread:
+        self.fetcher_thread.abort = True
 
-      if lyrics:
-        self.set_lyrics(lyrics)
-        return
-    self.fetcher_thread = FetcherThread(self, self.info, url)
-    self.fetcher_thread.start()
+      if not url:
+        lyrics = self.info.get('lyrics')
+
+        s = "%s %s" % (self.info['artist'], self.info['title'])
+        self.input.set_edit_text(s)
+        self.input.edit_pos = len(s)
+
+        if lyrics:
+          self.set_lyrics(lyrics)
+          return
+      self.fetcher_thread = FetcherThread(self, self.info, url)
+      self.fetcher_thread.start()
+    finally:
+      self.lock.release()
 
   def set_lyrics(self, lyrics):
     try:
@@ -221,10 +228,10 @@ class Lyrics(urwid.Pile):
 
       if self.widget_list[-1] != self.rlb:
         self.widget_list[-1] = self.rlb
+        self.set_focus(self.rlb)
 
       if results:
         self.rlb.set_rows([widgets.LyricResultWidget(r[0], r[1]) for r in results])
-        self.set_focus(self.rlb)
         self.set_info()
       else:
         self.set_info("no results found :/")
@@ -246,6 +253,17 @@ class Lyrics(urwid.Pile):
     while i != cur and not self.widget_list[i].selectable():
       i = (i + 1) % n
     self.set_focus(i)
+
+  def tab_loaded(self):
+    self.on_display = True
+
+    if not self.info:
+      self.on_xmms_playback_current_info(self.xs.playback_current_info())
+
+    self.fetch_lyrics()
+
+  def tab_unloaded(self):
+    self.on_display = False
 
   def get_contexts(self):
     return [self, self.widget_list[-1]]
