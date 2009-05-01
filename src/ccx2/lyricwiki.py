@@ -67,6 +67,9 @@ def get_lyrics(url):
     lyricbox = doc.cssselect('div.lyricbox')[0]
   except IndexError:
     return None
+
+  if lyricbox.text is None:
+    return None
   
   return "%s\n%s" % (lyricbox.text, '\n'.join([br.tail or "" for br in lyricbox.findall('br')]))
 

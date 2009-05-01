@@ -49,7 +49,7 @@ class FetcherThread(threading.Thread):
         self.info['id'], 'lyrics', lyrics, 'client/generic', sync=False)
 
   def from_url(self):
-    self.lyrics.set_lyrics("fetching lyrics...")
+    self.lyrics.set_info("fetching lyrics...")
 
     lyrics = lyricwiki.get_lyrics(self.url)
 
@@ -60,19 +60,19 @@ class FetcherThread(threading.Thread):
       self.save_lyrics(lyrics)
       self.lyrics.set_lyrics(lyrics)
     else:
-      self.lyrics.set_lyrics("some kind of error occurred while fetching the lyrics, too bad!")
+      self.lyrics.set_info("some kind of error occurred while fetching the lyrics, try again!")
 
   def run(self):
     if self.url:
       self.from_url()
       return
 
-    self.lyrics.set_lyrics("searching for lyrics...")
+    self.lyrics.set_info("searching for lyrics...")
 
     artist, title = self.info.get('artist'), self.info.get('title')
 
     if not artist or not title:
-      self.lyrics.set_lyrics("artist or title not set, not enough info to search for lyrics")
+      self.lyrics.set_info("artist or title not set, not enough info to search for lyrics")
       return
 
     lw = lyricwiki.LyricWiki(artist, title, self.info.get('album'), self.info.get('tracknr'))
@@ -86,9 +86,9 @@ class FetcherThread(threading.Thread):
     if self.abort:
       return
 
-    if lyrics:# or not results:
-      self.lyrics.set_lyrics(lyrics or "no results found :/")
-    else:
+    if lyrics:
+      self.lyrics.set_lyrics(lyrics)
+    elif results:
       self.lyrics.show_results(results)
 
 
@@ -102,7 +102,7 @@ class ResultsFetcherThread(threading.Thread):
     self.setDaemon(True)
 
   def run(self):
-    self.lyrics.set_lyrics("searching...")
+    self.lyrics.set_info("searching...")
     signals.emit('need-redraw')
 
     results = lyricwiki.get_google_results(self.query)
@@ -155,13 +155,15 @@ class Lyrics(urwid.Pile):
     self.input = widgets.InputEdit(caption='search lyricwiki.org > ')
     urwid.connect_signal(self.input, 'done', self.search)
 
+    self.info_w = urwid.Text('')
+
     self.llb = LyricsListBox([])
     self.llbw = urwid.Padding(self.llb, 'center', ('relative', 95))
     self.rlb = ResultsListBox(self, [])
 
     blank = urwid.Text('')
     self.__super.__init__([('flow', self.input),
-                           ('flow', blank),
+                           ('flow', self.info_w),
                            ('flow', blank),
                            self.llbw], 3)
 
@@ -207,6 +209,7 @@ class Lyrics(urwid.Pile):
           self.set_focus(self.llb)
 
       self.llb.set_rows([urwid.Text(l) for l in lyrics.split('\n')])
+      self.set_info()
       self._invalidate()
       signals.emit('need-redraw')
     finally:
@@ -219,12 +222,22 @@ class Lyrics(urwid.Pile):
       if self.widget_list[-1] != self.rlb:
         self.widget_list[-1] = self.rlb
 
-      self.rlb.set_rows([widgets.LyricResultWidget(r[0], r[1]) for r in results])
-      self.set_focus(self.rlb)
+      if results:
+        self.rlb.set_rows([widgets.LyricResultWidget(r[0], r[1]) for r in results])
+        self.set_focus(self.rlb)
+        self.set_info()
+      else:
+        self.set_info("no results found :/")
+
       self._invalidate()
       signals.emit('need-redraw')
     finally:
       self.lock.release()
+
+  def set_info(self, msg=""):
+    self.info_w.set_text(msg)
+    self._invalidate()
+    signals.emit('need-redraw')
 
   def cmd_cycle(self, args=None):
     cur = self.widget_list.index(self.focus_item)
