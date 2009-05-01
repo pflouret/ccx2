@@ -43,6 +43,11 @@ class PlaylistWidget(SelectableText):
     self.__super.__init__(name, *args, **kwargs)
     self.name = name
 
+class LyricResultWidget(SelectableText):
+  def __init__(self, title, url, *args, **kwargs):
+    self.__super.__init__(title, *args, **kwargs)
+    self.title, self.url = title, url
+
 
 class InputDialog(urwid.WidgetWrap):
   def __init__(self, title, width, height, attr=('dialog', 'default')):

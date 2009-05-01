@@ -45,6 +45,7 @@ import commands
 import config
 import containers
 import help
+import lyrics
 import mif
 import nowplaying
 import playlist
@@ -204,6 +205,12 @@ class Ccx2(object):
             ('now playing', nowplaying.NowPlaying(self, show_cover=show_cover)),
             ('playlist', pview),
             ('search', search.Search(self))]
+
+    try:
+      import lxml
+      tabs.append(('lyrics', lyrics.Lyrics(self)))
+    except ImportError:
+      pass
 
     if show_cover:
       i = len(self.ui.curses_pairs)
