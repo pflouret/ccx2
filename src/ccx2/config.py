@@ -109,6 +109,22 @@ class Config(object):
       msg = "warning: error while reading the config file, using defaults"
       print >> sys.stderr, msg
 
+    try:
+      import PIL
+      self.has_pil = True
+    except ImportError:
+      self.has_pil = False
+
+    try:
+      import lxml
+      try:
+        import json
+      except ImportError:
+        import simplejson
+      self.show_lyrics = True
+    except ImportError:
+      self.show_lyrics = False
+
     self.keys = {}
     self.aliases = {}
     self._palette = dict(_default_palette)
@@ -119,12 +135,6 @@ class Config(object):
     self._read_formatting()
     self._read_options()
     self._read_colors()
-
-    try:
-      import PIL
-      self.has_pil = True
-    except ImportError:
-      self.has_pil = False
 
   palette = property(lambda self: self._palette.values())
 

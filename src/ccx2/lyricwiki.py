@@ -13,7 +13,10 @@ try:
 except ImportError:
   import simplejson as json
 
-import lxml.html
+try:
+  import lxml.html
+except ImportError:
+  pass
 
 from pprint import pprint
 

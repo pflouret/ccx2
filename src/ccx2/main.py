@@ -206,11 +206,8 @@ class Ccx2(object):
             ('playlist', pview),
             ('search', search.Search(self))]
 
-    try:
-      import lxml
+    if self.config.show_lyrics:
       tabs.append(('lyrics', lyrics.Lyrics(self)))
-    except ImportError:
-      pass
 
     if show_cover:
       i = len(self.ui.curses_pairs)
