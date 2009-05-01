@@ -46,6 +46,11 @@ LEFT = 'left'
 RIGHT = 'right'
 CENTER = 'center'
 
+# Filler alignment modes 
+TOP = 'top'
+MIDDLE = 'middle'
+BOTTOM = 'bottom'
+
 # Text wrapping modes
 SPACE = 'space'
 ANY = 'any'
@@ -970,8 +975,6 @@ class Edit(Text):
         p = self.edit_pos
         if self.valid_char(key):
             self._delete_highlighted()
-            if type(key) == type(u""):
-                key = key.encode("utf-8")
             self.insert_text( key )
             
         elif key=="tab" and self.allow_tab:
