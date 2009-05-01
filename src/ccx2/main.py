@@ -198,12 +198,12 @@ class Ccx2(object):
                            ('weight', 5, playlist.Playlist(self))],
                           dividechars=1, focus_column=2)
 
+    show_cover = self.config.show_cover and self.colors == 256 and self.config.has_pil
+
     tabs = [('help', help.Help(self)),
+            ('now playing', nowplaying.NowPlaying(self, show_cover=show_cover)),
             ('playlist', pview),
             ('search', search.Search(self))]
-
-    show_cover = self.config.show_cover and self.colors == 256 and self.config.has_pil
-    tabs.insert(1, ('now playing', nowplaying.NowPlaying(self, show_cover=show_cover)))
 
     if show_cover:
       i = len(self.ui.curses_pairs)
