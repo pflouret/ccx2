@@ -295,6 +295,18 @@ class XmmsService(object):
     else:
       return self.xmms.medialib_get_info(id, cb=cb)
 
+  def medialib_property_set(self, mid, key, value, source=None, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.medialib_property_set(mid, key, value, source)
+    else:
+      self.xmms.medialib_property_set(mid, key, value, source, cb)
+
+  def medialib_property_remove(self, mid, key, source=None, cb=None, sync=True):
+    if sync:
+      return self.xmms_s.medialib_property_remove(mid, key, source)
+    else:
+      self.xmms.medialib_property_remove(mid, key, source, cb)
+
   def medialib_rehash(self, mid, cb=None, sync=True):
     if sync:
       return self.xmms_s.medialib_rehash(mid)
