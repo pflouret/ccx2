@@ -21,6 +21,11 @@ For cover art display:
 * A 256-color enabled terminal.
   (Some info on how to enable 256 colors in [xterm][xterm], [urxvt][urxvt] and [PuTTY][putty]).
 
+For lyrics display:
+
+* [lxml][lxml]
+* [simplejson][simplejson] (python &lt; 2.6)
+
 
 Download
 --------
@@ -90,9 +95,10 @@ License
 See the LICENSE file for more details.
 
 
-[xmms2]: http://xmms2.xmms.se
-[pil]:   http://www.pythonware.com/products/pil/
-[xterm]: http://www.frexx.de/xterm-256-notes/
-[urxvt]: http://scie.nti.st/2008/10/13/get-rxvt-unicode-with-256-color-support-on-ubunut
-[putty]: http://www.emacswiki.org/emacs/PuTTY#toc2
-
+[xmms2]:      http://xmms2.xmms.se
+[pil]:        http://www.pythonware.com/products/pil/
+[xterm]:      http://www.frexx.de/xterm-256-notes/
+[urxvt]:      http://scie.nti.st/2008/10/13/get-rxvt-unicode-with-256-color-support-on-ubunut
+[putty]:      http://www.emacswiki.org/emacs/PuTTY#toc2
+[lxml]:       http://codespeak.net/lxml/
+[simplejson]: http://code.google.com/p/simplejson/

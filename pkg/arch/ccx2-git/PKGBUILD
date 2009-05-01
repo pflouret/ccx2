@@ -7,7 +7,9 @@ arch=(i686 x86_64)
 url="http://palbo.github.com/ccx2"
 license=("BSD")
 depends=("ncurses" "python" "xmms2-git")
-optdepends=("pil: for cover art display")
+optdepends=("pil: for cover art display"
+            "python-lxml: for lyrics display"
+            "python-simplejson: for lyrics display, if python < 2.6")
 provides=(ccx2)
 conflicts=(ccx2)
 source=()
