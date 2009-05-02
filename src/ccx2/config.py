@@ -241,6 +241,7 @@ activate = enter
 cycle = tab
 insert = a
 insert +1 = w
+insert +1 album = ctrl-b
 goto playing = g
 ; keycode =
 move = m
