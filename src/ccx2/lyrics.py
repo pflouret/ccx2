@@ -210,10 +210,10 @@ class Lyrics(urwid.Pile):
       self.lock.acquire()
 
       in_list_w = self.widget_list[-1]
-      if in_list_w != self.llb:
-        self.widget_list[-1] = self.llb
+      if in_list_w != self.llbw:
+        self.widget_list[-1] = self.llbw
         if self.focus_item == in_list_w:
-          self.set_focus(self.llb)
+          self.set_focus(self.llbw)
 
       self.llb.set_rows([urwid.Text(l) for l in lyrics.split('\n')])
       self.set_info()
