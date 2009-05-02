@@ -40,7 +40,7 @@ def do_request(req):
   except:
     error = True
 
-  if error or r.getcode() != 200:
+  if error or r.code != 200:
     return None
 
   return r.read()
