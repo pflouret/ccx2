@@ -57,6 +57,11 @@ Known issues
 There's a bug in XMMS2 0.5 that makes adding songs to the playlist appear in
 reversed order, this is fixed in the XMMS2 0.6 DrM development version.
 
+There's some sort of race condition going on in the search, so sometimes when
+searching by means of the :search or :same commands might not show any results
+even though there should be. Restarting ccx2 is the only solution for now.
+Looking into it.
+
 Adding a playlist to the current one works, but the current playlist isn't
 refreshed correctly.
 
