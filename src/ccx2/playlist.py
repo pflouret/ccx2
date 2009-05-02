@@ -149,16 +149,14 @@ class PlaylistWalker(urwid.ListWalker):
   def get_next(self, pos): return self.get_pos(pos+1)
 
 
-class Playlist(listbox.MarkableListBox):
+class Playlist(listbox.SongListBox):
   context_name = 'playlist'
 
   def __init__(self, app):
-    self.__super.__init__([])
+    self.__super.__init__(app, [])
 
     self.body.current_pos = -1 # filthy filthy
 
-    self.xs = xmms.get()
-    self.app = app
     self.format = 'playlist'
 
     self._walkers = {} # pls => walker
@@ -342,17 +340,6 @@ class Playlist(listbox.MarkableListBox):
         self.toggle_mark(pos, mid)
         self.toggle_mark(dest, mid)
         # TODO: scroll if moving past last row in view
-
-  def cmd_same(self, args):
-    fields = args.split()
-    w, p = self.get_focus()
-    if w is not None:
-      info = self.xs.medialib_get_info(w.mid)
-      q = ' AND '.join('%s:"%s"' % (f, info[f]) for f in fields if info.get(f))
-      if q:
-        self.app.search(q)
-      else:
-        pass # TODO: error message
 
   def get_mark_data(self, pos, w):
     return w.mid

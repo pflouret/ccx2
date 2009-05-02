@@ -24,7 +24,11 @@
 
 import urwid
 
+from xmmsclient import collections as coll
+
 import commands
+import signals
+import xmms
 
 BADROWSMSG = "Widget %s at position %s within listbox calculated %d rows but rendered %d!"
 BADFOCUSROWSMSG = "Focus widget %s at position %s within listbox " \
@@ -222,4 +226,113 @@ class MarkableListBox(AttrListBox):
 
   def cmd_unmark_all(self, args):
     self.unmark_all()
+
+
+class SongListBox(MarkableListBox):
+  def __init__(self, app, body):
+    self.xs = xmms.get()
+    self.app = app
+    self.__super.__init__(body)
+
+  def cmd_same(self, args):
+    fields = args.split()
+    w, p = self.get_focus()
+    if w is not None:
+      info = self.xs.medialib_get_info(w.mid)
+      q = ' AND '.join('%s:"%s"' % (f, info[f]) for f in fields if info.get(f))
+      if q:
+        self.app.search(q)
+      else:
+        pass # TODO: error message
+
+  def cmd_insert(self, args):
+    pos = None
+    field = None
+    if args:
+      args = [a.strip() for a in args.split()]
+      relative = False
+
+      if args[0][0] in ('+', '-'):
+        relative = True
+
+      try:
+        pos = int(args[0])
+      except ValueError:
+        field = args[0]
+
+      if len(args) > 1:
+        field = args[1]
+
+      if pos:
+        if relative:
+          try:
+            cur = self.xs.playlist_current_pos()['position']
+            pos = cur + pos + (args[0][0] == '-' and 1 or 0)
+          except:
+            pos = None
+        else:
+          pos -= 1
+
+      if field:
+        self.insert_by_field(field, pos)
+        return
+
+    self.insert_marked(pos)
+
+  def insert_by_field(self, field, pos=None):
+    w, p = self.get_focus()
+
+    if w is None:
+      return
+
+    info = self.xs.medialib_get_info(w.mid)
+    if field not in info:
+      raise commands.CommandError("the song doesn't have a value for '%s'" % field)
+
+    c = coll.Equals(field=field, value=info[field].encode('utf-8'))
+
+    if pos is None:
+      self.xs.playlist_add_collection(c, ['id'], sync=False)
+    else:
+      self.xs.playlist_insert_collection(int(pos), c, ['id'], sync=False)
+
+    pos_s = pos is not None and "at position %d" % (pos+1) or ''
+    msg = 'added songs matching %s="%s" to playlist %s' % (field, info[field], pos_s)
+    signals.emit('show-message', msg)
+
+  def insert_marked(self, pos=None):
+    m = self.marked_data.values()
+
+    if not m:
+      w, p = self.get_focus()
+
+      if w is None:
+        return
+
+      m = [w.mid]
+
+    idl = coll.IDList()
+    idl.ids += m
+    if pos is None:
+      self.xs.playlist_add_collection(idl, ['id'], sync=False)
+    else:
+      self.xs.playlist_insert_collection(int(pos), idl, ['id'], sync=False)
+
+    n = len(idl.ids)
+    pos_s = pos is not None and "at position %d" % (pos+1) or ''
+    msg = "added %d song%s to playlist %s" % (n, n > 1 and 's' or '', pos_s)
+    signals.emit('show-message', msg)
+
+  def insert_marked_after_current(self):
+    def _cb(r):
+      if not r.iserror():
+        v = r.value()
+        if v == u'no current entry':
+          self.insert_marked()
+        else:
+          self.insert_marked(pos=v['position']+1)
+    self.xs.playlist_current_pos(cb=_cb, sync=False)
+
+  def get_mark_data(self, pos, w):
+    return w.mid
 
