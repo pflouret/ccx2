@@ -6,7 +6,7 @@ require 'rake/clean'
 require 'rake/packagetask'
 
 module Ccx2
-   VERSION = '0.1.1'
+   VERSION = '0.2.0'
 end
 
 VERSION_FILE_CONTENTS = %Q{
