@@ -1,8 +1,14 @@
+import sys
+
 from distutils.core import setup
 from glob import glob
 
+sys.path.insert(0, './src')
+
+import ccx2
+
 setup(name='ccx2',
-      version='0.1.1',
+      version=ccx2.__version__,
       description='console client for xmms2',
       author='Pablo Flouret',
       author_email='quuxbaz@gmail.com',
