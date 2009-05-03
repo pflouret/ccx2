@@ -66,7 +66,7 @@ class FormatParser(list):
     return self._fieldlist
 
   def eval(self, ctx):
-    return u' '.join(level.eval(ctx)[0] for level in self)
+    return reduce(lambda acc, l: acc + l, (level.eval(ctx)[0] for level in self), [])
 
   def _peek(self):
     try:
@@ -196,7 +196,7 @@ class Text(object):
     self.s = unicode(s)
 
   def fields(self): return []
-  def eval(self, ctx): return self.s, False
+  def eval(self, ctx): return [self.s], False
   def __str__(self): return u'Text(%r)' % self.s
   def __repr__(self): return str(self)
 
@@ -222,7 +222,7 @@ class Field(object):
     if b is None: b = v is not None
     if v is None: v = u''
 
-    return unicode(v), b
+    return [unicode(v)], b
 
   def __str__(self): return u'Field(%s)' % self.name
   def __repr__(self): return str(self)
@@ -242,10 +242,10 @@ class CondPart(object):
     bools = False
     for e in self.exprs:
       v, b = e.eval(ctx)
-      acc.append(v)
+      acc.extend(v)
       bools = bools or b
 
-    return u''.join(acc), bools
+    return acc, bools
 
   def __str__(self): return u'CondPart(%r)' % self.exprs
   def __repr__(self): return str(self)
@@ -282,7 +282,7 @@ class Cond(object):
         if b:
           return v, b
 
-    return u'', False
+    return [u''], False
 
   def __str__(self): return u'Cond(%r)' % self.parts
   def __repr__(self): return str(self)
@@ -307,10 +307,10 @@ class Level(list):
     bools = False
     for e in self:
       v, b = e.eval(ctx)
-      acc.append(v)
+      acc.extend(v)
       bools = bools or b
 
-    return u''.join(acc).strip(), bools
+    return acc, bools
 
   def __str__(self): return u'Level(%r)' % list(self)
   def __repr__(self): return str(self)
