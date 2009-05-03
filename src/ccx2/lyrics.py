@@ -215,6 +215,9 @@ class Lyrics(urwid.Pile):
         if self.focus_item == in_list_w:
           self.set_focus(self.llbw)
 
+      if not self.info.get('lyrics'):
+        self.info[('client/generic', 'lyrics')] = lyrics
+
       self.llb.set_rows([urwid.Text(l) for l in lyrics.split('\n')])
       self.set_info()
       self._invalidate()
