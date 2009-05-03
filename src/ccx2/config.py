@@ -74,6 +74,26 @@ _default_palette = {
     'progress-smooth': ('progress-smooth', 'dark red', 'light gray'),
 }
 
+_format_colors_palette = [
+    ('b', 'light blue', 'default'),
+    ('B', 'dark blue', 'default'),
+    ('c', 'light cyan', 'default'),
+    ('C', 'dark cyan', 'default'),
+    ('g', 'light green', 'default'),
+    ('G', 'dark green', 'default'),
+    ('m', 'light magenta', 'default'),
+    ('M', 'dark magenta', 'default'),
+    ('r', 'light red', 'default'),
+    ('R', 'dark red', 'default'),
+    ('a', 'light gray', 'default'),
+    ('A', 'dark gray', 'default'),
+    ('y', 'yellow', 'default'),
+    ('Y', 'brown', 'default'),
+    ('k', 'black', 'default'),
+    ('w', 'white', 'default'),
+    ('$', 'default', 'default'),
+]
+
 class Config(object):
   def __init__(self, path=None):
     if not path:
@@ -202,6 +222,9 @@ class Config(object):
         continue
 
       self._palette[key] = (key, fg, bg)
+
+    for e in _format_colors_palette:
+      self._palette[e[0]] = e
 
 
 DEFAULT_CONFIG = """
