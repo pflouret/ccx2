@@ -108,6 +108,7 @@ class AttrListBox(urwid.ListBox):
       if attr:
         canvas = urwid.CompositeCanvas(canvas)
         canvas.fill_attr(attr)
+
       if w_rows != canvas.rows():
         raise urwid.ListBoxError, BADROWSMSG % (`widget`,`w_pos`,w_rows, canvas.rows())
       rows += w_rows
@@ -175,7 +176,7 @@ class MarkableListBox(AttrListBox):
   def __init__(self, body):
     self._marked_data = {}
 
-    self.__super.__init__(body, attr='default', focus_attr='focus', focus_str='-focus')
+    self.__super.__init__(body, focus_attr='focus', focus_str='-focus')
 
   marked_data = property(lambda self: self._marked_data)
 
