@@ -397,7 +397,7 @@ class TextCanvas(Canvas):
 			i = 0
 			row = []
 			for (a, cs), run in attr_cs:
-				if a is None:
+				if def_attr:
 					a = def_attr
 				row.append((a, cs, text[i:i+run]))
 				i += run
