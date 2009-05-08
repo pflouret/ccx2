@@ -231,3 +231,7 @@ class InfoDialog(Dialog):
     self._w = self.make_overlay()
     signals.emit('need-redraw')
 
+  def keypress(self, size, key):
+    if key == 'esc':
+      signals.disconnect('window-resized', self.on_resize)
+    return self.__super.keypress(size, key)

@@ -27,6 +27,7 @@ import urwid
 from xmmsclient import collections as coll
 
 import commands
+import containers
 import signals
 import xmms
 
@@ -245,6 +246,12 @@ class SongListBox(MarkableListBox):
         self.app.search(q)
       else:
         pass # TODO: error message
+
+  def cmd_info(self, args):
+    w, p = self.get_focus()
+    if w:
+      info = self.xs.medialib_get_info(w.mid)
+      self.app.show_dialog(containers.InfoDialog(self.app, info, self.app.view.body)) # FIXME
 
   def cmd_insert(self, args):
     pos = None

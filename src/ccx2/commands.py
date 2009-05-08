@@ -197,6 +197,20 @@ help = {
                  'desc': "Search songs in the medialib with the same field values as "
                          "the current song."},
     },
+    'playlist and search': {
+        'info': {'usage': 'info',
+                 'desc': 'Show mediainfo for the focused track.'},
+        'insert': {'usage': 'insert [+<pos>|-<pos>|pos] [field]',
+                   'desc': "Insert the marked songs to a position in the playlist.\n"
+                           "If no songs are marked insert the focused song.\n"
+                           "If no position is given append the song to the playlist."
+                           "Relative positions are relative to the current playing song.\n"
+                           "If a field is given, songs that have the same field as the "
+                           "focused song will be added to the playlist.\n"},
+        'same': {'usage': 'same <fields>',
+                 'desc': "Search songs in the medialib with the same field values as "
+                         "the focused song."},
+    },
     'playlist': {
         'activate': {'usage': 'activate',
                      'desc': "Play the focused song."},
@@ -207,9 +221,6 @@ help = {
         'move': {'usage': 'move [+<pos>|-<pos>|<pos>]',
                  'desc': "Move marked songs to position or offset.\n"
                          "The focused song is moved if no songs are marked."},
-        'same': {'usage': 'same <fields>',
-                 'desc': "Search songs in the medialib with the same field values as "
-                         "the focused song."},
         'toggle': {'usage': 'toggle [<pos>]',
                    'desc': "Toggle mark on position or focused song if no position is given."},
         'unmark-all': {'usage': 'unmark-all',
@@ -230,13 +241,6 @@ help = {
     'search': {
         'cycle': {'usage': 'cycle',
                   'desc': "Cycle between the search input and results."},
-        'insert': {'usage': 'insert [+<pos>|-<pos>|pos] [field]',
-                   'desc': "Insert the marked songs to a position in the playlist.\n"
-                           "If no songs are marked insert the focused song.\n"
-                           "If no position is given append the song to the playlist."
-                           "Relative positions are relative to the current playing song.\n"
-                           "If a field is given, songs that have the same field as the "
-                           "focused song will be added to the playlist.\n"},
         'save': {'usage': 'save <collection-name>',
                  'desc': "Save the current search as a collection."},
         'toggle': {'usage': 'toggle [<pos>]',
