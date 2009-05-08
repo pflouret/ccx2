@@ -351,6 +351,18 @@ volume -2 = -
 ;   If :compilation is set it will print the :performer, otherwise it will
 ;   print the :artist.
 ;
+; Colors
+;
+; light blue      -> $b   dark blue    -> $B
+; light cyan      -> $c   dark cyan    -> $C
+; light green     -> $g   dark green   -> $G
+; light magenta   -> $m   dark magenta -> $M
+; light red       -> $r   dark red     -> $R
+; light gray      -> $a   dark gray    -> $A
+; yellow          -> $y   brown        -> $Y
+; black           -> $k   white        -> $w
+; default/nocolor -> $$
+;
 ; Reserved characters
 ;
 ; The characters : [ ] | > ? are reserved so the have to be escaped in most

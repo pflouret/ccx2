@@ -44,7 +44,7 @@ class FormatParser(list):
     self._px = self._x = 1
     self._py = self._y = 1
     self._line = 0
-    self._reserved = ':[]|>?'
+    self._reserved = ':[]|>?$'
 
     super(FormatParser, self).__init__([])
 
@@ -166,11 +166,49 @@ class FormatParser(list):
 
     return Cond(question_exprs, args)
 
+  def _parse_colored(self):
+    color = self._read()
+
+    colors = ['b','B','c','C','g','G','m','M','r','R','a','A','y','Y','k','w','$']
+
+    if not color or color not in colors:
+      return Text(u'$')
+
+    if color == '$':
+      return None
+
+    c = Colored(color)
+
+    while True:
+      e = None
+      ch = self._read()
+
+      if not ch:
+        break
+      elif ch == '$':
+        if self._peek() == '$':
+          self._read()
+          break
+        else:
+          e = self._parse_colored()
+      elif ch in (']', '|'):
+        self._unread()
+        break
+      else:
+        e = self._parse_expr(ch)
+
+      if e:
+        c.append(e)
+
+    return c
+
   def _parse_expr(self, ch):
     if ch == ':':
       return self._parse_field()
     elif ch == '[':
       return self._parse_cond()
+    elif ch == '$':
+      return self._parse_colored()
     elif ch in self._reserved: # reserved ch in non-interesting context
       return Text(ch)
     else:
@@ -198,6 +236,35 @@ class Text(object):
   def fields(self): return []
   def eval(self, ctx): return [self.s], False
   def __str__(self): return u'Text(%r)' % self.s
+  def __repr__(self): return str(self)
+
+class Colored(list):
+  def __init__(self, color, exprs=[]):
+    self.fieldlist = None
+    self.color = color
+    super(Colored, self).__init__(exprs)
+
+  def fields(self):
+    if self.fieldlist is not None:
+      return self.fieldlist
+
+    self.fieldlist = []
+    for e in self:
+      self.fieldlist.extend(e.fields())
+
+    return self.fieldlist
+
+  def eval(self, ctx):
+    acc = []
+    bools = False
+    for e in self:
+      v, b = e.eval(ctx)
+      acc.extend(v)
+      bools = bools or b
+
+    return [(self.color, acc)], bools
+
+  def __str__(self): return u'Colored(%s, %r)' % (self.color, list(self))
   def __repr__(self): return str(self)
 
 class Field(object):
