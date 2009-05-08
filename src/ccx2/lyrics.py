@@ -81,6 +81,7 @@ class FetcherThread(threading.Thread):
     if lyrics:
       self.save_lyrics(lyrics)
     else:
+      self.lyrics.set_info("no direct match, searching for results...")
       results = lw.get_song_results()
 
     if self.abort:
@@ -193,7 +194,7 @@ class Lyrics(urwid.Pile):
       if not url:
         lyrics = self.info.get('lyrics')
 
-        s = "%s %s" % (self.info['artist'], self.info['title'])
+        s = "%s %s" % (self.info.get('artist', ''), self.info.get('title', ''))
         self.input.set_edit_text(s)
         self.input.edit_pos = len(s)
 
