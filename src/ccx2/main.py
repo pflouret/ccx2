@@ -150,7 +150,7 @@ class StatusArea(urwid.Pile):
 
 
 signals.register('need-redraw')
-signals.register('need-redraw-non-urgent')
+signals.register('window-resized')
 
 class Ccx2(object):
   context_name = 'main'
@@ -277,6 +277,7 @@ class Ccx2(object):
         try:
           if k == 'window resize':
             self.size = self.ui.get_cols_rows()
+            signals.emit('window-resized', self.size)
           elif self.view.keypress(self.size, k) is None:
             continue
           elif self.cm.run_key(k, self.view.body.get_contexts() + [self]):
@@ -320,6 +321,12 @@ class Ccx2(object):
 
     self.view.set_focus('footer')
 
+  # FIXME
+  def show_dialog(self, dialog):
+    self.view.body = dialog
+    def r(w): self.view.body = self.tabcontainer
+    urwid.connect_signal(dialog, 'closed', r)
+
   def search(self, query=None):
     self.tabcontainer.load_tab_by_name('search')
     if query:
@@ -336,6 +343,10 @@ class Ccx2(object):
   def cmd_search(self, args): self.search(args)
   def cmd_shuffle(self, args): self.xs.playlist_shuffle(args or None, sync=False)
   def cmd_slow_as_hell(self, args): signals.emit('show-message', 'Indeed!')
+
+  def cmd_info(self, args):
+    info = self.xs.playback_current_info()
+    self.show_dialog(containers.InfoDialog(self, info, self.view.body))
 
   def cmd_keycode(self, args):
     signals.emit('show-message', "Press any key to see the config compatible keycode")
@@ -403,7 +414,6 @@ class Ccx2(object):
 
     s = "volume: " + ' '.join("%s:%d" % (c, v) for c, v in cur.iteritems())
     signals.emit('show-message', s)
-
 
 
 if __name__ == '__main__':

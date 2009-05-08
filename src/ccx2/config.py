@@ -58,7 +58,9 @@ def urwid_key_to_key(key):
 _default_palette = {
     'default': ('default','default','default'),
     'focus': ('focus','black','light gray'),
-    'dialog': ('dialog', 'black', 'light gray'),
+    'dialog-border': ('dialog-border', 'black', 'brown'),
+    'infodialog-odd': ('infodialog-odd', 'white', 'black'),
+    'infodialog-even': ('infodialog-even', 'light gray', 'black'),
     'marked': ('marked','yellow','default'),
     'marked-focus': ('marked-focus','black','brown'),
     'active': ('active','light blue', 'default'),
@@ -262,6 +264,7 @@ s = search
 activate = enter
 ; clear =
 cycle = tab
+info = i
 insert = a
 insert +1 = w
 insert +1 album = ctrl-b
@@ -409,7 +412,9 @@ nowplaying =
 
 default = default,default
 focus = black,light gray
-dialog = black,light gray
+dialog-border = black,brown
+infodialog-odd = white,black
+infodialog-even = light gray,black
 marked = yellow,default
 marked-focus = black,brown
 active = light blue,default

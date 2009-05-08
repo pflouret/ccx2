@@ -128,6 +128,7 @@ _commands = set([
     'activate',
     'clear',
     'cycle',
+    'info',
     'insert',
     'goto',
     'keycode',
@@ -188,6 +189,8 @@ help = {
                          'desc': "Complain about ccx2's speed."},
         'volume': {'usage': 'volume [+<value>|-<value>|<value>]',
                    'desc': 'Get or set the volume for all channels. Value range is 0-100.'},
+        'info': {'usage': 'info',
+                 'desc': 'Show mediainfo for the current track.'},
     },
     'nowplaying': {
         'same': {'usage': 'same <fields>',
