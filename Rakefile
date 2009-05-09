@@ -35,7 +35,7 @@ task :versiondev do
       commit = `git log -1 --pretty=format:%h`.chomp
       branch = `git branch`.split("\n").grep(/^\*/).first
       branch.chomp! if branch
-      branch = (branch if branch && !branch.empty? && branch != "* master") || nil
+      branch = (branch.gsub(/^\* /, '') if branch && !branch.empty? && branch != "* master") || nil
       additional = "#{'-'+branch if branch}#{'-'+commit if commit}"
       additional = "-git-#{Date.today.strftime('%Y%m%d')}#{additional}" if additional
    end
