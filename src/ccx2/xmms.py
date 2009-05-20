@@ -81,10 +81,14 @@ signals.register('xmms-medialib-entry-changed')
 # namespace:string (if present, or None)
 # new_name:string (if present, or None)
 signals.register('xmms-collection-changed')
+
+# args --
+# channels:dict(channel=>value)
+signals.register('xmms-playback-volume-changed')
+
 signals.register('xmms-configval-changed')
 signals.register('xmms-mediainfo-reader-status')
 signals.register('xmms-medialib-entry-added')
-signals.register('xmms-playback-volume-changed')
 signals.register('xmms-playlist-current-pos')
 
 _objects = {}
@@ -172,6 +176,7 @@ class XmmsService(object):
   def connect_signals(self):
     self.xmms.broadcast_playback_current_id(self._on_playback_current_id)
     self.xmms.broadcast_playback_status(self._simple_emit_fun('xmms-playback-status'))
+    self.xmms.broadcast_playback_volume_changed(self._on_playback_volume_changed)
     self.xmms.broadcast_playlist_loaded(self._simple_emit_fun('xmms-playlist-loaded'))
     self.xmms.broadcast_playlist_current_pos(self._on_playlist_current_pos)
     self.xmms.broadcast_playlist_changed(self._on_playlist_changed)
@@ -185,7 +190,6 @@ class XmmsService(object):
     #self.xmms.broadcast_configval_changed()
     #self.xmms.broadcast_mediainfo_reader_status()
     #self.xmms.broadcast_medialib_entry_added()
-    #self.xmms.broadcast_playback_volume_changed()
 
   def _on_collection_changed(self, r):
     if not r.iserror():
@@ -224,6 +228,11 @@ class XmmsService(object):
     signals.emit('xmms-playback-playtime', r.value())
     PlaybackPlaytimeTimer(0.2, self.xmms, self._on_playback_playtime).start()
     return False
+
+  def _on_playback_volume_changed(self, r):
+    if not r.iserror():
+      channels = r.value()
+      signals.emit('xmms-playback-volume-changed', channels)
 
   def bindata_retrieve(self, hash, cb=None, sync=True):
     if sync:

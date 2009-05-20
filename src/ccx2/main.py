@@ -115,6 +115,7 @@ class StatusArea(urwid.Pile):
 
     self.__super.__init__([self.status, self._empty], 1)
 
+    signals.connect('xmms-playback-volume-changed', self.on_xmms_playback_volume_changed)
     signals.connect('show-message', self.set_message)
     signals.connect('clear-message', lambda: self.clear_message(clear_loading=True))
 
@@ -122,6 +123,10 @@ class StatusArea(urwid.Pile):
     self.widget_list[1] = self._empty
     self.set_focus(1)
     self._invalidate()
+
+  def on_xmms_playback_volume_changed(self, channels):
+    s = "volume: " + ' '.join("%s:%d" % (c, v) for c, v in channels.iteritems())
+    self.set_message(s)
 
   def set_message(self, msg, type='info'):
     self.last_type = type
