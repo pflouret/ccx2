@@ -199,17 +199,23 @@ class Ccx2(object):
     except:
       pass
 
-    pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
-                           ('fixed', 1, urwid.SolidFill(u'\u2502')),
-                           ('weight', 5, playlist.Playlist(self))],
-                          dividechars=1, focus_column=2)
-
     show_cover = self.config.show_cover and self.colors == 256 and self.config.has_pil
 
+    if self.config.playlist_switcher_in_own_tab:
+      pview = [('playlist', playlist.Playlist(self)),
+               ('pls-switcher', playlist.PlaylistSwitcher(self))]
+    else:
+      pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
+                             ('fixed', 1, urwid.SolidFill(u'\u2502')),
+                             ('weight', 5, playlist.Playlist(self))],
+                             dividechars=1, focus_column=2)
+      pview = [('playlist', pview)]
+
+
     tabs = [('help', help.Help(self)),
-            ('now playing', nowplaying.NowPlaying(self, show_cover=show_cover)),
-            ('playlist', pview),
-            ('search', search.Search(self))]
+            ('now playing', nowplaying.NowPlaying(self, show_cover=show_cover))]
+    tabs.extend(pview)
+    tabs.append(('search', search.Search(self)))
 
     if self.config.show_lyrics:
       tabs.append(('lyrics', lyrics.Lyrics(self)))

@@ -190,7 +190,8 @@ class Config(object):
     for k, v in self.cp.items('options'):
       if k in ('search-find-as-you-type',
                'autostart-server',
-               'show-cover'):
+               'show-cover',
+               'playlist-switcher-in-own-tab'):
         setattr(self, rx.sub('_', k), self.cp.getboolean('options', k))
       else:
         setattr(self, rx.sub('_', k), v)
@@ -237,6 +238,8 @@ autostart-server = yes
 search-find-as-you-type = yes
 ; show album cover in now playing, if possible
 show-cover = yes
+; show the playlist switcher in a separate tab
+playlist-switcher-in-own-tab = no
 
 ; format strings to use, define them in the formatting section
 ; format for the now playing tab
