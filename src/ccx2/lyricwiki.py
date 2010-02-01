@@ -18,14 +18,11 @@ try:
 except ImportError:
   pass
 
-from pprint import pprint
-
 socket.setdefaulttimeout(5)
 
-LYRICWIKI_URL = u'http://lyricwiki.org'
-GOOGLE_URL = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=%s+" \
-             "-inurl%%3Aindex.php+-inurl%%3Aapi.php+-inurl%%3A%%22Category%%3A%%22+" \
-             "site%%3Alyricwiki.org&rsz=large&hl=en&safe=off"
+LYRICWIKI_URL = u'http://lyrics.wikia.org'
+YQL_URL = "http://query.yahooapis.com/v1/public/yql?q=select%%20title,url%%20from%%20search.web%%20where%%20query%%3D%%22%s%%20-inurl%%3ACategory%%20site%%3Alyrics.wikia.com%%22%%20and%%20title%%20like%%20%%22%%25%%3A%%25%%22&format=json"
+# "http://query.yahooapis.com/v1/public/yql?q=select%20title,url%20from%20search.web%20where%20query%3D%22XXXXX%20-inurl%3ACategory%20site%3Alyrics.wikia.com%22%20and%20title%20like%20%22%25%3A%25%22&format=json&callback=cbfunc"
 
 year_rx = re.compile(r'\s*\(\d{4}\)$')
 sym_rx = re.compile(r'[^a-zA-Z0-9 ]')
@@ -46,7 +43,7 @@ def do_request(req):
   return r.read()
 
 def get_google_results(query):
-  url = GOOGLE_URL % urllib.quote_plus(query.encode('utf-8'))
+  url = YQL_URL % urllib.quote_plus(query.encode('utf-8'))
 
   response = do_request(url)
 
@@ -54,10 +51,15 @@ def get_google_results(query):
 
   r = json.loads(response)
 
-  if r["responseStatus"] != 200: return []
+  if not r["query"]["results"]: return []
 
-  return [(e["titleNoFormatting"].replace(' - Lyrics from LyricWiki', ''), e["url"])
-          for e in r["responseData"]["results"]]
+  if type(r["query"]["results"]) == type([]):
+    r["query"]["results"] = [r["query"]["results"]]
+  if type(r["query"]["results"]["result"]) != type([]):
+    r["query"]["results"]["result"] = [r["query"]["results"]["result"]]
+
+  return [(re.sub(' Lyrics -.*', '', lxml.html.fromstring(e["title"]).text_content()), e["url"])
+          for e in r["query"]["results"]["result"]]
 
 def get_lyrics(url):
   html = do_request(url)
@@ -71,10 +73,11 @@ def get_lyrics(url):
   except IndexError:
     return None
 
-  if lyricbox.text is None:
-    return None
-  
-  return "%s\n%s" % (lyricbox.text, '\n'.join([br.tail or "" for br in lyricbox.findall('br')]))
+  for e in lyricbox.getchildren():
+    if e.tag != 'br':
+      e.drop_tree()
+
+  return '\n'.join(lyricbox.itertext()) or None
 
 class LyricWiki(object):
   def __init__(self, artist, title, album=None, tracknr=None):
