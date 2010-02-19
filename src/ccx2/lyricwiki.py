@@ -157,7 +157,7 @@ class LyricWiki(object):
           a = e.cssselect('a')[0]
           if '(page does not exist)' not in a.get('title'):
             al[i+1] = a
-        except TypeError, IndexError:
+        except (TypeError, IndexError):
           pass
       if not al: del albums[album]
 
