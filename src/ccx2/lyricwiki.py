@@ -77,7 +77,8 @@ def get_lyrics(url):
     if e.tag != 'br':
       e.drop_tree()
 
-  return '\n'.join(lyricbox.itertext()) or None
+  lines = [lyricbox.itertext().next()] + [b.tail or "" for b in lyricbox.getchildren()]
+  return '\n'.join(lines) or None
 
 class LyricWiki(object):
   def __init__(self, artist, title, album=None, tracknr=None):
