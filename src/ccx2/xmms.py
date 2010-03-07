@@ -491,11 +491,11 @@ class XmmsService(object):
 
   def playlist_play_pos(self, pos, relative=False):
     def __status_cb(res):
-      self.playlist_set_next(pos, relative=relative, sync=False)
-      self.playback_tickle(sync=False)
-
       if res.value() != xmmsclient.PLAYBACK_STATUS_PLAY:
         self.playback_start(sync=False)
+
+      self.playlist_set_next(pos, relative=relative, sync=False)
+      self.playback_tickle(sync=False)
 
     self.playback_status(cb=__status_cb, sync=False)
 
