@@ -3,7 +3,7 @@ ccx2
 
 A console client for the XMMS2 music player.
 
-http://palbo.github.com/ccx2
+http://pflouret.github.com/ccx2
 
 
 Requirements
