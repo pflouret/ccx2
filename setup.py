@@ -21,6 +21,11 @@ setup(name='ccx2',
             'ccx2 = ccx2.__main__:main',
         ],
       },
-      requires=[],
+      install_requires=[
+        'Pillow',
+        'simplejson',
+        'urwid',
+        # also Python 3 xmmsclient from https://github.com/xmms2/xmms2-devel/tree/master/src/clients/lib/python
+      ],
      )
 
