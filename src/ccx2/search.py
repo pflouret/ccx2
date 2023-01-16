@@ -27,7 +27,7 @@ import re
 import threading
 import time
 
-from . import urwid
+import urwid
 import xmmsclient.collections as coll
 
 from . import collutil

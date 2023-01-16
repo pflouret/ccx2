@@ -24,8 +24,8 @@
 
 import time
 
-from . import urwid
-from . import urwid.display_common
+import urwid
+import urwid.display_common
 import xmmsclient
 
 from . import commands

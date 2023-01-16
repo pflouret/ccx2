@@ -33,9 +33,9 @@ import time
 import warnings
 
 warnings.filterwarnings('ignore', category=DeprecationWarning)
-from . import urwid
-from . import urwid.curses_display
-from . import urwid.raw_display
+import urwid
+import urwid.curses_display
+import urwid.raw_display
 warnings.filterwarnings('default', category=DeprecationWarning)
 
 import xmmsclient
