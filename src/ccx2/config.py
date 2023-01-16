@@ -99,7 +99,7 @@ _format_colors_palette = [
 class Config(object):
   def __init__(self, path=None):
     if not path:
-      confdir = xmmsclient.userconfdir_get()
+      confdir = xmmsclient.userconfdir_get().decode()
       path = os.path.join(confdir, 'clients', 'ccx2')
 
       try:
