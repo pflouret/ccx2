@@ -26,7 +26,6 @@ import urwid
 import xmmsclient
 
 from xmmsclient import collections as coll
-from xmmsclient.sync import XMMSError
 
 from . import collutil
 from . import commands
