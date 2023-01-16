@@ -15,7 +15,7 @@ setup(name='ccx2',
       url='https://github.com/pflouret/ccx2',
       download_url='',
       packages=['ccx2'],
-      package_dir={'ccx2': 'src/ccx2'},
+      package_dir={'': 'src'},
       entry_points={
         'console_scripts': [
             'ccx2 = ccx2.__main__:main',
