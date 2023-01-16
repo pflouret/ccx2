@@ -21,6 +21,7 @@ setup(name='ccx2',
             'ccx2 = ccx2.__main__:main',
         ],
       },
+      python_requires='>=3.7',
       install_requires=[
         'Pillow',
         'simplejson',
