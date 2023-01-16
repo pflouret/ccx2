@@ -57,7 +57,7 @@ class CommandMap:
 		del self._command[key]
 	
 	def clear_command(self, command):
-		dk = [k for k, v in self._command.items() if v == command]
+		dk = [k for k, v in list(self._command.items()) if v == command]
 		for k in dk:
 			del self._command[key]
 command_map = CommandMap() # shared command mappings

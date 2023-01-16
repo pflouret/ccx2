@@ -19,14 +19,15 @@
 #
 # Urwid web site: http://excess.org/urwid/
 
-from util import *
-import signals
-import text_layout
-from canvas import *
-from monitored_list import MonitoredList
-from command_map import command_map
-from signals import connect_signal, connect_signal, disconnect_signal
-from split_repr import split_repr, remove_defaults
+from .util import *
+from . import signals
+from . import text_layout
+from .canvas import *
+from .monitored_list import MonitoredList
+from .command_map import command_map
+from .signals import connect_signal, connect_signal, disconnect_signal
+from .split_repr import split_repr, remove_defaults
+from functools import reduce
 
 try: sum # old python?
 except: sum = lambda l: reduce(lambda a,b: a+b, l, 0)
@@ -197,11 +198,10 @@ def cache_widget_rows(cls):
     return cached_rows
 
 
-class Widget(object):
+class Widget(object, metaclass=WidgetMeta):
     """
     base class of widgets
     """
-    __metaclass__ = WidgetMeta
     _selectable = False
     _sizing = set([])
 
@@ -315,7 +315,7 @@ def fixed_size(size):
     """
     if size != ():
         raise ValueError("FixedWidget takes only () for size." \
-            "passed: %s" % `size`)
+            "passed: %s" % repr(size))
 
 class FixedWidget(Widget):
     """
@@ -543,7 +543,7 @@ class Text(FlowWidget):
         """
         if not self.layout.supports_align_mode(mode):
             raise TextError("Alignment mode %s not supported."%
-                `mode`)
+                repr(mode))
         self._align_mode = mode
         self._invalidate()
 
@@ -573,7 +573,7 @@ class Text(FlowWidget):
         TextError: Wrap mode 'somehow' not supported.
         """
         if not self.layout.supports_wrap_mode(mode):
-            raise TextError("Wrap mode %s not supported."%`mode`)
+            raise TextError("Wrap mode %s not supported."%repr(mode))
         self._wrap_mode = mode
         self._invalidate()
 
@@ -909,7 +909,7 @@ class Edit(Text):
         >>> e.edit_text
         'no'
         """
-        if type(text) not in [type(""), type(u"")]:
+        if type(text) not in [type(""), type("")]:
             raise EditError("Edit text must be a string.")
         self.highlight = None
         self._emit("change", text)
@@ -1238,7 +1238,7 @@ class IntEdit(Edit):
         True
         """
         if self.edit_text:
-            return long(self.edit_text)
+            return int(self.edit_text)
         else:
             return 0
 

@@ -20,16 +20,16 @@
 #
 # Urwid web site: http://excess.org/urwid/
 
-from __future__ import nested_scopes
 
-import escape
+
+from . import escape
 
 import encodings
 
 try:
 	import str_util
 except ImportError:
-	import old_str_util as str_util
+	from . import old_str_util as str_util
 
 # bring str_util functions into our namespace
 calc_text_pos = str_util.calc_text_pos
@@ -41,7 +41,7 @@ within_double_byte = str_util.within_double_byte
 
 
 try: enumerate
-except: enumerate = lambda x: zip(range(len(x)),x) # old python
+except: enumerate = lambda x: list(zip(list(range(len(x))),x)) # old python
 
 
 # Try to determine if using a supported double-byte encoding
@@ -54,7 +54,7 @@ try:
 	detected_encoding = locale.getlocale()[1]
 	if not detected_encoding:
 		detected_encoding = ""
-except ValueError, e:
+except ValueError as e:
 	# with invalid LANG value python will throw ValueError
 	if e.args and e.args[0].startswith("unknown locale"):
 		detected_encoding = ""
@@ -94,7 +94,7 @@ def set_encoding( encoding ):
 	_target_encoding = 'ascii'
 	try:	
 		if encoding:
-			u"".encode(encoding)
+			"".encode(encoding)
 			_target_encoding = encoding
 	except LookupError: pass
 
@@ -112,7 +112,7 @@ def apply_target_encoding( s ):
 	"""
 	Return (encoded byte string, character set rle).
 	"""
-	if _use_dec_special and type(s) == type(u""):
+	if _use_dec_special and type(s) == type(""):
 		# first convert drawing characters
 		try:
 			s = s.translate( escape.DEC_SPECIAL_CHARMAP )
@@ -122,8 +122,8 @@ def apply_target_encoding( s ):
 					escape.ALT_DEC_SPECIAL_CHARS):
 				s = s.replace( c, escape.SO+alt+escape.SI )
 	
-	if type(s) == type(u""):
-		s = s.replace( escape.SI+escape.SO, u"" ) # remove redundant shifts
+	if type(s) == type(""):
+		s = s.replace( escape.SI+escape.SO, "" ) # remove redundant shifts
 		s = s.encode( _target_encoding )
 
 	sis = s.split( escape.SO )
@@ -270,18 +270,19 @@ def rle_len( rle ):
 	
 	run = 0
 	for v in rle:
-		assert type(v) == type(()), `rle`
+		assert type(v) == type(()), repr(rle)
 		a, r = v
 		run += r
 	return run
 
-def rle_append_beginning_modify( rle, (a, r) ):
+def rle_append_beginning_modify( rle, xxx_todo_changeme ):
 	"""
 	Append (a, r) to BEGINNING of rle.
 	Merge with first run when possible
 
 	MODIFIES rle parameter contents. Returns None.
 	"""
+	(a, r) = xxx_todo_changeme
 	if not rle:
 		rle[:] = [(a, r)]
 	else:	
@@ -292,13 +293,14 @@ def rle_append_beginning_modify( rle, (a, r) ):
 			rle[0:0] = [(al, r)]
 			
 			
-def rle_append_modify( rle, (a, r) ):
+def rle_append_modify( rle, xxx_todo_changeme1 ):
 	"""
 	Append (a,r) to the rle list rle.
 	Merge with last run when possible.
 	
 	MODIFIES rle parameter contents. Returns None.
 	"""
+	(a, r) = xxx_todo_changeme1
 	if not rle or rle[-1][0] != a:
 		rle.append( (a,r) )
 		return
@@ -378,7 +380,7 @@ def _tagmarkup_recurse( tm, attr ):
 	tm -- tagmarkup
 	attr -- current attribute or None"""
 	
-	if type(tm) == type("") or type(tm) == type( u"" ):
+	if type(tm) == type("") or type(tm) == type( "" ):
 		# text
 		return [tm], [(attr, len(tm))]
 		
@@ -402,12 +404,12 @@ def _tagmarkup_recurse( tm, attr ):
 	if type(tm) == type(()):
 		# tuples mark a new attribute boundary
 		if len(tm) != 2: 
-			raise TagMarkupException, "Tuples must be in the form (attribute, tagmarkup): %s" % `tm`
+			raise TagMarkupException("Tuples must be in the form (attribute, tagmarkup): %s" % repr(tm))
 
 		attr, element = tm
 		return _tagmarkup_recurse( element, attr )
 	
-	raise TagMarkupException, "Invalid markup element: %s" % `tm`
+	raise TagMarkupException("Invalid markup element: %s" % repr(tm))
 
 
 def is_mouse_event( ev ):
@@ -423,7 +425,7 @@ class MetaSuper(type):
 	def __init__(cls, name, bases, d):
 		super(MetaSuper, cls).__init__(name, bases, d)
 		if hasattr(cls, "_%s__super" % name):
-			raise AttributeError, "Class has same name as one of its super classes"
+			raise AttributeError("Class has same name as one of its super classes")
 		setattr(cls, "_%s__super" % name, super(cls))
 
 

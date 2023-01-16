@@ -160,9 +160,9 @@ def calc_text_pos( text, start_offs, end_offs, pref_col ):
 	
 	Returns (position, actual_col).
 	"""
-	assert start_offs <= end_offs, `start_offs, end_offs`
+	assert start_offs <= end_offs, repr((start_offs, end_offs))
 	utfs = (type(text) == type("") and _byte_encoding == "utf8")
-	if type(text) == type(u"") or utfs:
+	if type(text) == type("") or utfs:
 		i = start_offs
 		sc = 0
 		n = 1 # number to advance by
@@ -178,7 +178,7 @@ def calc_text_pos( text, start_offs, end_offs, pref_col ):
 			i = n
 			sc += w
 		return i, sc
-	assert type(text) == type(""), `text`
+	assert type(text) == type(""), repr(text)
 	# "wide" and "narrow"
 	i = start_offs+pref_col
 	if i >= end_offs:
@@ -192,9 +192,9 @@ def calc_width( text, start_offs, end_offs ):
 	"""
 	Return the screen column width of text between start_offs and end_offs.
 	"""
-	assert start_offs <= end_offs, `start_offs, end_offs`
+	assert start_offs <= end_offs, repr((start_offs, end_offs))
 	utfs = (type(text) == type("") and _byte_encoding == "utf8")
-	if (type(text) == type(u"") or utfs) and not SAFE_ASCII_RE.match(text):
+	if (type(text) == type("") or utfs) and not SAFE_ASCII_RE.match(text):
 		i = start_offs
 		sc = 0
 		n = 1 # number to advance by
@@ -215,7 +215,7 @@ def is_wide_char( text, offs ):
 	"""
 	Test if the character at offs within text is wide.
 	"""
-	if type(text) == type(u""):
+	if type(text) == type(""):
 		o = ord(text[offs])
 		return get_width(o) == 2
 	assert type(text) == type("")
@@ -231,7 +231,7 @@ def move_prev_char( text, start_offs, end_offs ):
 	Return the position of the character before end_offs.
 	"""
 	assert start_offs < end_offs
-	if type(text) == type(u""):
+	if type(text) == type(""):
 		return end_offs-1
 	assert type(text) == type("")
 	if _byte_encoding == "utf8":
@@ -249,7 +249,7 @@ def move_next_char( text, start_offs, end_offs ):
 	Return the position of the character after start_offs.
 	"""
 	assert start_offs < end_offs
-	if type(text) == type(u""):
+	if type(text) == type(""):
 		return start_offs+1
 	assert type(text) == type("")
 	if _byte_encoding == "utf8":
@@ -331,10 +331,10 @@ def process_east_asian_width():
 			out.append( (num, l) )
 			last = l
 
-	print "widths = ["
+	print("widths = [")
 	for o in out[1:]:  # treat control characters same as ascii
-		print "\t"+`o`+","
-	print "]"
+		print("\t"+repr(o)+",")
+	print("]")
 		
 if __name__ == "__main__":
 	process_east_asian_width()

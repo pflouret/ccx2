@@ -24,8 +24,8 @@ import time
 import heapq
 
 
-from util import *
-from command_map import command_map
+from .util import *
+from .command_map import command_map
 
 
 class ExitMainLoop(Exception):
@@ -50,7 +50,7 @@ class GenericMainLoop(object):
         self.handle_mouse = handle_mouse
         
         if not screen:
-            import raw_display
+            from . import raw_display
             screen = raw_display.Screen()
 
         if palette:
@@ -249,7 +249,7 @@ def generic_main_loop(topmost_widget, palette=[], screen=None,
                 size = screen.get_cols_rows()
     
     if not screen:
-        import raw_display
+        from . import raw_display
         screen = raw_display.Screen()
 
     if palette:
@@ -386,7 +386,7 @@ def twisted_main_loop(topmost_widget, palette=[], screen=None,
                 self.stop(Failure())
 
     if not screen:
-        import raw_display
+        from . import raw_display
         screen = raw_display.Screen()
 
     if palette:

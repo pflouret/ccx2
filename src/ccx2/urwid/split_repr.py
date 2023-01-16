@@ -44,7 +44,7 @@ def split_repr(self):
     >>> Bar()
     <Bar words here too attrs='appear too' barttr=42>
     """
-    alist = self._repr_attrs().items()
+    alist = list(self._repr_attrs().items())
     alist.sort()
     words = self._repr_words()
     if not words and not alist:
@@ -92,9 +92,9 @@ def remove_defaults(d, fn):
         del args[-1]
 
     # create adictionary of args with default values
-    ddict = dict(zip(args[len(args) - len(defaults):], defaults))
+    ddict = dict(list(zip(args[len(args) - len(defaults):], defaults)))
 
-    for k, v in d.items():
+    for k, v in list(d.items()):
         if k in ddict:
             # remove values that match their defaults
             if ddict[k] == v:

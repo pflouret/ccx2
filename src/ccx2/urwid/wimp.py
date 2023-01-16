@@ -19,9 +19,9 @@
 #
 # Urwid web site: http://excess.org/urwid/
 
-from widget import *
-from container import *
-from command_map import command_map
+from .widget import *
+from .container import *
+from .command_map import command_map
 
 
 class SelectableIcon(Text):

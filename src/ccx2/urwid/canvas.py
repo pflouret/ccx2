@@ -19,12 +19,12 @@
 #
 # Urwid web site: http://excess.org/urwid/
 
-from __future__ import generators
+
 import weakref
 
-from util import *
-from escape import * 
-from text_layout import *
+from .util import *
+from .escape import * 
+from .text_layout import *
 
 import sys
 
@@ -118,7 +118,7 @@ class CanvasCache(object):
 		Remove all canvases cached for widget.
 		"""
 		try:
-			for ref in cls._widgets[widget].values():
+			for ref in list(cls._widgets[widget].values()):
 				try:
 					del cls._refs[ref]
 				except KeyError:
@@ -270,7 +270,7 @@ class Canvas(object):
 		Return coords shifted by (dx, dy).
 		"""
 		d = {}
-		for name, (x, y, data) in self.coords.items():
+		for name, (x, y, data) in list(self.coords.items()):
 			d[name] = (x+dx, y+dy, data)
 		return d
 
@@ -298,7 +298,7 @@ class TextCanvas(Canvas):
 			widths = []
 			for t in text:
 				if type(t) != type(""):
-					raise CanvasError("Canvas text must be plain strings encoded in the screen's encoding", `text`)
+					raise CanvasError("Canvas text must be plain strings encoded in the screen's encoding", repr(text))
 				widths.append( calc_width( t, 0, len(t)) )
 		else:
 			assert type(maxcol) == type(0)
@@ -320,18 +320,18 @@ class TextCanvas(Canvas):
 		for i in range(len(text)):
 			w = widths[i]
 			if w > maxcol: 
-				raise CanvasError("Canvas text is wider than the maxcol specified \n%s\n%s\n%s"%(`maxcol`,`widths`,`text`))
+				raise CanvasError("Canvas text is wider than the maxcol specified \n%s\n%s\n%s"%(repr(maxcol),repr(widths),repr(text)))
 			if w < maxcol:
 				text[i] = text[i] + " "*(maxcol-w)
 			a_gap = len(text[i]) - rle_len( attr[i] )
 			if a_gap < 0:
-				raise CanvasError("Attribute extends beyond text \n%s\n%s" % (`text[i]`,`attr[i]`) )
+				raise CanvasError("Attribute extends beyond text \n%s\n%s" % (repr(text[i]),repr(attr[i])) )
 			if a_gap:
 				rle_append_modify( attr[i], (None, a_gap))
 			
 			cs_gap = len(text[i]) - rle_len( cs[i] )
 			if cs_gap < 0:
-				raise CanvasError("Character Set extends beyond text \n%s\n%s" % (`text[i]`,`cs[i]`) )
+				raise CanvasError("Character Set extends beyond text \n%s\n%s" % (repr(text[i]),repr(cs[i])) )
 			if cs_gap:
 				rle_append_modify( cs[i], (None, cs_gap))
 			
@@ -381,12 +381,12 @@ class TextCanvas(Canvas):
 		assert rows > 0 and trim_top + rows <= maxrow
 		
 		if trim_top or rows < maxrow:
-			text_attr_cs = zip(
+			text_attr_cs = list(zip(
 				self._text[trim_top:trim_top+rows],
 				self._attr[trim_top:trim_top+rows], 
-				self._cs[trim_top:trim_top+rows])
+				self._cs[trim_top:trim_top+rows]))
 		else:
-			text_attr_cs = zip(self._text, self._attr, self._cs)
+			text_attr_cs = list(zip(self._text, self._attr, self._cs))
 		
 		for text, a_row, cs_row in text_attr_cs:
 			if trim_left or cols < self._maxcol:
@@ -689,8 +689,8 @@ class CompositeCanvas(Canvas):
 		right = self.cols() - left - width
 		bottom = self.rows() - top - height
 		
-		assert right >= 0, "top canvas of overlay not the size expected!" + `other.cols(),left,right,width`
-		assert bottom >= 0, "top canvas of overlay not the size expected!" + `other.rows(),top,bottom,height`
+		assert right >= 0, "top canvas of overlay not the size expected!" + repr((other.cols(),left,right,width))
+		assert bottom >= 0, "top canvas of overlay not the size expected!" + repr((other.rows(),top,bottom,height))
 
 		shards = self.shards
 		top_shards = []
@@ -764,7 +764,7 @@ def shard_body_row(sbody):
 	row = []
 	for done_rows, content_iter, cview in sbody:
 		if content_iter:
-			row.extend(content_iter.next())
+			row.extend(next(content_iter))
 		else:
 			# need to skip this unchanged canvas
 			if row and type(row[-1]) == type(0):
@@ -803,10 +803,10 @@ def shards_delta(shards, other_shards):
 	done = other_done = 0
 	for num_rows, cviews in shards:
 		if other_num_rows is None:
-			other_num_rows, other_cviews = other_shards_iter.next()
+			other_num_rows, other_cviews = next(other_shards_iter)
 		while other_done < done:
 			other_done += other_num_rows
-			other_num_rows, other_cviews = other_shards_iter.next()
+			other_num_rows, other_cviews = next(other_shards_iter)
 		if other_done > done:
 			yield (num_rows, cviews)
 			done += num_rows
@@ -825,10 +825,10 @@ def shard_cviews_delta(cviews, other_cviews):
 	cols = other_cols = 0
 	for cv in cviews:
 		if other_cv is None:
-			other_cv = other_cviews_iter.next()
+			other_cv = next(other_cviews_iter)
 		while other_cols < cols:
 			other_cols += other_cv[2]
-			other_cv = other_cviews_iter.next()
+			other_cv = next(other_cviews_iter)
 		if other_cols > cols:
 			yield cv
 			cols += cv[2]
@@ -862,7 +862,7 @@ def shard_body(cviews, shard_tail, create_iter=True, iter_default=None):
 	for col_gap, done_rows, content_iter, tail_cview in shard_tail:
 		while col_gap:
 			try:
-				cview = cviews_iter.next()
+				cview = next(cviews_iter)
 			except StopIteration:
 				raise CanvasError("cviews do not fill gaps in"
 					" shard_tail!")
@@ -994,7 +994,7 @@ def shards_join(shard_lists):
 	All shards lists must have the same number of rows.
 	"""
 	shards_iters = [iter(sl) for sl in shard_lists]
-	shards_current = [i.next() for i in shards_iters]
+	shards_current = [next(i) for i in shards_iters]
 
 	new_shards = []
 	while True:
@@ -1015,7 +1015,7 @@ def shards_join(shard_lists):
 			for i in range(len(shards_current)):
 				if shards_current[i][0] > 0:
 					continue
-				shards_current[i] = shards_iters[i].next()
+				shards_current[i] = next(shards_iters[i])
 		except StopIteration:
 			break
 	return new_shards
@@ -1058,7 +1058,7 @@ def CanvasCombine(l):
 		children.append((0, row, canv, pos))
 		shards.extend(canv.shards)
 		combined_canvas.coords.update(canv.translate_coords(0, row))
-		for shortcut in canv.shortcuts.keys():
+		for shortcut in list(canv.shortcuts.keys()):
 			combined_canvas.shortcuts[shortcut] = pos
 		row += canv.rows()
 		n += 1
@@ -1081,7 +1081,7 @@ def CanvasOverlay(top_c, bottom_c, left, top):
 	overlayed_canvas.children = [(left, top, top_c, None), 
 		(0, 0, bottom_c, None)]
 	overlayed_canvas.shortcuts = {} # disable background shortcuts
-	for shortcut in top_c.shortcuts.keys():
+	for shortcut in list(top_c.shortcuts.keys()):
 		overlayed_canvas.shortcuts[shortcut]="fg"
 	return overlayed_canvas
 
@@ -1122,7 +1122,7 @@ def CanvasJoin(l):
 		if rows < maxrow:
 			canv.pad_trim_top_bottom(0, maxrow - rows)
 		joined_canvas.coords.update(canv.translate_coords(col, 0))
-		for shortcut in canv.shortcuts.keys():
+		for shortcut in list(canv.shortcuts.keys()):
 			joined_canvas.shortcuts[shortcut] = pos
 		shard_lists.append(canv.shards)
 		children.append((col, 0, canv, pos))
@@ -1138,7 +1138,7 @@ def CanvasJoin(l):
 
 
 def apply_text_layout(text, attr, ls, maxcol):
-	utext = type(text)==type(u"")
+	utext = type(text)==type("")
 	t = []
 	a = []
 	c = []

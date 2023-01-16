@@ -27,7 +27,7 @@ import sys
 import signal
 import random
 import select
-import util
+from . import util
 import socket
 import glob
 _js_code = r"""
@@ -592,7 +592,7 @@ class Screen:
 				continue
 			assert len(item) == 2, "Invalid register_palette usage"
 			name, like_name = item
-			if not self.palette.has_key(like_name):
+			if like_name not in self.palette:
 				raise Exception("palette entry '%s' doesn't exist"%like_name)
 			self.palette[name] = self.palette[like_name]
 
@@ -657,7 +657,7 @@ class Screen:
 		urwid_id = "%09d%09d"%(random.randrange(10**9),
 			random.randrange(10**9))
 		self.pipe_name = os.path.join(_prefs.pipe_dir,"urwid"+urwid_id)
-		os.mkfifo(self.pipe_name+".in",0600)
+		os.mkfifo(self.pipe_name+".in",0o600)
 		signal.signal(signal.SIGTERM,self._cleanup_pipe)
 		
 		self.input_fd = os.open(self.pipe_name+".in", 
@@ -733,9 +733,9 @@ class Screen:
 			rows = MAX_ROWS
 		self.screen_size = cols, rows
 		
-	def draw_screen(self, (cols, rows), r ):
+	def draw_screen(self, xxx_todo_changeme, r ):
 		"""Send a screen update to the client."""
-		
+		(cols, rows) = xxx_todo_changeme
 		if cols != self.last_screen_width:
 			self.last_screen = {}
 	
@@ -747,7 +747,7 @@ class Screen:
 			signal.alarm( 0 )
 			try:
 				s, addr = self.server_socket.accept()
-			except socket.timeout, e:
+			except socket.timeout as e:
 				sys.exit(0)
 			send = s.sendall
 		else:
@@ -854,7 +854,7 @@ class Screen:
 			try:
 				s, addr = self.server_socket.accept()
 				s.close()
-			except socket.timeout, e:
+			except socket.timeout as e:
 				sys.exit(0)
 		else:
 			# send empty update
@@ -875,7 +875,7 @@ class Screen:
 		try:
 			iready,oready,eready = select.select(
 				[self.input_fd],[],[],0.5)
-		except select.error, e:
+		except select.error as e:
 			# return on interruptions
 			if e.args[0] == 4: 
 				if raw_keys:
@@ -941,7 +941,7 @@ def is_web_request():
 	"""
 	Return True if this is a CGI web request.
 	"""
-	return os.environ.has_key('REQUEST_METHOD')
+	return 'REQUEST_METHOD' in os.environ
 
 def handle_short_request():
 	"""
@@ -968,7 +968,7 @@ def handle_short_request():
 		# Don't know what to do with head requests etc.
 		return False
 	
-	if not os.environ.has_key('HTTP_X_URWID_ID'):
+	if 'HTTP_X_URWID_ID' not in os.environ:
 		# If no urwid id, then the application should be started.
 		return False
 
@@ -996,7 +996,7 @@ def handle_short_request():
 				sys.stdout.write(data)
 				data = s.recv(BUF_SZ)
 			return True
-		except socket.error,e:
+		except socket.error as e:
 			sys.stdout.write("Status: 404 Not Found\r\n\r\n")
 			return True
 		
@@ -1006,7 +1006,7 @@ def handle_short_request():
 	try:
 		fd = os.open((os.path.join(_prefs.pipe_dir,
 			"urwid"+urwid_id+".in")), os.O_WRONLY)
-	except OSError,e:
+	except OSError as e:
 		sys.stdout.write("Status: 404 Not Found\r\n\r\n")
 		return True
 		

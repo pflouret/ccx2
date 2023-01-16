@@ -1,3 +1,4 @@
+from functools import reduce
 # Copyright (c) 2008-2009 Pablo Flouret <quuxbaz@gmail.com>
 # All rights reserved.
 #
@@ -172,7 +173,7 @@ class FormatParser(list):
     colors = ['b','B','c','C','g','G','m','M','r','R','a','A','y','Y','k','w','$']
 
     if not color or color not in colors:
-      return Text(u'$')
+      return Text('$')
 
     if color == '$':
       return None
@@ -231,11 +232,11 @@ class FormatParser(list):
 
 class Text(object):
   def __init__(self, s):
-    self.s = unicode(s)
+    self.s = str(s)
 
   def fields(self): return []
   def eval(self, ctx): return [self.s], False
-  def __str__(self): return u'Text(%r)' % self.s
+  def __str__(self): return 'Text(%r)' % self.s
   def __repr__(self): return str(self)
 
 class Colored(list):
@@ -264,7 +265,7 @@ class Colored(list):
 
     return [(self.color, acc)], bools
 
-  def __str__(self): return u'Colored(%s, %r)' % (self.color, list(self))
+  def __str__(self): return 'Colored(%s, %r)' % (self.color, list(self))
   def __repr__(self): return str(self)
 
 class Field(object):
@@ -287,11 +288,11 @@ class Field(object):
       v, b = _special_fields[self.name]
 
     if b is None: b = v is not None
-    if v is None: v = u''
+    if v is None: v = ''
 
-    return [unicode(v)], b
+    return [str(v)], b
 
-  def __str__(self): return u'Field(%s)' % self.name
+  def __str__(self): return 'Field(%s)' % self.name
   def __repr__(self): return str(self)
 
 class CondPart(object):
@@ -314,7 +315,7 @@ class CondPart(object):
 
     return acc, bools
 
-  def __str__(self): return u'CondPart(%r)' % self.exprs
+  def __str__(self): return 'CondPart(%r)' % self.exprs
   def __repr__(self): return str(self)
 
 class Cond(object):
@@ -349,9 +350,9 @@ class Cond(object):
         if b:
           return v, b
 
-    return [u''], False
+    return [''], False
 
-  def __str__(self): return u'Cond(%r)' % self.parts
+  def __str__(self): return 'Cond(%r)' % self.parts
   def __repr__(self): return str(self)
 
 class Level(list):
@@ -379,6 +380,6 @@ class Level(list):
 
     return acc, bools
 
-  def __str__(self): return u'Level(%r)' % list(self)
+  def __str__(self): return 'Level(%r)' % list(self)
   def __repr__(self): return str(self)
 

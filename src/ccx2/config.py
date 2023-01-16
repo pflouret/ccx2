@@ -22,8 +22,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import ConfigParser
-import StringIO
+import configparser
+import io
 import copy
 import os
 import re
@@ -33,9 +33,9 @@ import xmmsclient
 
 # H: horizontal | V: vertical | D: down | U: up
 
-UBORDER_H = u'\u2500'
-UBORDER_V = u'\u2502'
-UBORDER_H_D = u'\u252c'
+UBORDER_H = '\u2500'
+UBORDER_V = '\u2502'
+UBORDER_H_D = '\u252c'
 
 def key_to_urwid_key(key):
   if '-' in key and key != '-':
@@ -111,25 +111,25 @@ class Config(object):
 
       if not os.path.exists(path):
         try:
-          print >> sys.stderr, 'no config file found, making default one in %s' % path
+          print('no config file found, making default one in %s' % path, file=sys.stderr)
           f = open(path, 'w')
-          print >> f, DEFAULT_CONFIG
+          print(DEFAULT_CONFIG, file=f)
           f.close()
-        except Exception, e:
-          print >> sys.stderr, 'error while writing config file: %s' % e
+        except Exception as e:
+          print('error while writing config file: %s' % e, file=sys.stderr)
           path = None
 
     self.path = path
-    self.cp = ConfigParser.SafeConfigParser()
+    self.cp = configparser.SafeConfigParser()
 
     try:
-      self.cp.readfp(StringIO.StringIO(DEFAULT_CONFIG))
+      self.cp.readfp(io.StringIO(DEFAULT_CONFIG))
       if not self.cp.read(path):
         raise ValueError
     except:
       self.path = None
       msg = "warning: error while reading the config file, using defaults"
-      print >> sys.stderr, msg
+      print(msg, file=sys.stderr)
 
     try:
       import PIL
@@ -158,7 +158,7 @@ class Config(object):
     self._read_options()
     self._read_colors()
 
-  palette = property(lambda self: self._palette.values())
+  palette = property(lambda self: list(self._palette.values()))
 
   def format(self, key):
     try:
@@ -214,14 +214,14 @@ class Config(object):
       elif l == 2:
         fg, bg = sp
       else:
-        print >> sys.stderr, 'warning: wrong color specification for %s, ignoring' % key
+        print('warning: wrong color specification for %s, ignoring' % key, file=sys.stderr)
 
       if fg not in fg_colors:
-        print >> sys.stderr, 'warning: bad color %s for foreground, ignoring' % fg
+        print('warning: bad color %s for foreground, ignoring' % fg, file=sys.stderr)
         continue
 
       if bg not in bg_colors:
-        print >> sys.stderr, 'warning: bad color %s for background, ignoring' % bg
+        print('warning: bad color %s for background, ignoring' % bg, file=sys.stderr)
         continue
 
       self._palette[key] = (key, fg, bg)

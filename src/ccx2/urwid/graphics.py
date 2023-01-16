@@ -20,14 +20,14 @@
 #
 # Urwid web site: http://excess.org/urwid/
 
-from __future__ import nested_scopes
 
-from util import *
-from canvas import *
-from widget import *
-from container import *
-from escape import utf8decode
-from display_common import AttrSpec
+
+from .util import *
+from .canvas import *
+from .widget import *
+from .container import *
+from .escape import utf8decode
+from .display_common import AttrSpec
 
 class BigText(FixedWidget):
 	def __init__(self, markup, font):
@@ -152,8 +152,7 @@ def nocache_bargraph_get_data(self, get_data_fn):
 class BarGraphError(Exception):
 	pass
 
-class BarGraph(BoxWidget):
-	__metaclass__ = BarGraphMeta
+class BarGraph(BoxWidget, metaclass=BarGraphMeta):
 	ignore_focus = True
 
 	eighths = utf8decode(" ▁▂▃▄▅▆▇")
@@ -204,7 +203,7 @@ class BarGraph(BoxWidget):
 		self.attr = []
 		self.char = []
 		if len(attlist) < 2:
-			raise BarGraphError, "attlist must include at least background and seg1: %s" % `attlist`
+			raise BarGraphError("attlist must include at least background and seg1: %s" % repr(attlist))
 		assert len(attlist) >= 2, 'must at least specify bg and fg!'
 		for a in attlist:
 			if type(a)!=type(()):
@@ -224,17 +223,17 @@ class BarGraph(BoxWidget):
 		
 		if satt is None:
 			satt = {}
-		for i in satt.items():
+		for i in list(satt.items()):
 			try:
 				(fg,bg), attr = i
 			except:
-				raise BarGraphError, "satt not in (fg,bg:attr) form: %s"%`i`
+				raise BarGraphError("satt not in (fg,bg:attr) form: %s"%repr(i))
 			if type(fg) != type(0) or fg >= len(attlist):
-				raise BarGraphError, "fg not valid integer: %s"%`fg`
+				raise BarGraphError("fg not valid integer: %s"%repr(fg))
 			if type(bg) != type(0) or bg >= len(attlist):
-				raise BarGraphError, "bg not valid integer: %s"%`fg`
+				raise BarGraphError("bg not valid integer: %s"%repr(fg))
 			if fg<=bg:
-				raise BarGraphError, "fg (%s) not > bg (%s)" %(fg,bg)
+				raise BarGraphError("fg (%s) not > bg (%s)" %(fg,bg))
 		self.satt = satt
 			
 			
@@ -438,7 +437,9 @@ class BarGraph(BoxWidget):
 		"""
 		o = []
 		r = 0 # row remainder
-		def seg_combine( (bt1,w1), (bt2,w2) ):
+		def seg_combine(xxx_todo_changeme, xxx_todo_changeme1 ):
+			(bt1,w1) = xxx_todo_changeme
+			(bt2,w2) = xxx_todo_changeme1
 			if (bt1,w1) == (bt2,w2):
 				return (bt1,w1), None, None
 			wmin = min(w1,w2)
@@ -449,7 +450,7 @@ class BarGraph(BoxWidget):
 				l2 = (bt2, w2-w1)
 			if type(bt1)==type(()):
 				return (bt1,wmin), l1, l2
-			if not self.satt.has_key( (bt2, bt1) ):
+			if (bt2, bt1) not in self.satt:
 				if r<4:
 					return (bt2,wmin), l1, l2
 				return (bt1,wmin), l1, l2
@@ -662,7 +663,7 @@ def calculate_bargraph_display( bardata, top, bar_widths, maxrow ):
 			c += ln
 			if c == maxcol:
 				break
-			assert i<len(last), `on, maxcol`
+			assert i<len(last), repr((on, maxcol))
 			la, ln = last[i]
 	
 		if i < len(last): 

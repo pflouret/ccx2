@@ -5,8 +5,8 @@ import socket
 import string
 import sys
 import unicodedata
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 
 try:
   import json
@@ -20,7 +20,7 @@ except ImportError:
 
 socket.setdefaulttimeout(5)
 
-LYRICWIKI_URL = u'http://lyrics.wikia.org'
+LYRICWIKI_URL = 'http://lyrics.wikia.org'
 YQL_URL = "http://query.yahooapis.com/v1/public/yql?q=select%%20title,url%%20from%%20search.web%%20where%%20query%%3D%%22%s%%20-inurl%%3ACategory%%20site%%3Alyrics.wikia.com%%22%%20and%%20title%%20like%%20%%22%%25%%3A%%25%%22&format=json"
 # "http://query.yahooapis.com/v1/public/yql?q=select%20title,url%20from%20search.web%20where%20query%3D%22XXXXX%20-inurl%3ACategory%20site%3Alyrics.wikia.com%22%20and%20title%20like%20%22%25%3A%25%22&format=json&callback=cbfunc"
 
@@ -33,7 +33,7 @@ def do_request(req):
   error = None
 
   try:
-    r = urllib2.urlopen(req)
+    r = urllib.request.urlopen(req)
   except:
     error = True
 
@@ -43,7 +43,7 @@ def do_request(req):
   return r.read()
 
 def get_google_results(query):
-  url = YQL_URL % urllib.quote_plus(query.encode('utf-8'))
+  url = YQL_URL % urllib.parse.quote_plus(query.encode('utf-8'))
 
   response = do_request(url)
 
@@ -77,7 +77,7 @@ def get_lyrics(url):
     if e.tag != 'br':
       e.drop_tree()
 
-  lines = [lyricbox.itertext().next()] + [b.tail or "" for b in lyricbox.getchildren()]
+  lines = [next(lyricbox.itertext())] + [b.tail or "" for b in lyricbox.getchildren()]
   return '\n'.join(lines) or None
 
 class LyricWiki(object):
@@ -93,7 +93,7 @@ class LyricWiki(object):
       albums = self.get_albums(html)
       url = self.get_song_url(albums)
       return get_lyrics(url)
-    except ValueError, TypeError:
+    except ValueError as TypeError:
       pass
 
   def get_song_results(self):
@@ -109,14 +109,14 @@ class LyricWiki(object):
 
     title = self.normalizeish(self.title)
 
-    for album in albums.values():
-      for tracknr, a in album.iteritems():
+    for album in list(albums.values()):
+      for tracknr, a in album.items():
         if title == self.normalizeish(a.text):
           return LYRICWIKI_URL + a.get('href')
 
   def try_url(self):
     artist = string.capwords(self.artist).replace(" ", "_")
-    url = u"%s/%s" % (LYRICWIKI_URL, urllib.quote_plus(artist.encode('utf-8')))
+    url = "%s/%s" % (LYRICWIKI_URL, urllib.parse.quote_plus(artist.encode('utf-8')))
 
     return do_request(url)
 
@@ -126,9 +126,9 @@ class LyricWiki(object):
         return do_request(url)
 
   def normalizeish(self, s):
-    s = year_rx.sub(u'', s).strip()
-    s = unicodedata.normalize('NFKD', unicode(s)).encode('ascii', 'replace')
-    s = sym_rx.sub(u'', s)
+    s = year_rx.sub('', s).strip()
+    s = unicodedata.normalize('NFKD', str(s)).encode('ascii', 'replace')
+    s = sym_rx.sub('', s)
     return s.lower()
     
   def get_albums(self, html):

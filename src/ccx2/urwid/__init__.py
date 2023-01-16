@@ -43,17 +43,17 @@ __all__ = [
 __version__ = "0.9.8"
 
 
-from widget import *
-from decoration import *
-from container import *
-from wimp import *
-from listbox import *
-from graphics import *
-from canvas import *
-from font import *
-from signals import *
-from monitored_list import *
-from command_map import *
-from main_loop import *
-from text_layout import *
-from display_common import *
+from .widget import *
+from .decoration import *
+from .container import *
+from .wimp import *
+from .listbox import *
+from .graphics import *
+from .canvas import *
+from .font import *
+from .signals import *
+from .monitored_list import *
+from .command_map import *
+from .main_loop import *
+from .text_layout import *
+from .display_common import *

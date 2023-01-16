@@ -32,7 +32,7 @@ class MetaSignals(type):
 		signals = d.get("signals", [])
 		for superclass in cls.__bases__:
 			signals.extend(getattr(superclass, 'signals', []))
-		signals = dict([(x,None) for x in signals]).keys()
+		signals = list(dict([(x,None) for x in signals]).keys())
 		d["signals"] = signals
 		register_signal(cls, signals)
 		super(MetaSignals, cls).__init__(name, bases, d)
@@ -49,8 +49,8 @@ class Signals(object):
 	def connect(self, obj, name, callback, user_arg=None):
 		sig_cls = obj.__class__
 		if not name in self._supported.get(sig_cls, []):
-			raise NameError, "No such signal %r for object %r" % \
-				(name, obj)
+			raise NameError("No such signal %r for object %r" % \
+				(name, obj))
 		d = self._connections.setdefault(obj, {})
 		d.setdefault(name, []).append((callback, user_arg))
 		

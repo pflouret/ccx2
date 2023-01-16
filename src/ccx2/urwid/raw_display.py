@@ -33,10 +33,10 @@ import tty
 import signal
 import popen2
 
-import util
-import escape
-from display_common import *
-import signals
+from . import util
+from . import escape
+from .display_common import *
+from . import signals
 
 # replace control characters with ?'s
 _trans_table = "?"*32+"".join([chr(x) for x in range(32,256)])
@@ -263,14 +263,14 @@ class Screen(BaseScreen, RealTerminal):
         assert self._started
         
         self._wait_for_input_ready(self._next_timeout)
-        self._next_timeout, keys, raw = self._input_iter.next()
+        self._next_timeout, keys, raw = next(self._input_iter)
         
         # Avoid pegging CPU at 100% when slowly resizing
         if keys==['window resize'] and self.prev_input_resize:
             while True:
                 self._wait_for_input_ready(self.resize_wait)
                 self._next_timeout, keys, raw2 = \
-                    self._input_iter.next()
+                    next(self._input_iter)
                 raw += raw2
                 #if not keys:
                 #    keys, raw2 = self._get_input( 
@@ -320,7 +320,7 @@ class Screen(BaseScreen, RealTerminal):
         """
         assert self._started
 
-        return self._input_iter.next()
+        return next(self._input_iter)
 
     def _run_input_iter(self):
         while True:
@@ -383,7 +383,7 @@ class Screen(BaseScreen, RealTerminal):
                     ready,w,err = select.select(
                         fd_list,[],fd_list, timeout)
                 break
-            except select.error, e:
+            except select.error as e:
                 if e.args[0] != 4: 
                     raise
                 if self._resized:
@@ -483,13 +483,14 @@ class Screen(BaseScreen, RealTerminal):
                 sys.stdout.write(escape.DESIGNATE_G1_SPECIAL)
                 sys.stdout.flush()
                 break
-            except IOError, e:
+            except IOError as e:
                 pass
         self._setup_G1_done = True
 
     
-    def draw_screen(self, (maxcol, maxrow), r ):
+    def draw_screen(self, xxx_todo_changeme, r ):
         """Paint screen with rendered canvas."""
+        (maxcol, maxrow) = xxx_todo_changeme
         assert self._started
 
         assert maxrow == r.rows()
@@ -595,7 +596,7 @@ class Screen(BaseScreen, RealTerminal):
                     o.append(attr_to_escape(a))
                     lasta = a
                 if first or lastcs != cs:
-                    assert cs in [None, "0"], `cs`
+                    assert cs in [None, "0"], repr(cs)
                     if cs is None:
                         o.append( escape.SI )
                     else:
@@ -606,7 +607,7 @@ class Screen(BaseScreen, RealTerminal):
             if ins:
                 (inserta, insertcs, inserttext) = ins
                 ias = attr_to_escape(inserta)
-                assert insertcs in [None, "0"], `insertcs`
+                assert insertcs in [None, "0"], repr(insertcs)
                 if cs is None:
                     icss = escape.SI
                 else:
@@ -634,7 +635,7 @@ class Screen(BaseScreen, RealTerminal):
                     sys.stdout.flush()
                     k = 0
             sys.stdout.flush()
-        except IOError, e:
+        except IOError as e:
             # ignore interrupted syscall
             if e.args[0] != 4:
                 raise
@@ -766,7 +767,7 @@ class Screen(BaseScreen, RealTerminal):
             
         self.clear()
         self._pal_escape = {}
-        for p,v in self._palette.items():
+        for p,v in list(self._palette.items()):
             self._on_update_palette_entry(p, *v)
 
 

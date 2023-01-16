@@ -25,8 +25,8 @@
 import xmmsclient
 from xmmsclient import collections as coll
 
-import signals
-import xmms
+from . import signals
+from . import xmms
 
 
 class CollectionFeeder(object):

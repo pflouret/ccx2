@@ -19,10 +19,10 @@
 #
 # Urwid web site: http://excess.org/urwid/
 
-from util import *
-from widget import *
-from decoration import *
-from command_map import command_map
+from .util import *
+from .widget import *
+from .decoration import *
+from .command_map import command_map
 
 
 class WidgetContainer(Widget):
@@ -72,7 +72,7 @@ class WidgetContainer(Widget):
         return False
 
     def __reversed__(self):
-        for i in reversed(range(len(self))):
+        for i in reversed(list(range(len(self)))):
             yield self[i]
 
     def index(self, value):
@@ -697,7 +697,7 @@ class Pile(Widget): # either FlowWidget or BoxWidget
                 self.item_types.append((f,height))
                 w = widget
             else:
-                raise PileError, "widget list item invalid %s" % `w`
+                raise PileError("widget list item invalid %s" % repr(w))
             if focus_item is None and w.selectable():
                 focus_item = i
         self.widget_list.set_modified_callback(self._invalidate)
@@ -789,7 +789,7 @@ class Pile(Widget): # either FlowWidget or BoxWidget
                 wtotal += height
 
         if wtotal == 0:
-            raise PileError, "No weighted widgets found for Pile treated as a box widget"
+            raise PileError("No weighted widgets found for Pile treated as a box widget")
 
         if remaining < 0: 
             remaining = 0
@@ -897,9 +897,9 @@ class Pile(Widget): # either FlowWidget or BoxWidget
                 return key
 
         if command_map[key] == 'cursor up':
-            candidates = range(i-1, -1, -1) # count backwards to 0
+            candidates = list(range(i-1, -1, -1)) # count backwards to 0
         else: # command_map[key] == 'cursor down'
-            candidates = range(i+1, len(self.widget_list))
+            candidates = list(range(i+1, len(self.widget_list)))
         
         if not item_rows:
             item_rows = self.get_item_rows( size, focus=True )
@@ -917,9 +917,9 @@ class Pile(Widget): # either FlowWidget or BoxWidget
             f, height = self.item_types[j]
             rows = item_rows[j]
             if command_map[key] == 'cursor up':
-                rowlist = range(rows-1, -1, -1)
+                rowlist = list(range(rows-1, -1, -1))
             else: # command_map[key] == 'cursor down'
-                rowlist = range(rows)
+                rowlist = list(range(rows))
             for row in rowlist:
                 tsize=self.get_item_size(size,j,True,item_rows)
                 if self.focus_item.move_cursor_to_coords(
@@ -1037,7 +1037,7 @@ class Columns(Widget): # either FlowWidget or BoxWidget
                 self.column_types.append((f,width))
                 w = widget
             else:
-                raise ColumnsError, "widget list item invalid: %s" % `w`
+                raise ColumnsError("widget list item invalid: %s" % repr(w))
             if focus_column is None and w.selectable():
                 focus_column = i
                 
@@ -1336,9 +1336,9 @@ class Columns(Widget): # either FlowWidget or BoxWidget
             return key
 
         if command_map[key] == 'cursor left':
-            candidates = range(i-1, -1, -1) # count backwards to 0
+            candidates = list(range(i-1, -1, -1)) # count backwards to 0
         else: # key == 'right'
-            candidates = range(i+1, len(widths))
+            candidates = list(range(i+1, len(widths)))
 
         for j in candidates:
             if not self.widget_list[j].selectable():

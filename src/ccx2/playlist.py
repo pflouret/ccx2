@@ -22,19 +22,19 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import urwid
+from . import urwid
 import xmmsclient
 
 from xmmsclient import collections as coll
 from xmmsclient.sync import XMMSError
 
-import collutil
-import commands
-import listbox
-import mif
-import signals
-import widgets
-import xmms
+from . import collutil
+from . import commands
+from . import listbox
+from . import mif
+from . import signals
+from . import widgets
+from . import xmms
 
 
 class RowColumns(urwid.Columns):
@@ -255,7 +255,7 @@ class Playlist(listbox.SongListBox):
         return
       m = {pos: self.get_mark_data(pos, w)}
 
-    for pos, w in sorted(m.items(), key=lambda e: e[0], reverse=True):
+    for pos, w in sorted(list(m.items()), key=lambda e: e[0], reverse=True):
       self.xs.playlist_remove_entry(pos, self.view_pls, sync=False)
 
     self.unmark_all()
@@ -267,7 +267,7 @@ class Playlist(listbox.SongListBox):
       if not args:
         n = self.get_focus()[1]+1
       else:
-        raise CommandError, "bad argument"
+        raise CommandError("bad argument")
 
     if args and args[0] in ('+', '-'):
       if n > 0:
@@ -278,7 +278,7 @@ class Playlist(listbox.SongListBox):
       self.move_abs(n)
 
   def _get_marked_for_move(self, reverse=False):
-    m = self.marked_data.items()
+    m = list(self.marked_data.items())
     if not m:
       w, pos = self.get_focus()
       if pos is None:

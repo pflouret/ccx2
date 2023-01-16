@@ -21,8 +21,8 @@
 import sys
 import termios
 
-from util import int_scale
-import signals
+from .util import int_scale
+from . import signals
 
 # signals sent by BaseScreen
 UPDATE_PALETTE_ENTRY = "update palette entry"
@@ -683,11 +683,10 @@ class RealTerminal(object):
         return skeys
 
 
-class BaseScreen(object):
+class BaseScreen(object, metaclass=signals.MetaSignals):
     """
     Base class for Screen classes (raw_display.Screen, .. etc)
     """
-    __metaclass__ = signals.MetaSignals
     signals = [UPDATE_PALETTE_ENTRY]
 
     def __init__(self):
@@ -718,7 +717,7 @@ class BaseScreen(object):
             if len(item) != 2:
                 raise ScreenError("Invalid register_palette entry: %s"%item)
             name, like_name = item
-            if not self.palette.has_key(like_name):
+            if like_name not in self.palette:
                 raise ScreenError("palette entry '%s' doesn't exist"%like_name)
             self.palette[name] = self.palette[like_name]
 

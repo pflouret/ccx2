@@ -19,7 +19,7 @@
 #
 # Urwid web site: http://excess.org/urwid/
 
-from util import *
+from .util import *
 
 class TextLayout:
 	def supports_align_mode(self, align):
@@ -83,7 +83,7 @@ class StandardTextLayout(TextLayout):
 		returned by self.layout().
 		"""
 		maxwidth = 0
-		assert layout, "huh? empty layout?: "+`layout`
+		assert layout, "huh? empty layout?: "+repr(layout)
 		for l in layout:
 			lw = line_width(l)
 			if lw >= maxcol:
@@ -240,28 +240,28 @@ class LayoutSegment:
 	def __init__(self, seg):
 		"""Create object from line layout segment structure"""
 		
-		assert type(seg) == type(()), `seg`
-		assert len(seg) in (2,3), `seg`
+		assert type(seg) == type(()), repr(seg)
+		assert len(seg) in (2,3), repr(seg)
 		
 		self.sc, self.offs = seg[:2]
 		
-		assert type(self.sc) == type(0), `self.sc`
+		assert type(self.sc) == type(0), repr(self.sc)
 		
 		if len(seg)==3:
-			assert type(self.offs) == type(0), `self.offs`
-			assert self.sc > 0, `seg`
+			assert type(self.offs) == type(0), repr(self.offs)
+			assert self.sc > 0, repr(seg)
 			t = seg[2]
 			if type(t) == type(""):
 				self.text = t
 				self.end = None
 			else:
-				assert type(t) == type(0), `t`
+				assert type(t) == type(0), repr(t)
 				self.text = None
 				self.end = t
 		else:
-			assert len(seg) == 2, `seg`
+			assert len(seg) == 2, repr(seg)
 			if self.offs is not None:
-				assert self.sc >= 0, `seg`
+				assert self.sc >= 0, repr(seg)
 				assert type(self.offs)==type(0)
 			self.text = self.end = None
 			
@@ -321,7 +321,7 @@ def shift_line( segs, amount ):
 	segs -- line of a layout structure
 	amount -- screen columns to shift right (+ve) or left (-ve)
 	"""
-	assert type(amount)==type(0), `amount`
+	assert type(amount)==type(0), repr(amount)
 	
 	if segs and len(segs[0])==2 and segs[0][1]==None:
 		# existing shift
@@ -441,8 +441,8 @@ def calc_pos( text, layout, pref_col, row ):
 	if pos is not None:
 		return pos
 	
-	rows_above = range(row-1,-1,-1)
-	rows_below = range(row+1,len(layout))
+	rows_above = list(range(row-1,-1,-1))
+	rows_below = list(range(row+1,len(layout)))
 	while rows_above and rows_below:
 		if rows_above: 
 			r = rows_above.pop(0)

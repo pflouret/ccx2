@@ -19,21 +19,19 @@
 #
 # Urwid web site: http://excess.org/urwid/
 
-from util import *
-from canvas import *
-from widget import *
-from decoration import calculate_filler, decompose_valign_height
-import signals
-from monitored_list import MonitoredList
-from command_map import command_map
+from .util import *
+from .canvas import *
+from .widget import *
+from .decoration import calculate_filler, decompose_valign_height
+from . import signals
+from .monitored_list import MonitoredList
+from .command_map import command_map
 
 
 class ListWalkerError(Exception):
 	pass
 
-class ListWalker(object):
-	__metaclass__ = signals.MetaSignals
-	
+class ListWalker(object, metaclass=signals.MetaSignals):
 	signals = ["modified"]
 
 	def __hash__(self): return id(self)
@@ -50,7 +48,7 @@ class PollingListWalker(object):  # NOT ListWalker subclass
 		self.contents = contents
 		if not type(contents) == type([]) and not hasattr( 
 			contents, '__getitem__' ):
-			raise ListWalkerError, "SimpleListWalker expecting list like object, got: "+`contents`
+			raise ListWalkerError("SimpleListWalker expecting list like object, got: "+repr(contents))
 		self.focus = 0
 	
 	def _clamp_focus(self):
@@ -95,7 +93,7 @@ class SimpleListWalker(MonitoredList, ListWalker):
 		this list walker to be updated.
 		"""
 		if not type(contents) == type([]) and not hasattr(contents, '__getitem__'):
-			raise ListWalkerError, "SimpleListWalker expecting list like object, got: "+`contents`
+			raise ListWalkerError("SimpleListWalker expecting list like object, got: "+repr(contents))
 		MonitoredList.__init__(self, contents)
 		self.focus = 0
 
@@ -339,17 +337,17 @@ class ListBox(BoxWidget):
 		for widget,w_pos,w_rows in fill_above:
 			canvas = widget.render((maxcol,))
 			if w_rows != canvas.rows():
-				raise ListBoxError, "Widget %s at position %s within listbox calculated %d rows but rendered %d!"% (`widget`,`w_pos`,w_rows, canvas.rows())
+				raise ListBoxError("Widget %s at position %s within listbox calculated %d rows but rendered %d!"% (repr(widget),repr(w_pos),w_rows, canvas.rows()))
 			rows += w_rows
 			combinelist.append((canvas, w_pos, False))
 		
 		focus_canvas = focus_widget.render((maxcol,), focus=focus)
 
 		if focus_canvas.rows() != focus_rows:
-			raise ListBoxError, "Focus Widget %s at position %s within listbox calculated %d rows but rendered %d!"% (`focus_widget`,`focus_pos`,focus_rows, focus_canvas.rows())
+			raise ListBoxError("Focus Widget %s at position %s within listbox calculated %d rows but rendered %d!"% (repr(focus_widget),repr(focus_pos),focus_rows, focus_canvas.rows()))
 		c_cursor = focus_canvas.cursor
 		if cursor != c_cursor:
-			raise ListBoxError, "Focus Widget %s at position %s within listbox calculated cursor coords %s but rendered cursor coords %s!" %(`focus_widget`,`focus_pos`,`cursor`,`c_cursor`)
+			raise ListBoxError("Focus Widget %s at position %s within listbox calculated cursor coords %s but rendered cursor coords %s!" %(repr(focus_widget),repr(focus_pos),repr(cursor),repr(c_cursor)))
 			
 		rows += focus_rows
 		combinelist.append((focus_canvas, focus_pos, True))
@@ -357,7 +355,7 @@ class ListBox(BoxWidget):
 		for widget,w_pos,w_rows in fill_below:
 			canvas = widget.render((maxcol,))
 			if w_rows != canvas.rows():
-				raise ListBoxError, "Widget %s at position %s within listbox calculated %d rows but rendered %d!"% (`widget`,`w_pos`,w_rows, canvas.rows())
+				raise ListBoxError("Widget %s at position %s within listbox calculated %d rows but rendered %d!"% (repr(widget),repr(w_pos),w_rows, canvas.rows()))
 			rows += w_rows
 			combinelist.append((canvas, w_pos, False))
 		
@@ -370,12 +368,12 @@ class ListBox(BoxWidget):
 			final_canvas.trim_end(trim_bottom)
 			rows -= trim_bottom
 		
-		assert rows <= maxrow, "Listbox contents too long!  Probably urwid's fault (please report): %s" % `top,middle,bottom`
+		assert rows <= maxrow, "Listbox contents too long!  Probably urwid's fault (please report): %s" % repr((top,middle,bottom))
 		
 		if rows < maxrow:
 			bottom_pos = focus_pos
 			if fill_below: bottom_pos = fill_below[-1][1]
-			assert trim_bottom==0 and self.body.get_next(bottom_pos) == (None,None), "Listbox contents too short!  Probably urwid's fault (please report): %s" % `top,middle,bottom`
+			assert trim_bottom==0 and self.body.get_next(bottom_pos) == (None,None), "Listbox contents too short!  Probably urwid's fault (please report): %s" % repr((top,middle,bottom))
 			final_canvas.pad_trim_top_bottom(0, maxrow - rows)
 
 		return final_canvas
@@ -538,14 +536,14 @@ class ListBox(BoxWidget):
 		
 		if offset_inset >= 0:
 			if offset_inset >= maxrow:
-				raise ListBoxError, "Invalid offset_inset: %s, only %s rows in list box"% (`offset_inset`, `maxrow`)
+				raise ListBoxError("Invalid offset_inset: %s, only %s rows in list box"% (repr(offset_inset), repr(maxrow)))
 			self.offset_rows = offset_inset
 			self.inset_fraction = (0,1)
 		else:
 			target, _ignore = self.body.get_focus()
 			tgt_rows = target.rows( (maxcol,), True )
 			if offset_inset + tgt_rows <= 0:
-				raise ListBoxError, "Invalid offset_inset: %s, only %s rows in target!" %(`offset_inset`, `tgt_rows`)
+				raise ListBoxError("Invalid offset_inset: %s, only %s rows in target!" %(repr(offset_inset), repr(tgt_rows)))
 			self.offset_rows = 0
 			self.inset_fraction = (-offset_inset,tgt_rows)
 		self._invalidate()
@@ -624,7 +622,7 @@ class ListBox(BoxWidget):
 			self.inset_fraction = (0,1)
 		else:
 			if offset_inset + tgt_rows <= 0:
-				raise ListBoxError, "Invalid offset_inset: %s, only %s rows in target!" %(offset_inset, tgt_rows)
+				raise ListBoxError("Invalid offset_inset: %s, only %s rows in target!" %(offset_inset, tgt_rows))
 			self.offset_rows = 0
 			self.inset_fraction = (-offset_inset,tgt_rows)
 		
@@ -643,21 +641,21 @@ class ListBox(BoxWidget):
 			# start from closest edge and move inwards
 			(pref_col,) = cursor_coords
 			if coming_from=='above':
-				attempt_rows = range( 0, tgt_rows )
+				attempt_rows = list(range( 0, tgt_rows))
 			else:
 				assert coming_from == 'below', "must specify coming_from ('above' or 'below') if cursor row is not specified"
-				attempt_rows = range( tgt_rows, -1, -1)
+				attempt_rows = list(range( tgt_rows, -1, -1))
 		else:
 			# both column and row specified
 			# start from preferred row and move back to closest edge
 			(pref_col, pref_row) = cursor_coords
 			if pref_row < 0 or pref_row >= tgt_rows:
-				raise ListBoxError, "cursor_coords row outside valid range for target. pref_row:%s target_rows:%s"%(`pref_row`,`tgt_rows`)
+				raise ListBoxError("cursor_coords row outside valid range for target. pref_row:%s target_rows:%s"%(repr(pref_row),repr(tgt_rows)))
 
 			if coming_from=='above':
-				attempt_rows = range( pref_row, -1, -1 )
+				attempt_rows = list(range( pref_row, -1, -1))
 			elif coming_from=='below':
-				attempt_rows = range( pref_row, tgt_rows )
+				attempt_rows = list(range( pref_row, tgt_rows))
 			else:
 				attempt_rows = [pref_row]
 
@@ -675,7 +673,7 @@ class ListBox(BoxWidget):
 		if offset_rows == 0:
 			inum, iden = self.inset_fraction
 			if inum < 0 or iden < 0 or inum >= iden:
-				raise ListBoxError, "Invalid inset_fraction: %s"%`self.inset_fraction`
+				raise ListBoxError("Invalid inset_fraction: %s"%repr(self.inset_fraction))
 			inset_rows = focus_rows * inum / iden
 			assert inset_rows < focus_rows, "urwid inset_fraction error (please report)"
 		return offset_rows, inset_rows
@@ -991,8 +989,8 @@ class ListBox(BoxWidget):
 			
 		# choose the topmost selectable and (newly) visible widget
 		# search within snap_rows then visible region
-		search_order = ( range( snap_region_start, len(t))
-				+ range( snap_region_start-1, -1, -1 ) )
+		search_order = ( list(range( snap_region_start, len(t)))
+				+ list(range( snap_region_start-1, -1, -1)) )
 		#assert 0, `t, search_order`
 		bad_choices = []
 		cut_off_selectable_chosen = 0
@@ -1174,8 +1172,8 @@ class ListBox(BoxWidget):
 			
 		# choose the bottommost selectable and (newly) visible widget
 		# search within snap_rows then visible region
-		search_order = ( range( snap_region_start, len(t))
-				+ range( snap_region_start-1, -1, -1 ) )
+		search_order = ( list(range( snap_region_start, len(t)))
+				+ list(range( snap_region_start-1, -1, -1)) )
 		#assert 0, `t, search_order`
 		bad_choices = []
 		cut_off_selectable_chosen = 0
@@ -1533,7 +1531,7 @@ class HListBox(FlowWidget):
 
 		c_cursor = focus_canvas.cursor
 		if cursor != c_cursor:
-			raise HListBoxError, "Focus Widget %s at position %s within listbox calculated cursor coords %s but rendered cursor coords %s!" %(`focus_widget`,`focus_pos`,`cursor`,`c_cursor`)
+			raise HListBoxError("Focus Widget %s at position %s within listbox calculated cursor coords %s but rendered cursor coords %s!" %(repr(focus_widget),repr(focus_pos),repr(cursor),repr(c_cursor)))
 			
 		cols += focus_cols
 		joinlist.append((focus_canvas, focus_pos, True, focus_cols))
@@ -1550,12 +1548,12 @@ class HListBox(FlowWidget):
 				-trim_left, -trim_right)
 			cols -= trim_left + trim_right
 		
-		assert cols <= maxcol, "HListbox contents too long!  Probably urwid's fault (please report): %s" % `left,middle,right`
+		assert cols <= maxcol, "HListbox contents too long!  Probably urwid's fault (please report): %s" % repr((left,middle,right))
 		
 		if cols < maxcol:
 			right_pos = focus_pos
 			if fill_right: right_pos = fill_right[-1][1]
-			assert trim_right==0 and self.body.get_next(right_pos) == (None,None), "HListbox contents too short!  Probably urwid's fault (please report): %s" % `top,middle,bottom`
+			assert trim_right==0 and self.body.get_next(right_pos) == (None,None), "HListbox contents too short!  Probably urwid's fault (please report): %s" % repr((top,middle,bottom))
 			final_canvas.pad_trim_left_right(0, maxcol - cols)
 
 		return final_canvas
@@ -1717,14 +1715,14 @@ class HListBox(FlowWidget):
 		
 		if offset_inset >= 0:
 			if offset_inset >= maxcol:
-				raise HListBoxError, "Invalid offset_inset: %s, only %s cols in HListBox"% (`offset_inset`, `maxcol`)
+				raise HListBoxError("Invalid offset_inset: %s, only %s cols in HListBox"% (repr(offset_inset), repr(maxcol)))
 			self.offset_cols = offset_inset
 			self.inset_fraction = (0,1)
 		else:
 			target, _ignore = self.body.get_focus()
 			tgt_cols = target.pack(None, True)[0]
 			if offset_inset + tgt_cols <= 0:
-				raise HListBoxError, "Invalid offset_inset: %s, only %s rows in target!" %(`offset_inset`, `tgt_rows`)
+				raise HListBoxError("Invalid offset_inset: %s, only %s rows in target!" %(repr(offset_inset), repr(tgt_rows)))
 			self.offset_cols = 0
 			self.inset_fraction = (-offset_inset,tgt_cols)
 		self._invalidate()
@@ -1804,7 +1802,7 @@ class HListBox(FlowWidget):
 			self.inset_fraction = (0,1)
 		else:
 			if offset_inset + tgt_cols <= 0:
-				raise HListBoxError, "Invalid offset_inset: %s, only %s cols in target!" %(offset_inset, tgt_cols)
+				raise HListBoxError("Invalid offset_inset: %s, only %s cols in target!" %(offset_inset, tgt_cols))
 			self.offset_cols = 0
 			self.inset_fraction = (-offset_inset,tgt_cols)
 		
@@ -1834,7 +1832,7 @@ class HListBox(FlowWidget):
 		if offset_cols == 0:
 			inum, iden = self.inset_fraction
 			if inum < 0 or iden < 0 or inum >= iden:
-				raise HListBoxError, "Invalid inset_fraction: %s"%`self.inset_fraction`
+				raise HListBoxError("Invalid inset_fraction: %s"%repr(self.inset_fraction))
 			inset_cols = focus_cols * inum / iden
 			assert inset_cols < focus_cols, "urwid inset_fraction error (please report)"
 		return offset_cols, inset_cols

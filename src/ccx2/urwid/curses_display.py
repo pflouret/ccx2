@@ -23,16 +23,16 @@
 Curses-based UI implementation
 """
 
-from __future__ import nested_scopes
+
 
 import curses
 import _curses
 import sys
 
-import util
-import escape
+from . import util
+from . import escape
 
-from display_common import RealTerminal
+from .display_common import RealTerminal
 
 KEY_RESIZE = 410 # curses.KEY_RESIZE (sometimes not defined)
 KEY_MOUSE = 409 # curses.KEY_MOUSE
@@ -96,7 +96,7 @@ class Screen(RealTerminal):
 				continue
 			assert len(item) == 2, "Invalid register_palette usage"
 			name, like_name = item
-			if not self.palette.has_key(like_name):
+			if like_name not in self.palette:
 				raise Exception("palette entry '%s' doesn't exist"%like_name)
 			self.palette[name] = self.palette[like_name]
 
@@ -234,7 +234,7 @@ class Screen(RealTerminal):
 			wh, bl = curses.COLOR_WHITE, curses.COLOR_BLACK
 		
 		self.attrconv = {}
-		for name, (cp, a, mono) in self.palette.items():
+		for name, (cp, a, mono) in list(self.palette.items()):
 			if self.has_color:
 				self.attrconv[name] = curses.color_pair(cp)
 				if a: self.attrconv[name] |= curses.A_BOLD
@@ -521,14 +521,15 @@ class Screen(RealTerminal):
 		if a is None:
 			self.s.attrset( 0 )
 			return
-		if not self.attrconv.has_key(a):
-			raise Exception, "Attribute %s not registered!"%`a`
+		if a not in self.attrconv:
+			raise Exception("Attribute %s not registered!"%repr(a))
 		self.s.attrset( self.attrconv[a] )
 				
 			
 			
-	def draw_screen(self, (cols, rows), r ):
+	def draw_screen(self, xxx_todo_changeme, r ):
 		"""Paint screen with rendered canvas."""
+		(cols, rows) = xxx_todo_changeme
 		assert self._started
 		
 		assert r.rows() == rows, "canvas size and passed size don't match"
@@ -597,7 +598,7 @@ class Screen(RealTerminal):
 class _test:
 	def __init__(self):
 		self.ui = Screen()
-		self.l = _curses_colours.keys()
+		self.l = list(_curses_colours.keys())
 		self.l.sort()
 		for c in self.l:
 			self.ui.register_palette( [
@@ -610,7 +611,7 @@ class _test:
 	def run(self):
 		class FakeRender: pass
 		r = FakeRender()
-		text = ["  has_color = "+`self.ui.has_color`,""]
+		text = ["  has_color = "+repr(self.ui.has_color),""]
 		attr = [[],[]]
 		r.coords = {}
 		r.cursor = None
@@ -641,12 +642,12 @@ class _test:
 			t = ""
 			a = []
 			for k in keys:
-				if type(k) == type(u""): k = k.encode("utf-8")
+				if type(k) == type(""): k = k.encode("utf-8")
 				t += "'"+k + "' "
 				a += [(None,1), ('yellow on dark blue',len(k)),
 					(None,2)]
 			
-			text.append(t + ": "+ `raw`)
+			text.append(t + ": "+ repr(raw))
 			attr.append(a)
 			text = text[-rows:]
 			attr = attr[-rows:]

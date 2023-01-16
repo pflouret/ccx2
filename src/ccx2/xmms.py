@@ -30,7 +30,7 @@ import threading
 import xmmsclient
 from xmmsclient import collections as coll
 
-import signals
+from . import signals
 
 # TODO: better doc (rst)
 

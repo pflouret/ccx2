@@ -33,27 +33,27 @@ import time
 import warnings
 
 warnings.filterwarnings('ignore', category=DeprecationWarning)
-import urwid
-import urwid.curses_display
-import urwid.raw_display
+from . import urwid
+from . import urwid.curses_display
+from . import urwid.raw_display
 warnings.filterwarnings('default', category=DeprecationWarning)
 
 import xmmsclient
 import xmmsclient.collections as coll
 
-import commands
-import config
-import containers
-import help
-import lyrics
-import mif
-import nowplaying
-import playlist
-import search
-import signals
-import util
-import widgets
-import xmms
+from . import commands
+from . import config
+from . import containers
+from . import help
+from . import lyrics
+from . import mif
+from . import nowplaying
+from . import playlist
+from . import search
+from . import signals
+from . import util
+from . import widgets
+from . import xmms
 
 
 class HeaderBar(urwid.WidgetWrap):
@@ -100,7 +100,7 @@ class HeaderBar(urwid.WidgetWrap):
 
   def on_xmms_playback_current_info(self, info):
     self.info = info
-    self.ctx = dict(zip((k[1] for k in self.info), self.info.values()))
+    self.ctx = dict(list(zip((k[1] for k in self.info), list(self.info.values()))))
     self._update()
 
 
@@ -125,7 +125,7 @@ class StatusArea(urwid.Pile):
     self._invalidate()
 
   def on_xmms_playback_volume_changed(self, channels):
-    s = "volume: " + ' '.join("%s:%d" % (c, v) for c, v in channels.iteritems())
+    s = "volume: " + ' '.join("%s:%d" % (c, v) for c, v in channels.items())
     self.set_message(s)
 
   def set_message(self, msg, type='info'):
@@ -177,7 +177,7 @@ class Ccx2(object):
       if self.config.autostart_server:
         os.system('xmms2-launcher')
       if not self.xs.connect():
-        print >> sys.stderr, "error: couldn't connect to server"
+        print("error: couldn't connect to server", file=sys.stderr)
         sys.exit(0)
 
   def run(self):
@@ -206,7 +206,7 @@ class Ccx2(object):
                ('pls-switcher', playlist.PlaylistSwitcher(self))]
     else:
       pview = urwid.Columns([('weight', 1, playlist.PlaylistSwitcher(self)),
-                             ('fixed', 1, urwid.SolidFill(u'\u2502')),
+                             ('fixed', 1, urwid.SolidFill('\u2502')),
                              ('weight', 5, playlist.Playlist(self))],
                              dividechars=1, focus_column=2)
       pview = [('playlist', pview)]
@@ -261,7 +261,7 @@ class Ccx2(object):
         i = [xmmsfd, stdinfd]
 
       if not self.xs.connected:
-        print >> sys.stderr, "disconnected from server"
+        print("disconnected from server", file=sys.stderr)
         sys.exit(0) # TODO
 
       for fd in i:
@@ -297,7 +297,7 @@ class Ccx2(object):
             self.show_command_prompt()
           else:
             signals.emit('show-message', "unbound key: %s" % k, 'error')
-        except commands.CommandError, e:
+        except commands.CommandError as e:
           signals.emit('show-message', "command error: %s" % e, 'error')
 
   def show_dialog(self, dialog):
@@ -325,7 +325,7 @@ class Ccx2(object):
     def _run(widget, text):
       try:
         self.cm.run_command(text, contexts)
-      except commands.CommandError, e:
+      except commands.CommandError as e:
         signals.emit('show-message', "command error: %s" % e, 'error')
 
     self.statusarea.show_prompt(done_cb=[_restore, _run], abort_cb=[_restore])
@@ -375,7 +375,7 @@ class Ccx2(object):
     try:
       c = coll.coll_parse(args)
     except ValueError:
-      raise commands.CommandError, 'bad pattern'
+      raise commands.CommandError('bad pattern')
 
     ids = self.xs.coll_query_ids(c)
 
@@ -394,7 +394,7 @@ class Ccx2(object):
           mult *= 60
         # FIXME: check for a valid time spec, laziness is my name
       except ValueError:
-        raise commands.CommandError, "bad seconds value"
+        raise commands.CommandError("bad seconds value")
 
       if relative:
         self.xs.playback_seek_ms_rel(seconds*1000, sync=False)
@@ -404,7 +404,7 @@ class Ccx2(object):
   def cmd_volume(self, args):
     cur = self.xs.playback_volume_get()
 
-    if isinstance(cur, basestring):
+    if isinstance(cur, str):
       signals.emit('show-message', "volume: "+cur)
       return
 
@@ -414,7 +414,7 @@ class Ccx2(object):
       try:
         volume = int(args)
       except ValueError:
-        raise commands.CommandError, "wrong volume value"
+        raise commands.CommandError("wrong volume value")
 
       for c in cur:
         if relative:
@@ -423,7 +423,7 @@ class Ccx2(object):
           cur[c] = volume
         self.xs.playback_volume_set(c, cur[c])
 
-    s = "volume: " + ' '.join("%s:%d" % (c, v) for c, v in cur.iteritems())
+    s = "volume: " + ' '.join("%s:%d" % (c, v) for c, v in cur.items())
     signals.emit('show-message', s)
 
 

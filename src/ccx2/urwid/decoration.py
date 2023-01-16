@@ -20,9 +20,9 @@
 # Urwid web site: http://excess.org/urwid/
 
 
-from util import *
-from widget import *
-from split_repr import remove_defaults
+from .util import *
+from .widget import *
+from .split_repr import remove_defaults
 
 
 class WidgetDecoration(Widget):  # "decorator" was already taken
@@ -666,7 +666,7 @@ def normalize_align(align, err):
         return align
     raise err("align value %s is not one of 'left', 'center', "
         "'right', ('relative', percentage 0=left 100=right)" 
-        % `align`)
+        % repr(align))
 
 def simplify_align(align_type, align_amount):
     """
@@ -690,7 +690,7 @@ def normalize_width(width, err):
         return width
     raise err("width value %s is not one of fixed number of columns, "
         "'pack', ('relative', percentage of total width), 'clip'" 
-        % `width`)
+        % repr(width))
 
 def simplify_width(width_type, width_amount):
     """
@@ -715,7 +715,7 @@ def decompose_align_width( align, width, err ):
         raise err("align value %s is not one of 'left', 'center', "
             "'right', ('fixed left', columns), ('fixed right', "
             "columns), ('relative', percentage 0=left 100=right)" 
-            % `align`)
+            % repr(align))
 
     try:
         if width is None:
@@ -728,7 +728,7 @@ def decompose_align_width( align, width, err ):
     except:
         raise err("width value %s is not one of ('fixed', columns "
             "width), ('fixed right', columns), ('relative', "
-            "percentage of total width), None" % `width`)
+            "percentage of total width), None" % repr(width))
         
     if width_type == 'fixed left' and align_type != 'fixed right':
         raise err("fixed left width may only be used with fixed "
@@ -747,7 +747,7 @@ def decompose_valign_height( valign, height, err ):
         valign_type, valign_amount = valign
         assert valign_type in ('top','middle','bottom','fixed top','fixed bottom','relative')
     except:
-        raise err, "Invalid valign: %s" % `valign`
+        raise err("Invalid valign: %s" % repr(valign))
 
     try:
         if height is None:
@@ -757,12 +757,12 @@ def decompose_valign_height( valign, height, err ):
         height_type, height_amount = height
         assert height_type in (None, 'fixed','fixed bottom','fixed top','relative')
     except:
-        raise err, "Invalid height: %s"%`height`
+        raise err("Invalid height: %s"%repr(height))
         
     if height_type == 'fixed top' and valign_type != 'fixed bottom':
-        raise err, "fixed top height may only be used with fixed bottom valign"
+        raise err("fixed top height may only be used with fixed bottom valign")
     if height_type == 'fixed bottom' and valign_type != 'fixed top':
-        raise err, "fixed bottom height may only be used with fixed top valign"
+        raise err("fixed bottom height may only be used with fixed top valign")
         
     return valign_type, valign_amount, height_type, height_amount
 

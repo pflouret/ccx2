@@ -22,19 +22,19 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import urwid
+from . import urwid
 
-import commands
-import config
+from . import commands
+from . import config
 
 class Help(urwid.ListBox):
   def __init__(self, app):
     self.app = app
 
     keys = {}
-    for key, cmd in self.app.config.keys.iteritems():
+    for key, cmd in self.app.config.keys.items():
       keys.setdefault(cmd, []).append(config.urwid_key_to_key(key))
-    keys = sorted(keys.items(), key=lambda e: e[0])
+    keys = sorted(list(keys.items()), key=lambda e: e[0])
 
     # ugly for py2.4, >= 2.5 has a key argument for max
     pad = len(list(sorted(keys, key=lambda e: len(e[0]), reverse=True))[0][0]) + 2

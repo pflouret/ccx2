@@ -23,7 +23,7 @@
 HTML PRE-based UI implementation
 """
 
-import util
+from . import util
 
 
 _html_colours = {
@@ -77,7 +77,7 @@ class HtmlGenerator:
 				continue
 			assert len(item) == 2, "Invalid register_palette usage"
 			name, like_name = item
-			if not self.palette.has_key(like_name):
+			if like_name not in self.palette:
 				raise Exception("palette entry '%s' doesn't exist"%like_name)
 			self.palette[name] = self.palette[like_name]
 
@@ -112,11 +112,11 @@ class HtmlGenerator:
 		"""Call fn."""
 		return fn()
 
-	def draw_screen(self, (cols, rows), r ):
+	def draw_screen(self, xxx_todo_changeme, r ):
 		"""Create an html fragment from the render object. 
 		Append it to HtmlGenerator.fragments list.
 		"""
-		# collect output in l
+		(cols, rows) = xxx_todo_changeme
 		l = []
 		
 		assert r.rows() == rows
@@ -166,13 +166,13 @@ class HtmlGenerator:
 	def get_cols_rows(self):
 		"""Return the next screen size in HtmlGenerator.sizes."""
 		if not self.sizes:
-			raise HtmlGeneratorSimulationError, "Ran out of screen sizes to return!"
+			raise HtmlGeneratorSimulationError("Ran out of screen sizes to return!")
 		return self.sizes.pop(0)
 
 	def get_input(self):
 		"""Return the next list of keypresses in HtmlGenerator.keys."""
 		if not self.keys:
-			raise HtmlGeneratorSimulationError, "Ran out of key lists to return!"
+			raise HtmlGeneratorSimulationError("Ran out of key lists to return!")
 		return self.keys.pop(0)
 	
 
@@ -235,7 +235,7 @@ def screenshot_init( sizes, keys ):
 			assert type(row) == type(0)
 			assert row>0 and col>0
 	except:
-		raise Exception, "sizes must be in the form [ (col1,row1), (col2,row2), ...]"
+		raise Exception("sizes must be in the form [ (col1,row1), (col2,row2), ...]")
 	
 	try:
 		for l in keys:
@@ -243,11 +243,11 @@ def screenshot_init( sizes, keys ):
 			for k in l:
 				assert type(k) == type("")
 	except:
-		raise Exception, "keys must be in the form [ [keyA1, keyA2, ..], [keyB1, ..], ...]"
+		raise Exception("keys must be in the form [ [keyA1, keyA2, ..], [keyB1, ..], ...]")
 	
-	import curses_display
+	from . import curses_display
 	curses_display.Screen = HtmlGenerator
-	import raw_display
+	from . import raw_display
 	raw_display.Screen = HtmlGenerator
 	
 	HtmlGenerator.sizes = sizes
