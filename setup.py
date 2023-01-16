@@ -1,6 +1,6 @@
 import sys
 
-from distutils.core import setup
+from setuptools import setup
 from glob import glob
 
 sys.path.insert(0, './src')
