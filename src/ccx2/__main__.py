@@ -29,18 +29,20 @@ import optparse
 import ccx2
 import ccx2.main
 
-p = optparse.OptionParser(usage='usage: %prog [options]',
-                          description='%prog is a console client for the xmms2 music server',
-                          prog='ccx2',
-                          version='%%prog %s' % ccx2.__version__)
+def main():
+    p = optparse.OptionParser(usage='usage: %prog [options]',
+                            description='%prog is a console client for the xmms2 music server',
+                            prog='ccx2',
+                            version='%%prog %s' % ccx2.__version__)
 
-p.add_option('-c', '--config',
-             dest='config',
-             metavar='<configpath>',
-             help='path to an alternate config file',
-             default=None)
+    p.add_option('-c', '--config',
+                dest='config',
+                metavar='<configpath>',
+                help='path to an alternate config file',
+                default=None)
 
-opts, args = p.parse_args()
+    opts, args = p.parse_args()
 
-ccx2.main.Ccx2(config_path=opts.config).run()
+    ccx2.main.Ccx2(config_path=opts.config).run()
 
+main()

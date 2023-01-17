@@ -24,9 +24,9 @@
 
 import urwid
 
-import commands
-import search
-import signals
+from . import commands
+from . import search
+from . import signals
 
 class TabContainer(urwid.Pile):
   context_name = 'tabs'
@@ -46,7 +46,7 @@ class TabContainer(urwid.Pile):
     self.tab_w = urwid.WidgetWrap(w)
 
     self.__super.__init__([('flow', self.tabbar),
-                           ('flow', urwid.Divider(u'\u2500')),
+                           ('flow', urwid.Divider('\u2500')),
                            self.tab_w],
                           2)
 
@@ -208,10 +208,10 @@ class InfoDialog(Dialog):
       attr = i % 2 == 0 and 'infodialog-even' or 'infodialog-odd'
       if k[0] != source:
         source = k[0]
-        cols.append(urwid.AttrWrap(urwid.Text(unicode(source)), 'marked'))
+        cols.append(urwid.AttrWrap(urwid.Text(str(source)), 'marked'))
         self.list_length += 1
-      cols.append(urwid.AttrWrap(urwid.Columns([urwid.Text(u'  ' + unicode(k[1])),
-                                                ('weight', 2, urwid.Text(unicode(info[k])))]),
+      cols.append(urwid.AttrWrap(urwid.Columns([urwid.Text('  ' + str(k[1])),
+                                                ('weight', 2, urwid.Text(str(info[k])))]),
                                  attr))
     self.lb = urwid.AttrWrap(urwid.ListBox(cols), 'infodialog-even')
 

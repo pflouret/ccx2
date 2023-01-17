@@ -26,10 +26,10 @@ import urwid
 
 from xmmsclient import collections as coll
 
-import commands
-import containers
-import signals
-import xmms
+from . import commands
+from . import containers
+from . import signals
+from . import xmms
 
 BADROWSMSG = "Widget %s at position %s within listbox calculated %d rows but rendered %d!"
 BADFOCUSROWSMSG = "Focus widget %s at position %s within listbox " \
@@ -111,7 +111,7 @@ class AttrListBox(urwid.ListBox):
         canvas.fill_attr(attr)
 
       if w_rows != canvas.rows():
-        raise urwid.ListBoxError, BADROWSMSG % (`widget`,`w_pos`,w_rows, canvas.rows())
+        raise urwid.ListBoxError(BADROWSMSG % (repr(widget),repr(w_pos),w_rows, canvas.rows()))
       rows += w_rows
       combinelist.append((canvas, w_pos, False))
     
@@ -130,11 +130,11 @@ class AttrListBox(urwid.ListBox):
       focus_canvas.fill_attr(focus_attr)
 
     if focus_canvas.rows() != focus_rows:
-      raise ListBoxError, BADFOCUSROWSMSG % (`focus_widget`, `focus_pos`,
-                                             focus_rows, focus_canvas.rows())
+      raise ListBoxError(BADFOCUSROWSMSG % (repr(focus_widget), repr(focus_pos),
+                                             focus_rows, focus_canvas.rows()))
     c_cursor = focus_canvas.cursor
     if cursor != c_cursor:
-      raise urwid.ListBoxError, BADCURSORMSG % (`focus_widget`,`focus_pos`,`cursor`,`c_cursor`)
+      raise urwid.ListBoxError(BADCURSORMSG % (repr(focus_widget),repr(focus_pos),repr(cursor),repr(c_cursor)))
       
     rows += focus_rows
     combinelist.append((focus_canvas, focus_pos, True))
@@ -146,7 +146,7 @@ class AttrListBox(urwid.ListBox):
         canvas = urwid.CompositeCanvas(canvas)
         canvas.fill_attr(attr)
       if w_rows != canvas.rows():
-        raise urwid.ListBoxError, BADROWSMSG  % (`widget`,`w_pos`,w_rows, canvas.rows())
+        raise urwid.ListBoxError(BADROWSMSG  % (repr(widget),repr(w_pos),w_rows, canvas.rows()))
       rows += w_rows
       combinelist.append((canvas, w_pos, False))
     
@@ -200,7 +200,7 @@ class MarkableListBox(AttrListBox):
 
   def unmark_all(self):
     self._marked_data.clear()
-    for pos in self.row_attrs.keys():
+    for pos in list(self.row_attrs.keys()):
       self.remove_row_attr(pos, 'marked')
     self._invalidate()
 
@@ -309,7 +309,7 @@ class SongListBox(MarkableListBox):
     signals.emit('show-message', msg)
 
   def insert_marked(self, pos=None):
-    m = self.marked_data.values()
+    m = list(self.marked_data.values())
 
     if not m:
       w, p = self.get_focus()
@@ -335,7 +335,7 @@ class SongListBox(MarkableListBox):
     def _cb(r):
       if not r.iserror():
         v = r.value()
-        if v == u'no current entry':
+        if v == 'no current entry':
           self.insert_marked()
         else:
           self.insert_marked(pos=v['position']+1)

@@ -26,13 +26,13 @@ import threading
 
 import urwid
 
-import commands
-import config
-import listbox
-import lyricwiki
-import signals
-import widgets
-import xmms
+from . import commands
+from . import config
+from . import listbox
+from . import lyricwiki
+from . import signals
+from . import widgets
+from . import xmms
 
 class FetcherThread(threading.Thread):
   def __init__(self, lyrics, info, url=None):

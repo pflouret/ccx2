@@ -30,14 +30,14 @@ import time
 import urwid
 import xmmsclient.collections as coll
 
-import collutil
-import config
-import commands
-import listbox
-import mif
-import signals
-import widgets
-import xmms
+from . import collutil
+from . import config
+from . import commands
+from . import listbox
+from . import mif
+from . import signals
+from . import widgets
+from . import xmms
 
 
 class SearchWalker(urwid.ListWalker):
@@ -149,7 +149,7 @@ class Search(urwid.Pile):
     # TODO: playlists and playlist types/options
     args = args.strip()
     if not args:
-      raise commands.CommandError, 'need some args'
+      raise commands.CommandError('need some args')
 
     name = args
     q = self.input.edit_text
@@ -159,7 +159,7 @@ class Search(urwid.Pile):
     try:
       c = coll.coll_parse(q)
     except ValueError:
-      raise commands.CommandError, 'invalid collection'
+      raise commands.CommandError('invalid collection')
 
     self.xs.coll_save(c, name, 'Collections', sync=False)
     signals.emit('show-message',

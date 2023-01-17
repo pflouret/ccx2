@@ -28,20 +28,20 @@ import urwid
 import urwid.display_common
 import xmmsclient
 
-import commands
-import containers
-import mif
-import signals
-import util
-import widgets
-import xmms
+from . import commands
+from . import containers
+from . import mif
+from . import signals
+from . import util
+from . import widgets
+from . import xmms
 
 try:
   from PIL import Image
   try:
-    from cStringIO import StringIO
+    from io import StringIO
   except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 except ImportError:
   pass
 
@@ -111,7 +111,7 @@ class NowPlaying(urwid.WidgetWrap):
 
   def on_xmms_playback_current_info(self, info):
     self.info = info
-    self.ctx = dict(zip((k[1] for k in self.info), self.info.values()))
+    self.ctx = dict(list(zip((k[1] for k in self.info), list(self.info.values()))))
     if self.show_cover:
       if 'picture_front' in self.info:
         # TODO: cache the picture to disk (or open directly from disk if local?)
@@ -175,7 +175,7 @@ class AlbumCoverWidget(urwid.WidgetWrap):
       self.dim = None
       self.text.align = 'left'
       self._w = self.padding
-    except IOError, e:
+    except IOError as e:
       self.reset()
     self._invalidate()
 
@@ -191,7 +191,7 @@ class AlbumCoverWidget(urwid.WidgetWrap):
     match = 0
 
     colors = urwid.display_common._COLOR_VALUES_256[16:]
-    indexes = range(16,256)
+    indexes = list(range(16,256))
     for i, values in zip(indexes, colors):
       rd, gd, bd = rgb[0] - values[0], rgb[1] - values[1], rgb[2] - values[2]
       d = rd*rd + gd*gd + bd*bd
